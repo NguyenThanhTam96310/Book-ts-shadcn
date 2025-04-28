@@ -1,5 +1,6 @@
 import Banner from "@/features/banner/components";
 import CategoryHomeForm from "@/features/category/components";
+import PostHome from "@/features/post/components";
 import { ProductFlashSaleForm, ProductNewForm } from "@/features/product/components";
 
 import PublisherShowForm from "@/features/publisher/components";
@@ -33,6 +34,9 @@ export default function Home() {
       </div>
       <div className="my-6 mx-6">
         <PublisherShowForm />
+      </div>
+      <div>
+        <PostHome />
       </div>
     </div>
   );

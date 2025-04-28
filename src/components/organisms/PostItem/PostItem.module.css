@@ -1,21 +1,21 @@
 .postItem {
     background-color: #f9fafb;
-    /* tương đương bg-gray-100 */
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .imageGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    display: block;
+    margin-bottom: 0.75rem;
 }
 
 .imageWrapper {
     position: relative;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 16 / 9;
     overflow: hidden;
     border-radius: 0.25rem;
 }
@@ -27,22 +27,37 @@
 .content {
     background-color: white;
     border-radius: 0.5rem;
-    padding: 1rem;
+    padding: 0;
 }
 
 .title {
     font-size: 1rem;
     font-weight: 600;
     color: #111827;
-    display: block;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    /* Giới hạn 2 dòng */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
     margin-bottom: 0.5rem;
+    min-height: 3rem;
+    /* Đảm bảo đủ chiều cao cho 2 dòng */
 }
 
 .excerpt {
     font-size: 0.875rem;
     color: #4b5563;
-    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    /* Giới hạn 2 dòng */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
     line-height: 1.4;
+    margin-bottom: 0.5rem;
+    min-height: 2.5rem;
+    /* Tùy thuộc line-height, nên để phù hợp 2 dòng */
 }
 
 .readMore {

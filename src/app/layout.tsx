@@ -6,6 +6,7 @@ import Header from "@/components/organisms/Header";
 import Menu from "@/components/organisms/Menu";
 import { Providers } from "@/app/Providers";
 import Footer from "@/components/organisms/Footer";
+import { ToastContainer } from "react-toastify";
 
 
 const roboto = Roboto({
@@ -29,6 +30,7 @@ export default function RootLayout({
           <Menu />
           {children}
           <Footer />
+          <ToastContainer />
         </Providers>
       </body>
     </html>

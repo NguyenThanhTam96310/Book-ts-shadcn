@@ -12,7 +12,6 @@ const CategoryHomeForm = () => {
             try {
                 const data = await fetchCategories()
                 setCategories(data)
-                console.log(data);
             } catch (error) {
                 console.error("Lỗi khi load categories:", error)
             }

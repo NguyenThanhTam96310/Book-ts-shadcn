@@ -1,3 +1,4 @@
+import { ProductItemProps } from "@/features/product/services/type"
 import axiosInstance from "@/lib/api/Config"
 
 
@@ -31,10 +32,10 @@ export const fetchProductNewForm = async (): Promise<ProductItemProps[]> => {
     const data = response.data as { content: ProductItemProps[] }
     return data.content
 }
-export const fetchProductCategory = async (): Promise<ProductItemProps[]> => {
+export const fetchProductByCategory = async (categoryId: number): Promise<ProductItemProps[]> => {
     const response = await axiosInstance.get(`${API}/public/products`, {
         params: {
-            categoryId: 2,
+            categoryId, // dùng tham số truyền vào
             status: true,
             pageNumber: 0,
             pageSize: 5,
@@ -45,6 +46,7 @@ export const fetchProductCategory = async (): Promise<ProductItemProps[]> => {
     const data = response.data as { content: ProductItemProps[] }
     return data.content
 }
+
 
 export const fetchProductAuthor = async (): Promise<ProductItemProps[]> => {
     const response = await axiosInstance.get(`${API}/public/products`, {
@@ -59,4 +61,10 @@ export const fetchProductAuthor = async (): Promise<ProductItemProps[]> => {
     })
     const data = response.data as { content: ProductItemProps[] }
     return data.content
+}
+// src/features/product/services/product.service.ts
+export const fetchProductBySlug = async (slug: string): Promise<ProductItemProps> => {
+    const response = await axiosInstance.get(`${API}/public/products/slug/${slug}`)
+    return response.data as ProductItemProps
+
 }

@@ -14,9 +14,14 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { login } from "@/features/auth/services/auth.service"
+import { fetchUserByEmail, fetchUserByToken, login } from "@/features/auth/services/auth.service"
 import { LoginBody } from "@/features/auth/services/auth.schema"
 import { useState } from "react"
+import { toast } from "react-toastify"
+import { fetchCart } from "@/features/cart/services/service"
+import { POST_ADD } from "@/lib/api/Service"
+import { CartItemType, CartProps } from "@/features/cart"
+import { CART_ITEM_KEY } from "@/constants/cartConstants"
 
 
 const LoginForm = () => {
@@ -32,7 +37,6 @@ const LoginForm = () => {
     })
 
     const onSubmit = async (values: z.infer<typeof LoginBody>) => {
-        const { username, password } = values;
         try {
             const result = await login(values);
             const token = result["jwt-token"];
@@ -40,8 +44,53 @@ const LoginForm = () => {
                 throw new Error("Không nhận được token từ server");
             }
             localStorage.setItem("authToken", token);
-            localStorage.setItem("username", username);
 
+
+            const user = await fetchUserByToken();
+            if (user?.userId && user?.email) {
+                localStorage.setItem("userId", user.userId);
+                localStorage.setItem("username", user.email);
+            }
+            const raw = localStorage.getItem(CART_ITEM_KEY);
+            if (raw) {
+                try {
+                    const localCart = JSON.parse(raw) as {
+                        cartItems: Array<{
+                            product: { productId: number };
+                            quantity: number;
+                        }>;
+                        totalPrice?: number;
+                    };
+
+                    if (localCart?.cartItems?.length > 0) {
+                        // Lấy giỏ hàng trên server
+                        const serverCart: CartProps = await fetchCart(user.userId);
+
+                        const existingIds = new Set(
+                            (serverCart.cartItems || []).map(ci => ci.product.productId)
+                        );
+
+                        // Gửi POST_ADD cho mỗi item chưa có trên server
+                        await Promise.all(
+                            localCart.cartItems
+                                .filter(item => !existingIds.has(item.product.productId))
+                                .map(item =>
+                                    POST_ADD("/public/carts", {
+                                        cartId: user.userId,
+                                        productId: item.product.productId,
+                                        quantity: item.quantity,
+                                    })
+                                )
+                        );
+                    }
+
+                    // Xóa local cart sau khi đã đồng bộ
+                    localStorage.removeItem(CART_ITEM_KEY);
+
+                } catch (error) {
+                    console.error("Failed to sync local cart:", error);
+                }
+            }
             // Điều hướng
             router.push("/");
         } catch (error) {

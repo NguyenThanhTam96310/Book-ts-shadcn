@@ -7,9 +7,11 @@ export interface LoginResponse {
     email: string
     userId: number
 }
-export type User = {
-    userId?: string;
-    username: string;
-    email: string;
-    token?: string;
+export type UserProps = {
+    userId?: string
+    username: string
+    fullName?: string
+    email?: string
+    avatar?: string
+    mobileNumber?: string
 };

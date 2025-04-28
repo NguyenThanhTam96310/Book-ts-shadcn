@@ -42,12 +42,12 @@ export default function Header() {
                 {/* Icons */}
                 <div className="flex w-full md:w-auto justify-between md:justify-end items-center gap-6 text-sm">
                     {[
-                        { icon: <UserIcon className="w-6 h-6" />, label: 'Hồ sơ của tôi', badge: 3 },
-                        { icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />, label: 'Tin nhắn', badge: 1 },
-                        { icon: <TruckIcon className="w-6 h-6" />, label: 'Đơn hàng' },
-                        { icon: <ShoppingCartIcon className="w-6 h-6" />, label: 'Giỏ hàng' },
+                        { href: '/profile', icon: <UserIcon className="w-6 h-6" />, label: 'Hồ sơ của tôi', badge: 3 },
+                        { href: '/messages', icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />, label: 'Tin nhắn', badge: 1 },
+                        { href: '/orders', icon: <TruckIcon className="w-6 h-6" />, label: 'Đơn hàng' },
+                        { href: '/cart', icon: <ShoppingCartIcon className="w-6 h-6" />, label: 'Giỏ hàng' },
                     ].map((item, index) => (
-                        <div key={index} className="relative flex flex-col items-center">
+                        <Link key={index} href={item.href} className="relative flex flex-col items-center">
                             {item.icon}
                             <span>{item.label}</span>
                             {item.badge && (
@@ -55,7 +55,7 @@ export default function Header() {
                                     {item.badge}
                                 </span>
                             )}
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>

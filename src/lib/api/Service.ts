@@ -27,3 +27,14 @@ export async function callApi<T>(
         throw error
     }
 }
+export function POST_ADD<T = any>(endpoint: string, data: any): Promise<T> {
+    return callApi<T>(endpoint, "POST", data);
+}
+
+export function PUT_EDIT<T = any>(endpoint: string, data: any): Promise<T> {
+    return callApi<T>(endpoint, "PUT", data);
+}
+
+export function DELETE_ID<T = any>(endpoint: string): Promise<T> {
+    return callApi<T>(endpoint, "DELETE");
+}
