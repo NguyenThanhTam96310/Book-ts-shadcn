@@ -5,13 +5,38 @@ import {
     ChatBubbleLeftRightIcon,
     ShoppingCartIcon,
     TruckIcon,
-    Bars3Icon,
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { USER_ID } from '@/constants/cartConstants'
 
 export default function Header() {
-    const [showMobileMenu, setShowMobileMenu] = useState(false)
+    const [userId, setUserId] = useState<number | null>(null)
+    useEffect(() => {
+        const loadUserId = () => {
+            const storedUserId = localStorage.getItem(USER_ID);
+            if (storedUserId) {
+                setUserId(parseInt(storedUserId, 10));
+            } else {
+                setUserId(null);
+            }
+        };
+
+        loadUserId(); // Load lần đầu tiên
+
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === 'userId') {
+                loadUserId();
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
+
 
     return (
         <header className="border-b">
@@ -23,7 +48,6 @@ export default function Header() {
                 </div>
 
                 {/* Search */}
-                {/* <div className="flex items-center w-full md:flex-1 border rounded-md overflow-hidden text-sm  "> */}
                 <div className="flex items-center w-full sm:w-3/4 md:w-1/2 lg:w-2/4 border rounded-md overflow-hidden text-sm">
                     <select className="p-2 border-r outline-none bg-white">
                         <option>Tất cả</option>
@@ -41,25 +65,45 @@ export default function Header() {
 
                 {/* Icons */}
                 <div className="flex w-full md:w-auto justify-between md:justify-end items-center gap-6 text-sm">
-                    {[
-                        { href: '/profile', icon: <UserIcon className="w-6 h-6" />, label: 'Hồ sơ của tôi', badge: 3 },
-                        { href: '/messages', icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />, label: 'Tin nhắn', badge: 1 },
-                        { href: '/orders', icon: <TruckIcon className="w-6 h-6" />, label: 'Đơn hàng' },
-                        { href: '/cart', icon: <ShoppingCartIcon className="w-6 h-6" />, label: 'Giỏ hàng' },
-                    ].map((item, index) => (
-                        <Link key={index} href={item.href} className="relative flex flex-col items-center">
-                            {item.icon}
-                            <span>{item.label}</span>
-                            {item.badge && (
+
+                    {userId ? (
+                        <>
+                            <Link href="/profile" className="relative flex flex-col items-center">
+                                <UserIcon className="w-6 h-6" />
+                                <span>Hồ sơ của tôi</span>
+                            </Link>
+                            <Link href="/messages" className="relative flex flex-col items-center">
+                                <ChatBubbleLeftRightIcon className="w-6 h-6" />
+                                <span>Tin nhắn</span>
                                 <span className="absolute -top-1 -right-2 text-xs bg-red-500 text-white px-1 rounded-full">
-                                    {item.badge}
+                                    1
                                 </span>
-                            )}
-                        </Link>
-                    ))}
+                            </Link>
+                            <Link href="/orders" className="relative flex flex-col items-center">
+                                <TruckIcon className="w-6 h-6" />
+                                <span>Đơn hàng</span>
+                            </Link>
+
+                        </>
+                    ) : (
+                        <>
+                            <Link href="/login" className="relative flex flex-col items-center">
+                                <UserIcon className="w-6 h-6" />
+                                <span>Đăng nhập</span>
+                            </Link>
+                        </>
+                    )}
+
+
+
+
+
+                    <Link href="/cart" className="relative flex flex-col items-center">
+                        <ShoppingCartIcon className="w-6 h-6" />
+                        <span>Giỏ hàng</span>
+                    </Link>
                 </div>
             </div>
         </header>
-
     )
 }

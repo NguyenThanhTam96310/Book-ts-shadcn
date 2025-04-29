@@ -38,8 +38,8 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
                     </div>
                     <Image
                         src={
-                            product.images && product.images.length > 0
-                                ? `/images/products/${product.images[0].fileName}`
+                            product.images && product.images.length > 0 && process.env.NEXT_PUBLIC_FILE
+                                ? `${process.env.NEXT_PUBLIC_FILE}${product.images[0].fileName}`
                                 : "/placeholder.svg"
                         }
                         alt={product.productName}

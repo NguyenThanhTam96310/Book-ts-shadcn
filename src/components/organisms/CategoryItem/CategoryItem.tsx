@@ -36,7 +36,8 @@ const CategoryItem: FC<CategoryItemProps> = ({
                                     } ${styles[`book${index + 1}`]}`}
                             >
                                 <Image
-                                    src={image || "/placeholder.svg"}
+                                    src={`${process.env.NEXT_PUBLIC_FILE}${image}`}
+
                                     alt={categoryName}
                                     fill
                                     className={styles.bookCover}
@@ -46,7 +47,7 @@ const CategoryItem: FC<CategoryItemProps> = ({
 
                         {/* Main featured book */}
                         <div className={styles.mainBook}>
-                            <Image src={image || "/placeholder.svg"} alt={categoryName} fill className={styles.bookCover} priority />
+                            <Image src={`${process.env.NEXT_PUBLIC_FILE}${image}`} alt={categoryName} fill className={styles.bookCover} priority />
                         </div>
                     </div>
                 </div>

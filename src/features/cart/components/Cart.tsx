@@ -17,13 +17,13 @@ export default function Cart() {
         totalPrice: 0,
     });
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
-    let userId: number | null = null
-    if (typeof window !== 'undefined') {
-        const storedUserId = localStorage.getItem(USER_ID)
+    const [userId, setUserId] = useState<number | null>(null)
+    useEffect(() => {
+        const storedUserId = localStorage.getItem('userId')
         if (storedUserId) {
-            userId = parseInt(storedUserId, 10)
+            setUserId(parseInt(storedUserId, 10))
         }
-    }
+    }, [])
     useEffect(() => {
         const fetchData = async () => {
             if (typeof window === "undefined") return;

@@ -92,7 +92,10 @@ const LoginForm = () => {
                 }
             }
             // Điều hướng
-            router.push("/");
+            window.location.href = "/";
+            // router.push("/");
+            // router.refresh();
+
         } catch (error) {
             console.error("Lỗi đăng nhập:", error);
             alert("Tên đăng nhập hoặc mật khẩu không đúng!");

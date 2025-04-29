@@ -1,13 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
-// next.config.js
-module.exports = {
-  experimental: {
-    appDir: true,
+  images: {
+    domains: ["localhost"],
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8080",
+        pathname: "/api/public/file/**",
+      },
+    ],
   },
-}
+};
+export default nextConfig;
+

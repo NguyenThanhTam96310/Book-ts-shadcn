@@ -14,7 +14,7 @@ const PublisherItem: FC<PublisherItemProps> = ({ publisherId, publisherName, ima
         <Link key={publisherId} href={`/publisher/${publisherId}`} className={styles.publisherItem}>
             <div className={styles.logoContainer}>
                 <Image
-                    src={image || "/placeholder.svg"}
+                    src={`${process.env.NEXT_PUBLIC_FILE}${image}`}
                     alt={publisherName || "image.jpg"}
                     fill
                     sizes="(max-width: 768px) 25vw, 150px"

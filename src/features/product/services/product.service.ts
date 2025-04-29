@@ -1,4 +1,4 @@
-import { ProductItemProps } from "@/features/product/services/type"
+import { FetchProductListParams, ProductItemProps, ProductListResponse } from "@/features/product/services/type"
 import axiosInstance from "@/lib/api/Config"
 
 
@@ -67,4 +67,26 @@ export const fetchProductBySlug = async (slug: string): Promise<ProductItemProps
     const response = await axiosInstance.get(`${API}/public/products/slug/${slug}`)
     return response.data as ProductItemProps
 
+}
+
+export const fetchProductList = async (params: FetchProductListParams): Promise<ProductListResponse> => {
+    const response = await axiosInstance.get(`${API}/public/products`, {
+        params: params // truyền thẳng params từ ngoài vào
+    });
+
+    const data = response.data as {
+        content: ProductItemProps[],
+        totalElements: number,
+        totalPages: number,
+        pageNumber: number,
+        pageSize: number
+    };
+
+    return {
+        items: data.content,
+        totalPages: data.totalPages,
+        totalItems: data.totalElements,
+        pageNumber: data.pageNumber,
+        pageSize: data.pageSize
+    };
 }

@@ -53,7 +53,7 @@ export default function Banner() {
                 >
                     <div className="relative w-full h-full rounded-lg"> {/* Thêm rounded-lg cho div chứa Image */}
                         <Image
-                            src={b.image}
+                            src={`${process.env.NEXT_PUBLIC_FILE}${b.image}`}
                             alt={b.bannerName}
                             fill
                             className="object-cover rounded-lg"

@@ -36,7 +36,7 @@ export default function Home() {
         <PublisherShowForm />
       </div>
       <div>
-        <PostHome />
+        {/* <PostHome /> */}
       </div>
     </div>
   );

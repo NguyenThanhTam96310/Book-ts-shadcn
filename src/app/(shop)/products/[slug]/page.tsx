@@ -9,7 +9,7 @@ interface Props {
     params: { slug: string }
 }
 
-export default async function ProductPage({ params }: Props) {
+export default async function ProductDetailPage({ params }: Props) {
     const { slug } = await params
     const product: ProductItemProps = await fetchProductBySlug(slug)
     console.log(product)

@@ -1,3 +1,5 @@
+import { Author, Categories, Images, Languages, Publisher } from "@/types"
+
 export interface ProductItemProps {
     productId: string | number
     productName: string
@@ -21,32 +23,27 @@ export interface ProductItemProps {
     isAuthentic?: boolean // Not in schema but needed for display
 }
 
-
-export interface Images {
-    fileName: string
+export interface FetchProductListParams {
+    keyword?: string
+    isbn?: string
+    minPrice?: number
+    maxPrice?: number
+    categoryId?: number
+    authorIds?: number[]
+    languageIds?: number[]
+    supplierId?: number
+    publisherId?: number
+    isSale?: boolean
+    status?: boolean
+    pageNumber?: number
+    pageSize?: number
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
 }
-
-export interface Publisher {
-    publisherId?: string | number
-    publisherName?: string
-    slug: string
-    email?: string
-}
-export interface Author {
-    authorId?: string | number,
-    authorName?: string,
-}
-
-export interface Languages {
-    languageId: string | number
-    name: string
-}
-export interface Categories {
-    categoryId: string | number
-    categoryName: string
-    slug: string
-    parentId?: number
-    size?: string
-    status?: "active" | "inactive" | string
-    image?: string
+export interface ProductListResponse {
+    items: ProductItemProps[];
+    totalPages: number;
+    totalItems: number;
+    pageNumber: number;
+    pageSize: number;
 }

@@ -12,7 +12,7 @@ const PostItem: React.FC<PostItemProps> = ({ postId, title, image, content }) =>
         <div className={styles.postItem}>
             <div className={styles.imageGrid}>
                 <div className={styles.imageWrapper} >
-                    <Image src={image || "image.jpg"} alt={""} fill className={styles.image} />
+                    <Image src={`${process.env.NEXT_PUBLIC_FILE}${image}`} alt={""} fill className={styles.image} />
                 </div>
             </div>
             <div className={styles.content}>

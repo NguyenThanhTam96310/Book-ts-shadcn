@@ -18,3 +18,17 @@ export const fetchCategories = async (): Promise<CategoryItemProps[]> => {
     const data = response.data as { content: CategoryItemProps[] }
     return data.content
 }
+export const fetchAllCategories = async (): Promise<CategoryItemProps[]> => {
+    const response = await axiosInstance.get(`${API}/public/categories`, {
+        params: {
+            status: true,
+            type: "parent",
+            pageNumber: 0,
+            sortBy: "categoryId",
+            sortOrder: "asc"
+        }
+    })
+
+    const data = response.data as { content: CategoryItemProps[] }
+    return data.content
+}

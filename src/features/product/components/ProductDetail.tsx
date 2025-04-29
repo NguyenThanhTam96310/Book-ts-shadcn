@@ -1,6 +1,6 @@
 'use client'
 
-import { FC } from 'react'
+import { FC, useEffect, useState } from 'react'
 import Image from 'next/image'
 import styles from './ProductDetail.module.css'
 import { ProductItemProps } from '@/features/product/services/type'
@@ -17,17 +17,16 @@ interface ProductDetailProps {
 
 const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
     const router = useRouter()
-
+    const [userId, setUserId] = useState<number | null>(null)
     const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
 
-    let userId: number | null = null
-    if (typeof window !== 'undefined') {
+    useEffect(() => {
         const storedUserId = localStorage.getItem('userId')
         if (storedUserId) {
-            userId = parseInt(storedUserId, 10)
+            setUserId(parseInt(storedUserId, 10))
         }
-    }
+    }, [])
 
     const discountedPrice =
         product.discount && product.discount > 0
@@ -104,7 +103,9 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                 {/* Ảnh sản phẩm */}
                 <div className={styles.imageBox}>
                     <Image
-                        src={product.images?.[0]?.fileName ? `/images/products/${product.images[0].fileName}` : '/placeholder.svg'}
+                        src={product.images && product.images.length > 0 && process.env.NEXT_PUBLIC_FILE
+                            ? `${process.env.NEXT_PUBLIC_FILE}${product.images[0].fileName}`
+                            : "/placeholder.svg"}
                         alt={product.productName}
                         width={400}
                         height={500}
