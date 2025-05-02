@@ -3,15 +3,18 @@ import Link from "next/link";
 import type { FC } from "react";
 import styles from "./ProductItem.module.css";
 import { ProductItemProps } from "@/features/product/services/type";
+import { ShoppingCart } from "lucide-react";
 
 interface ProductDetailProps {
-    product: ProductItemProps
+    product: ProductItemProps;
 }
-const ProductItem: FC<ProductDetailProps> = ({ product }) => {
-    // Giá sau khi giảm
-    const discountedPrice = (product.discount ?? 0) > 0 ? Math.round(product.price - (product.price * ((product.discount ?? 0) / 100))) : product.price;
 
-    // Format giá theo VNĐ  
+const ProductItem: FC<ProductDetailProps> = ({ product }) => {
+    const discountedPrice =
+        (product.discount ?? 0) > 0
+            ? Math.round(product.price - (product.price * ((product.discount ?? 0) / 100)))
+            : product.price;
+
     const formatPrice = (price: number) => {
         return (
             new Intl.NumberFormat("vi-VN", {
@@ -27,15 +30,12 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
     };
 
     return (
-        <div className={styles.container}>
+        <div className={styles.card}>
             <Link href={`/products/${product.slug}`} className={styles.productLink}>
-                <div className={styles.imageContainer}>
+                <div className={styles.imageWrapper}>
                     {(product.discount ?? 0) > 0 && (
-                        <div className={styles.discountBadge}>-{product.discount}%</div>
+                        <span className={styles.discountBadge}>-{product.discount}%</span>
                     )}
-                    <div className={styles.authenticBadge}>
-                        <span>CHÍNH HÃNG</span>
-                    </div>
                     <Image
                         src={
                             product.images && product.images.length > 0 && process.env.NEXT_PUBLIC_FILE
@@ -49,20 +49,20 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
                         priority
                     />
                 </div>
-
-                <div className={styles.infoContainer}>
+                <div className={styles.content}>
                     <h3 className={styles.title}>{product.productName}</h3>
-                    <div className={styles.priceContainer}>
-                        <span className={styles.price}>
-                            {formatPrice(discountedPrice)}
-                        </span>
+                    <div className={styles.priceWrapper}>
+                        <span className={styles.currentPrice}>{formatPrice(discountedPrice)}</span>
                         {(product.discount ?? 0) > 0 && (
-                            <span className={styles.originalPrice}>{formatPrice(product.price)}</span>
+                            <span className={styles.oldPrice}>{formatPrice(product.price)}</span>
                         )}
                     </div>
                 </div>
             </Link>
-            <button className={styles.addToCartButton}>THÊM VÀO GIỎ</button>
+            <button className={styles.addToCart}>
+                <ShoppingCart size={16} className={styles.cartIcon} />
+                Thêm vào giỏ
+            </button>
         </div>
     );
 };

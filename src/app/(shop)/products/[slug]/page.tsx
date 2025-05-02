@@ -12,16 +12,15 @@ interface Props {
 export default async function ProductDetailPage({ params }: Props) {
     const { slug } = await params
     const product: ProductItemProps = await fetchProductBySlug(slug)
-    console.log(product)
     return (
         <div className="bg-gray-800 py-4">
             <div className="container mx-auto">
                 <div className="mb-4">
                     <ProductDetail product={product} />
                 </div>
-                <div className="mb-4">
+                {/* <div className="mb-4">
                     <ProductReview />
-                </div>
+                </div> */}
                 <div className="p-4 bg-white rounded-lg mb-4">
                     <div className="container mx-auto pt-5">
                         <h1 className="text-xl md:text-2xl font-bold tracking-widest uppercase">

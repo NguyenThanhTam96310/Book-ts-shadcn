@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import ProductItem from "@/components/organisms/ProductItem";
 import { fetchProductList } from "@/features/product/services/product.service";
@@ -8,9 +8,10 @@ import { useEffect, useState } from "react";
 interface ProductListProps {
     fetchApi: (params: FetchProductListParams) => Promise<ProductListResponse>;
     params: FetchProductListParams;
+    onTotalPagesChange?: (totalPages: number) => void; // Thêm prop để truyền totalPages lên cha
 }
 
-const ProductList = ({ fetchApi, params }: ProductListProps) => {
+const ProductList = ({ fetchApi, params, onTotalPagesChange }: ProductListProps) => {
     const [products, setProducts] = useState<ProductItemProps[]>([]);
     const [totalPages, setTotalPages] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
@@ -19,9 +20,12 @@ const ProductList = ({ fetchApi, params }: ProductListProps) => {
         const loadProducts = async () => {
             setLoading(true);
             try {
-                const data = await fetchApi(params); // gọi API với params
+                const data = await fetchApi(params);
                 setProducts(data.items);
                 setTotalPages(data.totalPages);
+                if (onTotalPagesChange) {
+                    onTotalPagesChange(data.totalPages); // Gửi totalPages lên cha
+                }
             } catch (error) {
                 console.error("Lỗi khi load product:", error);
             } finally {
@@ -30,12 +34,14 @@ const ProductList = ({ fetchApi, params }: ProductListProps) => {
         };
 
         loadProducts();
-    }, [params, fetchApi]); // khi params thay đổi, gọi lại API
+    }, [params, fetchApi, onTotalPagesChange]);
 
     return (
-        <main className="py-8">
+        <main className="py-4">
             {loading ? (
-                <div>Loading...</div> // Hiển thị loading khi đang fetch dữ liệu
+                <div className="text-center text-gray-500">Đang tải...</div>
+            ) : products.length === 0 ? (
+                <div className="text-center text-gray-500">Không có sản phẩm nào</div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {products.map((product) => (

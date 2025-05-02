@@ -90,3 +90,13 @@ export const fetchProductList = async (params: FetchProductListParams): Promise<
         pageSize: data.pageSize
     };
 }
+export const fetchProductsByIds = async (productIds: number[]): Promise<ProductItemProps[]> => {
+    if (productIds.length === 0) return []
+
+    const queryString = productIds.map((id) => `id=${id}`).join("&")
+    const response = await axiosInstance.get(`${API}/public/products/ids?${queryString}`)
+
+    const data = response.data as ProductItemProps[] // hoặc kiểm tra nếu backend trả thêm `content`
+
+    return data
+}

@@ -1,17 +1,18 @@
-'use client'
+'use client';
 
 import {
     UserIcon,
     ChatBubbleLeftRightIcon,
     ShoppingCartIcon,
     TruckIcon,
-} from '@heroicons/react/24/outline'
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { USER_ID } from '@/constants/cartConstants'
+} from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { USER_ID } from '@/constants/cartConstants';
 
 export default function Header() {
-    const [userId, setUserId] = useState<number | null>(null)
+    const [userId, setUserId] = useState<number | null>(null);
+
     useEffect(() => {
         const loadUserId = () => {
             const storedUserId = localStorage.getItem(USER_ID);
@@ -22,7 +23,7 @@ export default function Header() {
             }
         };
 
-        loadUserId(); // Load lần đầu tiên
+        loadUserId();
 
         const handleStorageChange = (event: StorageEvent) => {
             if (event.key === 'userId') {
@@ -37,73 +38,76 @@ export default function Header() {
         };
     }, []);
 
-
     return (
-        <header className="border-b">
-            {/* Top Bar */}
-            <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-8">
+        <header className="bg-white shadow-md border-b border-gray-200">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
                 {/* Logo */}
-                <div className="flex items-center gap-2 text-orange-500 text-2xl font-bold w-full md:w-auto">
-                    <span className=" sm:inline">BOOKSTORE</span>
-                </div>
+                <Link href="/" className="flex items-center gap-2">
+                    <span className="text-orange-600 text-3xl sm:text-4xl font-extrabold tracking-tight hover:text-orange-700 transition-colors">
+                        BOOKSTORE
+                    </span>
+                </Link>
 
-                {/* Search */}
-                <div className="flex items-center w-full sm:w-3/4 md:w-1/2 lg:w-2/4 border rounded-md overflow-hidden text-sm">
-                    <select className="p-2 border-r outline-none bg-white">
-                        <option>Tất cả</option>
-                        <option>Sách mới</option>
-                    </select>
+                {/* Search Bar */}
+                <div className="flex items-center w-full md:w-1/2 lg:w-2/5 border border-gray-300 rounded-full overflow-hidden text-sm shadow-sm hover:shadow-md transition-shadow">
                     <input
                         type="text"
-                        placeholder="Tìm kiếm"
-                        className="flex-1 px-2 py-2 outline-none text-sm"
+                        placeholder="Tìm kiếm sách, tác giả..."
+                        className="flex-1 px-4 py-2 outline-none text-gray-700 placeholder-gray-400"
                     />
-                    <button className="bg-orange-500 text-white px-4 py-2 whitespace-nowrap">
+                    <button className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-r-full hover:from-orange-600 hover:to-orange-700 transition-all">
                         Tìm kiếm
                     </button>
                 </div>
 
                 {/* Icons */}
-                <div className="flex w-full md:w-auto justify-between md:justify-end items-center gap-6 text-sm">
-
+                <div className="flex items-center gap-4 sm:gap-6 text-gray-700">
                     {userId ? (
                         <>
-                            <Link href="/profile" className="relative flex flex-col items-center">
-                                <UserIcon className="w-6 h-6" />
-                                <span>Hồ sơ của tôi</span>
+                            <Link
+                                href="/profile"
+                                className="flex flex-col items-center group hover:text-orange-600 transition-colors"
+                            >
+                                <UserIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs sm:text-sm font-medium">Hồ sơ</span>
                             </Link>
-                            <Link href="/messages" className="relative flex flex-col items-center">
-                                <ChatBubbleLeftRightIcon className="w-6 h-6" />
-                                <span>Tin nhắn</span>
-                                <span className="absolute -top-1 -right-2 text-xs bg-red-500 text-white px-1 rounded-full">
+                            <Link
+                                href="/messages"
+                                className="flex flex-col items-center group hover:text-orange-600 transition-colors relative"
+                            >
+                                <ChatBubbleLeftRightIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs sm:text-sm font-medium">Tin nhắn</span>
+                                <span className="absolute -top-1 -right-2 text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">
                                     1
                                 </span>
                             </Link>
-                            <Link href="/orders" className="relative flex flex-col items-center">
-                                <TruckIcon className="w-6 h-6" />
-                                <span>Đơn hàng</span>
+                            <Link
+                                href="/orders"
+                                className="flex flex-col items-center group hover:text-orange-600 transition-colors"
+                            >
+                                <TruckIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs sm:text-sm font-medium">Đơn hàng</span>
                             </Link>
-
                         </>
                     ) : (
-                        <>
-                            <Link href="/login" className="relative flex flex-col items-center">
-                                <UserIcon className="w-6 h-6" />
-                                <span>Đăng nhập</span>
-                            </Link>
-                        </>
+                        <Link
+                            href="/login"
+                            className="flex flex-col items-center group hover:text-orange-600 transition-colors"
+                        >
+                            <UserIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                            <span className="text-xs sm:text-sm font-medium">Đăng nhập</span>
+                        </Link>
                     )}
 
-
-
-
-
-                    <Link href="/cart" className="relative flex flex-col items-center">
-                        <ShoppingCartIcon className="w-6 h-6" />
-                        <span>Giỏ hàng</span>
+                    <Link
+                        href="/cart"
+                        className="flex flex-col items-center group hover:text-orange-600 transition-colors"
+                    >
+                        <ShoppingCartIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs sm:text-sm font-medium">Giỏ hàng</span>
                     </Link>
                 </div>
             </div>
         </header>
-    )
+    );
 }
