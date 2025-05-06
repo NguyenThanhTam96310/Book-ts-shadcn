@@ -35,7 +35,7 @@ export const fetchProductNewForm = async (): Promise<ProductItemProps[]> => {
 export const fetchProductByCategory = async (categoryId: number): Promise<ProductItemProps[]> => {
     const response = await axiosInstance.get(`${API}/public/products`, {
         params: {
-            categoryId, // dùng tham số truyền vào
+            categoryId: categoryId,
             status: true,
             pageNumber: 0,
             pageSize: 5,
@@ -48,7 +48,7 @@ export const fetchProductByCategory = async (categoryId: number): Promise<Produc
 }
 
 
-export const fetchProductAuthor = async (): Promise<ProductItemProps[]> => {
+export const fetchProductByAuthor = async (): Promise<ProductItemProps[]> => {
     const response = await axiosInstance.get(`${API}/public/products`, {
         params: {
             authorId: 6,

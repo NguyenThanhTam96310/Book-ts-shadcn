@@ -3,45 +3,96 @@ import Sidebar from "@/components/organisms/Sidebar";
 import ProductList from "@/features/product/components/ProductList";
 import { fetchProductList } from "@/features/product/services/product.service";
 import { FetchProductListParams } from "@/features/product/services/type";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 const ProductPage = () => {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+
+    // Lấy các tham số từ query string, nếu không có thì sử dụng giá trị mặc định
+    const initialSortBy = searchParams.get("sortBy") || "productId";
+    const initialSortOrder = searchParams.get("sortOrder") || "asc";
+    const initialPageSize = searchParams.get("pageSize") ? Number(searchParams.get("pageSize")) : 5;
+    const initialPageNumber = searchParams.get("pageNumber") ? Number(searchParams.get("pageNumber")) : 1;
+    const initialCategoryId = searchParams.get("categoryId") ? Number(searchParams.get("categoryId")) : undefined;
+    const initialMinPrice = searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined;
+    const initialMaxPrice = searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined;
+    const initialLanguageIds = searchParams.get("languageIds") ? Number(searchParams.get("languageIds")) : undefined;
+    const initialPublisherId = searchParams.get("publisherId") ? Number(searchParams.get("publisherId")) : undefined;
+
     // State để quản lý params
-    const [params, setParams] = useState<FetchProductListParams>({
+    const [filterParams, setFilterParams] = useState<FetchProductListParams>({
         status: true,
-        pageNumber: 1,
-        pageSize: 5,
-        sortBy: "productId",
-        sortOrder: "asc",
+        pageNumber: initialPageNumber,
+        pageSize: initialPageSize,
+        sortBy: initialSortBy,
+        sortOrder: initialSortOrder as "asc" | "desc",
+        categoryId: initialCategoryId,
+        minPrice: initialMinPrice,
+        maxPrice: initialMaxPrice,
+        languageIds: initialLanguageIds,
+        publisherId: initialPublisherId,
     });
 
-    // State để lưu totalPages từ ProductList
     const [totalPages, setTotalPages] = useState<number>(0);
 
-    // Hàm cập nhật params từ Sidebar
+    // Đồng bộ params với searchParams khi URL thay đổi
+    useEffect(() => {
+        const newParams: Partial<FetchProductListParams> = {
+            sortBy: searchParams.get("sortBy") || "productId",
+            sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || "asc",
+            pageSize: searchParams.get("pageSize") ? Number(searchParams.get("pageSize")) : 5,
+            pageNumber: searchParams.get("pageNumber") ? Number(searchParams.get("pageNumber")) : 1,
+            categoryId: searchParams.get("categoryId") ? Number(searchParams.get("categoryId")) : undefined,
+            minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined,
+            maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined,
+            languageIds: searchParams.get("languageIds") ? Number(searchParams.get("languageIds")) : undefined,
+            publisherId: searchParams.get("publisherId") ? Number(searchParams.get("publisherId")) : undefined,
+        };
+        setFilterParams((prev) => {
+            const updatedParams = { ...prev, ...newParams };
+            return updatedParams;
+        });
+    }, [searchParams]);
+
+    // Đồng bộ URL với filterParams sau khi filterParams thay đổi
+    useEffect(() => {
+        const query = new URLSearchParams();
+
+        // Chỉ thêm các tham số nếu chúng có giá trị và không phải giá trị mặc định
+        if (filterParams.sortBy && filterParams.sortBy !== "productId") query.set("sortBy", filterParams.sortBy);
+        if (filterParams.sortOrder && filterParams.sortOrder !== "asc") query.set("sortOrder", filterParams.sortOrder);
+        if (filterParams.pageSize && filterParams.pageSize !== 5) query.set("pageSize", filterParams.pageSize.toString());
+        if (filterParams.pageNumber && filterParams.pageNumber !== 1) query.set("pageNumber", filterParams.pageNumber.toString());
+        if (filterParams.categoryId !== undefined) query.set("categoryId", filterParams.categoryId.toString());
+        if (filterParams.minPrice !== undefined) query.set("minPrice", filterParams.minPrice.toString());
+        if (filterParams.maxPrice !== undefined) query.set("maxPrice", filterParams.maxPrice.toString());
+        if (filterParams.languageIds !== undefined) query.set("languageIds", filterParams.languageIds.toString());
+        if (filterParams.publisherId !== undefined) query.set("publisherId", filterParams.publisherId.toString());
+
+        // Cập nhật URL mà không tải lại trang
+        router.push(`/products?${query.toString()}`, { scroll: false });
+    }, [filterParams, router]);
+
+    // Cập nhật params khi bộ lọc thay đổi
     const updateParams = (newParams: Partial<FetchProductListParams>) => {
-        setParams((prev) => ({
+        setFilterParams((prev) => ({
             ...prev,
             ...newParams,
-            pageNumber: 1, // Reset về trang 1 khi thay đổi bộ lọc
+            pageNumber: newParams.pageNumber ?? 1, // Reset về trang 1 khi thay đổi bộ lọc, trừ khi pageNumber được chỉ định
         }));
     };
 
-    // Xử lý thay đổi pageSize từ select
     const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const newPageSize = Number(event.target.value);
-        setParams((prev) => ({
-            ...prev,
-            pageSize: newPageSize,
-            pageNumber: 1, // Reset về trang 1 khi thay đổi số lượng sản phẩm
-        }));
+        updateParams({ pageSize: newPageSize });
     };
 
-    // Xử lý thay đổi sắp xếp từ select
     const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const sortValue = event.target.value;
-        let newSortBy = "productId"; // Giá trị mặc định
+        let newSortBy = "productId";
         let newSortOrder: "asc" | "desc" = "asc";
 
         if (sortValue === "Bán chạy tuần") {
@@ -52,45 +103,39 @@ const ProductPage = () => {
             newSortOrder = "desc";
         }
 
-        setParams((prev) => ({
-            ...prev,
-            sortBy: newSortBy,
-            sortOrder: newSortOrder,
-            pageNumber: 1, // Reset về trang 1 khi thay đổi sắp xếp
-        }));
+        updateParams({ sortBy: newSortBy, sortOrder: newSortOrder });
     };
 
-    // Xử lý reset bộ lọc
     const resetFilters = () => {
-        setParams({
+        const resetParams: FetchProductListParams = {
             status: true,
             pageNumber: 1,
-            pageSize: 10,
+            pageSize: 5,
             sortBy: "productId",
             sortOrder: "asc",
-        });
+            categoryId: undefined,
+            minPrice: undefined,
+            maxPrice: undefined,
+            languageIds: undefined,
+            publisherId: undefined,
+        };
+        setFilterParams(resetParams);
     };
 
-    // Xử lý chuyển trang
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) {
-            setParams((prev) => ({
-                ...prev,
-                pageNumber: page,
-            }));
+            updateParams({ pageNumber: page });
         }
     };
 
-    // Tính toán các trang hiển thị (giới hạn số lượng nút phân trang)
     const getPaginationRange = () => {
-        const currentPage = params.pageNumber || 1;
-        const maxPagesToShow = 5; // Số lượng nút phân trang tối đa hiển thị
+        const currentPage = filterParams.pageNumber || 1;
+        const maxPagesToShow = 5;
         const half = Math.floor(maxPagesToShow / 2);
 
         let start = Math.max(1, currentPage - half);
         let end = Math.min(totalPages, start + maxPagesToShow - 1);
 
-        // Điều chỉnh start nếu end gần cuối
         if (end - start + 1 < maxPagesToShow) {
             start = Math.max(1, end - maxPagesToShow + 1);
         }
@@ -101,12 +146,8 @@ const ProductPage = () => {
     return (
         <div className="container mx-auto py-8 bg-gray-100">
             <div className="flex flex-col lg:flex-row gap-6">
-                {/* Sidebar */}
                 <Sidebar onFilterChange={updateParams} />
-
-                {/* Main content */}
                 <main className="flex-1 bg-gray-50 rounded-lg shadow-sm p-4 sm:p-6">
-                    {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
                         <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-0">
                             Danh sách sản phẩm
@@ -116,11 +157,15 @@ const ProductPage = () => {
                                 <span className="text-gray-700 text-sm sm:text-base">Sắp xếp theo:</span>
                                 <select
                                     className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                                    onChange={handleSortChange} // Đã bỏ comment để chức năng hoạt động
-                                    defaultValue="Bán chạy tuần"
+                                    onChange={handleSortChange}
+                                    value={
+                                        filterParams.sortBy === "weeklySales" ? "Bán chạy tuần" :
+                                            filterParams.sortBy === "monthlySales" ? "Bán chạy tháng" :
+                                                "Bán chạy tuần"
+                                    }
                                 >
-                                    <option>Bán chạy tuần</option>
-                                    <option>Bán chạy tháng</option>
+                                    <option value="Bán chạy tuần">Bán chạy tuần</option>
+                                    <option value="Bán chạy tháng">Bán chạy tháng</option>
                                 </select>
                             </div>
                             <div className="flex items-center gap-2">
@@ -128,7 +173,7 @@ const ProductPage = () => {
                                 <select
                                     className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                                     onChange={handlePageSizeChange}
-                                    defaultValue="5"
+                                    value={filterParams.pageSize}
                                 >
                                     <option value="5">5 sản phẩm</option>
                                     <option value="10">10 sản phẩm</option>
@@ -136,32 +181,24 @@ const ProductPage = () => {
                                     <option value="36">36 sản phẩm</option>
                                 </select>
                             </div>
-                            <button
-                                onClick={resetFilters}
-                                className="text-orange-600 hover:text-orange-700 text-sm sm:text-base font-medium transition-colors"
-                            >
-                                Xóa bộ lọc
-                            </button>
+
                         </div>
                     </div>
 
-                    {/* Danh sách sản phẩm */}
                     <div className="m-1">
                         <ProductList
                             fetchApi={fetchProductList}
-                            params={params}
-                            onTotalPagesChange={setTotalPages} // Truyền callback để nhận totalPages
+                            params={filterParams}
+                            onTotalPagesChange={setTotalPages}
                         />
                     </div>
 
-                    {/* Phân trang */}
                     {totalPages > 1 && (
                         <div className="flex justify-center items-center mt-6 space-x-2">
-                            {/* Nút Previous */}
                             <button
-                                onClick={() => goToPage((params.pageNumber || 1) - 1)}
-                                disabled={(params.pageNumber || 1) === 1}
-                                className={`p-2 rounded-lg transition-colors ${(params.pageNumber || 1) === 1
+                                onClick={() => goToPage((filterParams.pageNumber || 1) - 1)}
+                                disabled={(filterParams.pageNumber || 1) === 1}
+                                className={`p-2 rounded-lg transition-colors ${(filterParams.pageNumber || 1) === 1
                                     ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                                     : "bg-white text-gray-700 hover:bg-gray-100"
                                     }`}
@@ -169,12 +206,11 @@ const ProductPage = () => {
                                 <ChevronLeft size={20} />
                             </button>
 
-                            {/* Các nút trang */}
                             {getPaginationRange().map((page) => (
                                 <button
                                     key={page}
                                     onClick={() => goToPage(page)}
-                                    className={`px-4 py-2 rounded-lg transition-colors ${(params.pageNumber || 1) === page
+                                    className={`px-4 py-2 rounded-lg transition-colors ${(filterParams.pageNumber || 1) === page
                                         ? "bg-orange-500 text-white"
                                         : "bg-white text-gray-700 hover:bg-gray-100"
                                         }`}
@@ -183,11 +219,10 @@ const ProductPage = () => {
                                 </button>
                             ))}
 
-                            {/* Nút Next */}
                             <button
-                                onClick={() => goToPage((params.pageNumber || 1) + 1)}
-                                disabled={(params.pageNumber || 1) === totalPages}
-                                className={`p-2 rounded-lg transition-colors ${(params.pageNumber || 1) === totalPages
+                                onClick={() => goToPage((filterParams.pageNumber || 1) + 1)}
+                                disabled={(filterParams.pageNumber || 1) === totalPages}
+                                className={`p-2 rounded-lg transition-colors ${(filterParams.pageNumber || 1) === totalPages
                                     ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                                     : "bg-white text-gray-700 hover:bg-gray-100"
                                     }`}

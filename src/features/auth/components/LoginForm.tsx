@@ -4,7 +4,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
     Form,
     FormControl,
@@ -27,7 +27,7 @@ import { CART_ITEM_KEY } from "@/constants/cartConstants"
 const LoginForm = () => {
 
     const router = useRouter()
-
+    const searchParams = useSearchParams();
     const form = useForm<z.infer<typeof LoginBody>>({
         resolver: zodResolver(LoginBody),
         defaultValues: {
@@ -43,8 +43,11 @@ const LoginForm = () => {
             if (!token) {
                 throw new Error("Không nhận được token từ server");
             }
+            // Lưu token và expiryTime vào localStorage
             localStorage.setItem("authToken", token);
-
+            // Đặt thời gian hết hạn cho token (3 ngày)
+            const expiryTime = new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
+            localStorage.setItem("authTokenExpiry", expiryTime.toString());
 
             const user = await fetchUserByToken();
             if (user?.userId && user?.email) {
@@ -92,7 +95,9 @@ const LoginForm = () => {
                 }
             }
             // Điều hướng
-            window.location.href = "/";
+            const redirect = searchParams.get("redirect") || "/";
+            // Sau khi login thành công:
+            window.location.href = redirect;
             // router.push("/");
             // router.refresh();
 

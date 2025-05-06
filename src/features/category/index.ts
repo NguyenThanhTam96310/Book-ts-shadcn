@@ -1,3 +1,4 @@
 export * from "./components/CategoryHomeForm"
-export * from "./services/categoryHome.service"
+export * from "./components/CategoryMenu"
+export * from "./services/category.service"
 

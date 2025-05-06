@@ -29,32 +29,13 @@ export default function Menu() {
       <div className="border-b-2 border-orange-500">
         <div className="container mx-auto px-4 lg:px-6">
           <Menubar className="hidden md:flex rounded-none px-0 py-4 gap-8 border-0">
+            {/* <Menubar className="hidden md:flex rounded-none px-0 py-4 border-0 justify-between w-full"> */}
+
             {menus.map((menu) => (
               <MenubarMenu key={menu.menuId}>
-                {menu.childrens && menu.childrens.length > 0 ? (
-                  <>
-                    <MenubarTrigger className="flex items-center gap-2 text-gray-800 text-base font-semibold hover:text-orange-600 transition-colors group">
-                      {menu.name}
-                      <ChevronDown
-                        size={16}
-                        className="group-hover:rotate-180 transition-transform duration-300"
-                      />
-                    </MenubarTrigger>
-                    <MenubarContent className="min-w-[200px] bg-white shadow-lg rounded-lg border border-gray-100 mt-2 p-2">
-                      {menu.childrens.map((child) => (
-                        <MenubarItem key={child.menuId} className="rounded-md hover:bg-orange-50 transition-colors">
-                          <Link href={child.link} className="block w-full py-2 px-3 text-gray-700 hover:text-orange-600">
-                            {child.name}
-                          </Link>
-                        </MenubarItem>
-                      ))}
-                    </MenubarContent>
-                  </>
-                ) : (
-                  <MenubarTrigger className="text-gray-800 text-base font-semibold hover:text-orange-600 transition-colors">
-                    <Link href={menu.link}>{menu.name}</Link>
-                  </MenubarTrigger>
-                )}
+                <MenubarTrigger className="text-gray-800 text-base font-semibold hover:text-orange-600 transition-colors">
+                  <Link href={menu.link}>{menu.name}</Link>
+                </MenubarTrigger>
               </MenubarMenu>
             ))}
           </Menubar>

@@ -12,6 +12,7 @@ interface Props {
 export default async function ProductDetailPage({ params }: Props) {
     const { slug } = await params
     const product: ProductItemProps = await fetchProductBySlug(slug)
+
     return (
         <div className="bg-gray-800 py-4">
             <div className="container mx-auto">

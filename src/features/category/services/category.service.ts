@@ -1,3 +1,4 @@
+import { CategoryItemProps } from "@/features/category/services/type"
 import axiosInstance from "@/lib/api/Config"
 
 
@@ -31,4 +32,8 @@ export const fetchAllCategories = async (): Promise<CategoryItemProps[]> => {
 
     const data = response.data as { content: CategoryItemProps[] }
     return data.content
+}
+export const fetchCategoryById = async (categoryId: number): Promise<CategoryItemProps> => {
+    const response = await axiosInstance.get(`${API}/public/categories/${categoryId}`)
+    return response.data as CategoryItemProps
 }

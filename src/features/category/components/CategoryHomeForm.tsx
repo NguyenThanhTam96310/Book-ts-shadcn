@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import CategoryItem from "@/components/organisms/CategoryItem"
-import { fetchCategories } from "@/features/category/services/categoryHome.service"
+import { fetchCategories } from "@/features/category/services/category.service"
+import { CategoryItemProps } from "@/features/category/services/type"
 
 const CategoryHomeForm = () => {
     const [categories, setCategories] = useState<CategoryItemProps[]>([])
@@ -20,7 +21,7 @@ const CategoryHomeForm = () => {
         loadCategories()
     }, [])
     return (
-        <section className="container mx-auto py-8 px-4 my-4 rounded-lg">
+        <section className="container mx-auto rounded-lg">
 
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {/* <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6"> */}
@@ -28,9 +29,10 @@ const CategoryHomeForm = () => {
                 {categories.map((category) => (
                     <CategoryItem
                         key={category.categoryId}
+                        categoryId={category.categoryId}
                         categoryName={category.categoryName}
                         image={category.image || "/placeholder.svg?height=400&width=280"}
-                        slug={category.slug} categoryId={""} />
+                        slug={category.slug} />
                 ))}
             </div>
         </section>

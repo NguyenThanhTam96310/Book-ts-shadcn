@@ -10,6 +10,7 @@ import { POST_ADD } from '@/lib/api/Service'
 import { toast } from 'react-toastify'
 import { useRouter } from 'next/navigation'
 import { CART_ITEM_KEY } from '@/constants/cartConstants'
+import { isTokenExpired } from '@/lib/utils/auth'
 
 interface ProductDetailProps {
     product: ProductItemProps
@@ -19,7 +20,7 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
     const router = useRouter()
     const [activeTab, setActiveTab] = useState('technical')
     const [selectedImage, setSelectedImage] = useState<string | null>(null) // State để quản lý hình ảnh chính
-
+    const [quantity, setQuantity] = useState(1);
     const [userId, setUserId] = useState<number | null>(null)
     const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
@@ -111,7 +112,7 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                         <div className={styles.imageWrapper}>
                             {/* Hình ảnh chính */}
                             <Image
-                                src={selectedImage || '/placeholder.svg'}
+                                src={selectedImage || '/placeholder.png'}
                                 alt={product.productName}
                                 width={400}
                                 height={500}
@@ -215,9 +216,13 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                 <input
                                     id="quantityInput"
                                     type="number"
-                                    defaultValue={1}
+                                    value={quantity}
                                     min={1}
                                     className="w-20 border px-3 py-1 rounded"
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        setQuantity(value < 1 || isNaN(value) ? 1 : value);
+                                    }}
                                 />
                                 <Button
                                     variant="outline"

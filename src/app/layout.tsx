@@ -7,6 +7,8 @@ import Menu from "@/components/organisms/Menu";
 import { Providers } from "@/app/Providers";
 import Footer from "@/components/organisms/Footer";
 import { ToastContainer } from "react-toastify";
+import CategoryMenu from "@/features/category/components/CategoryMenu";
+import BannerTop from "@/features/banner/components/BannerTop";
 
 
 const roboto = Roboto({

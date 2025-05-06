@@ -3,7 +3,7 @@
 import type { CartItemType, CartProps, ProductCartProps } from "@/features/cart/services/type";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from 'lucide-react';
-
+import Link from "next/link";
 interface CartItemProps {
     item: CartItemType;
     index: number;
@@ -21,18 +21,26 @@ const CartItem = ({ item, checked, onCheck, onDecrease, onIncrease, onRemove }: 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b py-4 gap-4">
             {/* Left - image + name + price */}
             <div className="flex items-start lg:items-center gap-4 w-full lg:w-[40%]">
+
                 <Checkbox checked={checked} onCheckedChange={onCheck} />
-                <img
-                    src={
-                        product.images && product.images.length > 0 && process.env.NEXT_PUBLIC_FILE
-                            ? `${process.env.NEXT_PUBLIC_FILE}${product.images[0].fileName}`
-                            : "/placeholder.svg"
-                    }
-                    alt={product?.productName}
-                    className="w-20 h-20 object-cover border rounded-md flex-shrink-0"
-                />
+                <Link href={`/products/${product.slug}`}>
+                    <img
+                        src={
+                            product.images && product.images.length > 0 && process.env.NEXT_PUBLIC_FILE
+                                ? `${process.env.NEXT_PUBLIC_FILE}${product.images[0].fileName}`
+                                : "/placeholder.svg"
+                        }
+                        alt={product?.productName}
+                        className="w-20 h-20 object-cover border rounded-md flex-shrink-0"
+                    />
+                </Link>
                 <div className="flex flex-col gap-1">
-                    <div className="text-base font-medium text-gray-800">{product?.productName}</div>
+                    <Link href={`/products/${product.slug}`}>
+                        <div className="text-base font-medium text-gray-800 hover:text-red-600 transition-colors duration-200">
+                            {product?.productName}
+                        </div>
+                    </Link>
+
                     <div className="flex items-center gap-2">
                         {product?.discount ? (
                             <>

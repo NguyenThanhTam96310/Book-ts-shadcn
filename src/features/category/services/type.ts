@@ -1,4 +1,4 @@
-interface CategoryItemProps {
+export interface CategoryItemProps {
     categoryId: string | number
     categoryName: string
     slug: string
@@ -6,4 +6,5 @@ interface CategoryItemProps {
     size?: string
     status?: "active" | "inactive" | string
     image?: string
+    childrens?: CategoryItemProps[]
 }

@@ -21,7 +21,7 @@ export default function Banner() {
         fetchData()
     }, [])
 
-    const mainSlides = banners.filter((b) => b.position === "HOME_TOP")
+    const mainSlides = banners.filter((b) => b.position === "HOME_MAIN")
 
     useEffect(() => {
         if (mainSlides.length === 0) return

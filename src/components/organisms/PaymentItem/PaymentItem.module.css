@@ -1,0 +1,89 @@
+.cartItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding: 16px 0;
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.checkbox {
+    width: 20px;
+    height: 20px;
+}
+
+.image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.name {
+    font-weight: 500;
+    font-size: 16px;
+    color: #333;
+}
+
+.price {
+    font-size: 14px;
+    color: #888;
+    text-decoration: line-through;
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.quantity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100px;
+    justify-content: center;
+}
+
+.quantity button {
+    background: #f0f0f0;
+    border: none;
+    padding: 4px 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.quantity span {
+    min-width: 24px;
+    text-align: center;
+}
+
+.totalPrice {
+    font-weight: bold;
+    color: #e60000;
+    width: 120px;
+    text-align: center;
+}
+
+.deleteButton {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: red;
+    cursor: pointer;
+    width: 40px;
+    text-align: center;
+}

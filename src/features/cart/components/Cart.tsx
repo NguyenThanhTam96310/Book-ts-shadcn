@@ -9,6 +9,9 @@ import { deleteCartItem, fetchCart, updateQuantityCart } from "@/features/cart";
 import { CART_ITEM_KEY, USER_ID } from "@/constants/cartConstants";
 import { toast } from "react-toastify";
 import { fetchProductsByIds } from "@/features/product";
+import { isTokenExpired } from "@/lib/utils/auth";
+import { useRouter } from "next/navigation";
+import { PAYMENT_ITEM_KEY } from "@/constants/orderConstants";
 
 export default function Cart() {
     const [cart, setCart] = useState<CartProps>({
@@ -126,12 +129,43 @@ export default function Cart() {
 
         fetchData();
     }, [isMounted]);
+    const router = useRouter();
+    const handleCheckout = () => {
+        const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+        // Lưu giỏ hàng đã chọn vào localStorage
+        const updatedCart = {
+            ...cart,
+            cartItems: (cart.cartItems ?? []).filter((item) => selectedItems.includes(Number(item.product.productId)))
+        };
+
+        // Cập nhật lại tổng tiền
+        updatedCart.totalPrice = updatedCart.cartItems.reduce(
+            (sum, item) =>
+                sum +
+                (item.product.price - Math.round(item.product.price * ((item.product?.discount ?? 0) / 100))) * item.quantity,
+            0
+        );
+
+        // Lưu giỏ hàng đã cập nhật vào localStorage
+        localStorage.setItem(PAYMENT_ITEM_KEY, JSON.stringify(updatedCart));
+        if (!token) {
+            // Chuyển về trang login và đính kèm redirect URL
+            router.push("/login?redirect=/payment");
+        } else if (getTotal() > 0) {
+            router.push("/payment");
+        }
+    };
+
+
 
     const updateQuantity = async (id: string | number, qty: number) => {
         try {
             if (userId) {
                 if (qty < 1) {
-                    console.error("Quantity must be at least 1");
+                    toast.error("Số lượng không nhỏ hơn 1.", {
+                        position: "bottom-right",
+                        autoClose: 2000,
+                    });
                     return;
                 }
 
@@ -236,6 +270,7 @@ export default function Cart() {
         } else {
             setSelectedItems((prev) => [...prev, id]);
         }
+
     };
 
     if (!isMounted) return null;
@@ -305,6 +340,7 @@ export default function Cart() {
                     </div>
                     <Button
                         disabled={getTotal() === 0}
+                        onClick={handleCheckout}
                         className="w-full bg-orange-500 hover:bg-orange-600 text-white mt-2"
                     >
                         THANH TOÁN

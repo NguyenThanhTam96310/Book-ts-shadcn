@@ -49,13 +49,11 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
 
     const handlePriceChange = (min: number, max: number, rangeKey: string) => {
         if (selectedPriceRange === rangeKey) {
-            // Nếu khoảng giá đang được chọn, bỏ chọn nó
             setSelectedPriceRange(null);
             setMinPrice(undefined);
             setMaxPrice(undefined);
             onFilterChange({ minPrice: undefined, maxPrice: undefined });
         } else {
-            // Chọn khoảng giá mới, bỏ chọn khoảng giá cũ
             setSelectedPriceRange(rangeKey);
             setMinPrice(min);
             setMaxPrice(max);
@@ -78,7 +76,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
     const handleLanguageChange = (languageId: number) => {
         const newLanguageId = languageId === selectedLanguageId ? null : languageId;
         setSelectedLanguageId(newLanguageId);
-        onFilterChange({ languageId: newLanguageId ?? undefined });
+        onFilterChange({ languageIds: newLanguageId ?? undefined });
     };
 
     const toggleSection = (section: string) => {
@@ -104,7 +102,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
         onFilterChange({
             categoryId: undefined,
             publisherId: undefined,
-            languageId: undefined,
+            languageIds: undefined,
             minPrice: undefined,
             maxPrice: undefined,
         });
@@ -114,11 +112,11 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
         <aside className="w-full lg:w-1/4 bg-white border-r border-gray-200 p-4 lg:p-6">
             <div className="space-y-4">
                 {/* Nhóm sản phẩm */}
-                {/* <div className="flex justify-end mb-4">
+                <div className="flex justify-end mb-4">
                     <button onClick={resetFilters} className="text-orange-600 hover:text-orange-700">
                         Xóa bộ lọc
                     </button>
-                </div> */}
+                </div>
                 <div>
                     <button
                         onClick={() => toggleSection('categories')}
