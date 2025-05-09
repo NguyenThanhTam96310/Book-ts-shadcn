@@ -92,15 +92,9 @@ export default function Cart() {
                     try {
                         const data = JSON.parse(raw) as { cartItems: CartItemType[]; totalPrice: number };
                         const productIds: number[] = data.cartItems.map((item) => Number(item.product.productId));
-                        console.log('Danh sách productId:', productIds);
-                        // setCart({
-                        //     cartId: undefined,
-                        //     cartItems: data.cartItems || [],
-                        //     totalPrice: data.totalPrice || 0,
-                        // });
+
                         // Gọi API lấy chi tiết sản phẩm nếu muốn cập nhật lại
                         fetchProductsByIds(productIds).then((products) => {
-                            console.log('Chi tiết sản phẩm:', products)
 
                             // Nếu bạn muốn cập nhật lại cartItems theo dữ liệu server
                             const updatedItems = data.cartItems.map((item) => {
@@ -148,10 +142,11 @@ export default function Cart() {
 
         // Lưu giỏ hàng đã cập nhật vào localStorage
         localStorage.setItem(PAYMENT_ITEM_KEY, JSON.stringify(updatedCart));
-        if (!token) {
-            // Chuyển về trang login và đính kèm redirect URL
-            router.push("/login?redirect=/payment");
-        } else if (getTotal() > 0) {
+        // if (!token) {
+        //     // Chuyển về trang login và đính kèm redirect URL
+        //     router.push("/login?redirect=/payment");
+        // } else
+        if (getTotal() > 0) {
             router.push("/payment");
         }
     };

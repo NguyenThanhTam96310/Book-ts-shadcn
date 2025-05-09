@@ -5,59 +5,96 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { useEffect, useState } from "react";
-import { Badge } from "lucide-react";
 import { CartItemType, CartProps } from "@/features/cart";
 import { PAYMENT_ITEM_KEY } from "@/constants/orderConstants";
 import PaymentItem from "@/components/organisms/PaymentItem";
+import { fetchPromotions, PromotionItemProps } from "@/features/promotion";
 
-const validCoupons = [
-    {
-        code: "GIAM10",
-        type: "percent",
-        value: 10,
-        expires: "2025-06-30",
-        description: "Giảm 10%"
-    },
-    {
-        code: "FREESHIP",
-        type: "shipping",
-        value: 0,
-        expires: "2025-12-31",
-        description: "Miễn phí vận chuyển"
-    },
-    {
-        code: "BOOK50K",
-        type: "fixed",
-        value: 50000,
-        expires: "2025-07-01",
-        description: "Giảm 50.000đ"
-    },
-];
+import { paymentCustomer, paymentUser } from "@/features/order/services/order.service";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { USER_ID } from "@/constants/cartConstants";
+import { orderSchema } from "@/features/order/services/order.Schema";
+import { fetchUserByToken } from "@/features/auth/services/auth.service";
+import { UserProps } from "@/features/auth/services/type";
 
-const orderSchema = z.object({
-    delivery_name: z.string().min(1, "Vui lòng nhập họ tên"),
-    email: z.string().email("Email không hợp lệ"),
-    delivery_phone: z.string().min(10, "Số điện thoại không hợp lệ"),
-    country: z.string(),
-    city: z.string().min(1, "Chọn tỉnh/thành phố"),
-    district: z.string().min(1, "Chọn quận/huyện"),
-    ward: z.string().min(1, "Chọn phường/xã"),
-    address_detail: z.string().min(1, "Vui lòng nhập địa chỉ"),
-    payment_method: z.string().min(1, "Vui lòng chọn phương thức thanh toán"),
+
+const cartSchema = z.object({
+    cartItems: z.array(
+        z.object({
+            product: z.object({
+                productId: z.number().min(1),
+            }),
+            quantity: z.number().min(1),
+        })
+    ),
+    totalPrice: z.number().min(0),
 });
 
-type OrderFormValues = z.infer<typeof orderSchema>;
+const addressFields: Array<keyof z.infer<typeof orderSchema>['order']['address']> = [
+    'ward',
+    'buildingName',
+    'city',
+    'district',
+    'country',
+    'pincode',
+];
+
+const addressFieldLabels: Record<keyof z.infer<typeof orderSchema>['order']['address'], string> = {
+    ward: "Phường/Xã",
+    buildingName: "Tên tòa nhà/Số nhà",
+    city: "Thành phố",
+    district: "Quận/Huyện",
+    country: "Quốc gia",
+    pincode: "Mã bưu điện",
+};
 
 export default function PaymentForm() {
-    const form = useForm<OrderFormValues>({
+    const form = useForm<z.infer<typeof orderSchema>>({
         resolver: zodResolver(orderSchema),
         defaultValues: {
-            country: "Việt Nam",
+            order: {
+                email: "",
+                deliveryName: "",
+                deliveryPhone: "",
+                address: {
+                    ward: "",
+                    buildingName: "",
+                    city: "",
+                    district: "",
+                    country: "Việt Nam",
+                    pincode: "",
+                },
+                payment: {
+                    paymentMethod: "COD",
+                },
+                freeship: undefined,
+            },
+            productIds: [
+                1
+            ],
+            productQuantities: []
+
         },
     });
+    const [userId, setUserId] = useState<number | null>(null)
+    const [user, setUser] = useState<UserProps | null>(null)
     const [showCouponOptions, setShowCouponOptions] = useState(false);
     const [couponInput, setCouponInput] = useState("");
     const [appliedCoupons, setAppliedCoupons] = useState<string[]>([]);
@@ -66,63 +103,170 @@ export default function PaymentForm() {
         cartItems: [],
         totalPrice: 0,
     });
+    const [promotions, setPromotions] = useState<PromotionItemProps[]>([]);
+    useEffect(() => {
+        const fetchData = async () => {
+            const storedUserId = localStorage.getItem(USER_ID);
+            if (storedUserId) {
+                form.setValue("productIds", [Number(storedUserId)]);
+                setUserId(parseInt(storedUserId, 10));
+                const token = localStorage.getItem("authToken");
+                if (!token) {
+                    throw new Error("Không nhận được token từ server");
+                }
+
+                // Fetch user info from token
+                const user = await fetchUserByToken();
+                if (user?.userId && user?.email) {
+                    localStorage.setItem("userId", user.userId.toString());
+                    localStorage.setItem("username", user.email);
+                }
+                setUser(user)
+                form.setValue("order.deliveryName", user.fullName || "");
+                form.setValue("order.email", user.email || "");
+                form.setValue("order.deliveryPhone", user.mobileNumber || "");
+            }
+        };
+
+        fetchData(); // Call the async function
+    }, []); // Chạy một lần khi component mount
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const raw = localStorage.getItem(PAYMENT_ITEM_KEY);
+                const dataPromo = await fetchPromotions();
+                setPromotions(dataPromo);
+
                 if (raw) {
-                    const data = JSON.parse(raw) as { cartItems: CartItemType[]; totalPrice: number };
-                    setCart({
-                        cartId: undefined,
-                        cartItems: data.cartItems || [],
-                        totalPrice: data.totalPrice || 0,
-                    });
+                    const data = JSON.parse(raw) as {
+                        cartItems: CartItemType[];
+                        totalPrice: number;
+                    };
+                    const validated = cartSchema.safeParse(data);
+                    if (raw) {
+                        const data = JSON.parse(raw) as {
+                            cartItems: CartItemType[];
+                            totalPrice: number;
+                        };
+                        setCart({
+                            cartId: undefined,
+                            cartItems: data.cartItems || [],
+                            totalPrice: data.totalPrice || 0,
+                        });
+
+                        const productQuantities = data.cartItems.map((item) => ({
+                            productId: Number(item.product.productId),
+                            quantity: item.quantity,
+                        }));
+
+                        form.reset({
+                            ...form.getValues(),
+                            productQuantities,
+                        });
+                    } else {
+                        console.error("Invalid cart data:", validated.error);
+                        localStorage.removeItem(PAYMENT_ITEM_KEY);
+                    }
                 }
             } catch (error) {
-                console.error("Failed to parse local cart data:", error);
+                console.error("Failed to load cart data:", error);
+                localStorage.removeItem(PAYMENT_ITEM_KEY);
             }
         };
 
         fetchData();
-    }, []);
+    }, [form]);
 
-    const handleApplyCoupon = (code?: string) => {
-        const coupon = validCoupons.find(c => c.code === (code || couponInput.toUpperCase()));
+    const handleApplyCoupon = (promotion_code?: string) => {
+        const coupon = promotions.find(
+            (c) => c.promotionCode === (promotion_code || couponInput.toUpperCase())
+        );
 
         if (!coupon) {
-            alert("Mã không hợp lệ");
+            toast.error("Mã không hợp lệ");
             return;
         }
 
-        const isExpired = new Date(coupon.expires) < new Date();
-        if (isExpired) {
-            alert("Mã đã hết hạn");
+        const expired = coupon.endDate
+            ? new Date(coupon.endDate) < new Date()
+            : true;
+
+        if (expired) {
+            toast.error("Mã đã hết hạn");
             return;
         }
 
-        if (!appliedCoupons.includes(coupon.code)) {
-            setAppliedCoupons([...appliedCoupons, coupon.code]);
+        if (!appliedCoupons.includes(coupon.promotionCode)) {
+            setAppliedCoupons([...appliedCoupons, coupon.promotionCode]);
             setCouponInput("");
+        }
+
+        if (coupon.promotionType === "FREESHIP") {
+            form.setValue("order.freeship", { promotionCode: coupon.promotionCode });
         }
     };
 
     const handleRemoveCoupon = (coupon: string) => {
-        setAppliedCoupons(appliedCoupons.filter(c => c !== coupon));
+        setAppliedCoupons(appliedCoupons.filter((c) => c !== coupon));
+        if (form.getValues("order.freeship")?.promotionCode === coupon) {
+            form.setValue("order.freeship", undefined);
+        }
+    };
+    const router = useRouter();
+    const onSubmit = async (values: z.infer<typeof orderSchema>) => {
+        try {
+            if (userId) {
+                console.log("Form data:", values); // Log dữ liệu gửi đi
+                const result = await paymentUser(values);
+                toast.success("Đặt hàng thành công!");
+                localStorage.removeItem(PAYMENT_ITEM_KEY);
+                router.push("/")
+            } else {
+                console.log("Form data:", values); // Log dữ liệu gửi đi
+                const result = await paymentCustomer(values);
+                toast.success("Đặt hàng thành công!");
+                localStorage.removeItem(PAYMENT_ITEM_KEY);
+                router.push("/")
+            }
+
+        } catch (error) {
+            if (error instanceof Error) {
+                toast.error(error.message);
+            } else {
+                toast.error("An unknown error occurred.");
+            }
+            console.error(error);
+        }
     };
 
-    const onSubmit = (values: OrderFormValues) => {
-        console.log("Order Data:", values);
-    };
+    const formatCurrency = (value: number) =>
+        new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+        }).format(value);
+    const baseShippingFee = 32000;
+    const appliedFreeship = appliedCoupons
+        .map((code) => promotions.find((p) => p.promotionCode === code))
+        .find((p) => p?.promotionType === "FREESHIP");
+    const shippingFee =
+        appliedFreeship && Number(appliedFreeship.value) === 100 && Number(appliedFreeship.valueType) === 1
+            ? 0
+            : baseShippingFee;
+    const totalWithShipping = Number(cart.totalPrice) + shippingFee;
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-3xl mx-auto space-y-6 p-4 bg-white relative">
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="max-w-3xl mx-auto space-y-6 p-4 bg-white"
+            >
+                {/* ĐỊA CHỈ */}
                 <h2 className="text-xl font-semibold">ĐỊA CHỈ GIAO HÀNG</h2>
 
                 <FormField
                     control={form.control}
-                    name="delivery_name"
+                    name="order.deliveryName"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Họ và tên người nhận</FormLabel>
@@ -136,7 +280,7 @@ export default function PaymentForm() {
 
                 <FormField
                     control={form.control}
-                    name="email"
+                    name="order.email"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Email</FormLabel>
@@ -150,142 +294,57 @@ export default function PaymentForm() {
 
                 <FormField
                     control={form.control}
-                    name="delivery_phone"
+                    name="order.deliveryPhone"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Số điện thoại</FormLabel>
                             <FormControl>
-                                <Input placeholder="Ví dụ: 0979123xxx (10 ký tự số)" {...field} />
+                                <Input
+                                    placeholder="Ví dụ: 0979123xxx (10 ký tự số)"
+                                    {...field}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
 
-                <FormField
-                    control={form.control}
-                    name="country"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Quốc gia</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue="Việt Nam">
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Chọn quốc gia" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="Việt Nam">Việt Nam</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <div className="grid grid-cols-3 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="city"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Tỉnh/Thành Phố</FormLabel>
-                                <FormControl>
-                                    <Select onValueChange={field.onChange}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Chọn tỉnh/thành Phố" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="HCM">Hồ Chí Minh</SelectItem>
-                                            <SelectItem value="HN">Hà Nội</SelectItem>
-                                            <SelectItem value="DN">Đà Nẵng</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="district"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Quận/Huyện</FormLabel>
-                                <FormControl>
-                                    <Select onValueChange={field.onChange}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Chọn quận/huyện" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Q1">Quận 1</SelectItem>
-                                            <SelectItem value="Q2">Quận 2</SelectItem>
-                                            <SelectItem value="Q3">Quận 3</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="ward"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Phường/Xã</FormLabel>
-                                <FormControl>
-                                    <Select onValueChange={field.onChange}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Chọn phường/xã" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="P1">Phường 1</SelectItem>
-                                            <SelectItem value="P2">Phường 2</SelectItem>
-                                            <SelectItem value="P3">Phường 3</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                {/* Địa chỉ chi tiết */}
+                <div className="grid grid-cols-2 gap-4">
+                    {addressFields.map((fieldName) => (
+                        <FormField
+                            key={fieldName}
+                            control={form.control}
+                            name={`order.address.${fieldName}`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{addressFieldLabels[fieldName]}</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder={`Nhập ${addressFieldLabels[fieldName].toLowerCase()}`} {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    ))}
                 </div>
 
+                {/* THANH TOÁN */}
+                <h2 className="text-xl font-semibold border-b-2 pb-1">PHƯƠNG THỨC THANH TOÁN</h2>
                 <FormField
                     control={form.control}
-                    name="address_detail"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Địa chỉ nhận hàng</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Nhập địa chỉ nhận hàng" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <h2 className="text-xl font-semibold border-b-2 border-solid pb-1">
-                    PHƯƠNG THỨC THANH TOÁN
-                </h2>
-
-                <FormField
-                    control={form.control}
-                    name="payment_method"
+                    name="order.payment.paymentMethod"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Phương thức</FormLabel>
                             <FormControl>
-                                <Select onValueChange={field.onChange}>
+                                <Select value={field.value} onValueChange={field.onChange}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Chọn phương thức thanh toán" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="cod">Thanh toán khi nhận hàng</SelectItem>
-                                        <SelectItem value="paypal">Thanh toán Paypal</SelectItem>
+                                        <SelectItem value="COD">Thanh toán khi nhận hàng</SelectItem>
+                                        <SelectItem value="PAYPAL">Thanh toán Paypal</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </FormControl>
@@ -293,23 +352,30 @@ export default function PaymentForm() {
                         </FormItem>
                     )}
                 />
-                <h2 className="text-xl font-semibold border-b-2 border-solid pb-1">MÃ KHUYẾN MÃI/MÃ QUÀ TẶNG</h2>
+
+                {/* KHUYẾN MÃI */}
+                <h2 className="text-xl font-semibold border-b-2 pb-1">MÃ KHUYẾN MÃI</h2>
                 <div className="flex gap-2">
                     <Input
-                        placeholder="Nhập mã khuyến mãi/Quà tặng"
+                        placeholder="Nhập mã khuyến mãi (không phân biệt hoa thường)"
                         value={couponInput}
-                        onChange={(e) => setCouponInput(e.target.value)}
+                        onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                     />
                     <Button type="button" onClick={() => handleApplyCoupon()}>
                         Áp dụng
                     </Button>
-                    <Button type="button" onClick={() => setShowCouponOptions(!showCouponOptions)} variant="link" className="text-sm text-blue-600 self-center hover:underline">
-                        Chọn mã khuyến mãi
+                    <Button
+                        type="button"
+                        variant="link"
+                        onClick={() => setShowCouponOptions(!showCouponOptions)}
+                    >
+                        {showCouponOptions ? "Ẩn mã" : "Chọn mã"}
                     </Button>
                 </div>
+
                 {appliedCoupons.length > 0 && (
                     <div className="mt-4">
-                        <h4 className="font-semibold">Mã giảm giá đã áp dụng</h4>
+                        <h4 className="font-semibold">Đã áp dụng</h4>
                         <div className="flex flex-wrap gap-2 mt-2">
                             {appliedCoupons.map((coupon) => (
                                 <div
@@ -329,69 +395,61 @@ export default function PaymentForm() {
                         </div>
                     </div>
                 )}
-                <div className="flex flex-wrap gap-2">
-                    {showCouponOptions && (
-                        <div className="mt-2 border p-3 rounded-md bg-gray-50 space-y-2">
-                            <h3 className="font-semibold">Chọn mã giảm giá</h3>
-                            <div className="space-y-2">
-                                {validCoupons.map((coupon) => (
-                                    <div
-                                        key={coupon.code}
-                                        className="flex items-center justify-between px-3 py-2 bg-gray-100 rounded-md"
-                                    >
-                                        <span className="text-sm">{coupon.description}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleApplyCoupon(coupon.code)}
-                                            className="text-blue-600 hover:text-blue-800 text-sm"
-                                        >
-                                            Áp dụng
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                        Có thể áp dụng đồng thời nhiều mã <span className="text-gray-400">ℹ️</span>
-                    </p>
-                </div>
-                <h2 className="text-xl font-semibold border-b-2 border-solid pb-1">KIỂM TRA LẠI ĐƠN HÀNG</h2>
 
+                {showCouponOptions && (
+                    <div className="mt-2 border p-3 rounded-md bg-gray-50 space-y-2">
+                        {promotions.map((coupon) => (
+                            <div
+                                key={coupon.promotionId}
+                                className="flex justify-between items-center"
+                            >
+                                <span>{coupon.promotionName}</span>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => handleApplyCoupon(coupon.promotionCode)}
+                                    disabled={appliedCoupons.includes(coupon.promotionCode)}
+                                >
+                                    {appliedCoupons.includes(coupon.promotionCode) ? "Đã áp dụng" : "Áp dụng"}
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* DANH SÁCH SẢN PHẨM */}
+                <h2 className="text-xl font-semibold border-b-2 pb-1">ĐƠN HÀNG</h2>
                 <div className="space-y-4">
-                    {cart.cartItems && cart.cartItems.length > 0 ? (
-                        cart.cartItems.map((ci, index) => (
-                            <PaymentItem
-                                key={`${ci.product.productId}-${index}`}
-                                item={ci}
-                            />
+                    {(cart.cartItems ?? []).length > 0 ? (
+                        (cart.cartItems ?? []).map((ci, index) => (
+                            <PaymentItem key={`${ci.product.productId}-${index}`} item={ci} />
                         ))
                     ) : (
                         <p>Giỏ hàng trống</p>
                     )}
                 </div>
 
-                <div className="flex items-center space-x-2">
-                    <input type="checkbox" required />
-                    <label className="text-sm text-gray-600">Bằng việc tiến hành Mua hàng, bạn đã đồng ý với <a className="text-blue-500 underline" href="#">Điều khoản & Điều kiện</a></label>
-                </div>
-
-                <div className="sticky bottom-0 bg-white p-4 border-t">
+                {/* TỔNG TIỀN */}
+                <div className="sticky bottom-0 bg-white p-4 border-t mt-4">
                     <div className="space-y-2 mb-4">
                         <div className="flex justify-between">
                             <span>Thành tiền</span>
-                            <span>{cart.totalPrice}</span>
+                            <span>{formatCurrency(Number(cart.totalPrice))}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span>Phí vận chuyển (Giao hàng tiêu chuẩn)</span>
-                            <span>32.000 ₫</span>
+                            <span>Phí vận chuyển</span>
+                            <span>{formatCurrency(shippingFee)}</span>
                         </div>
                         <div className="flex justify-between font-semibold border-t pt-2">
-                            <span>Tổng Số Tiền (gồm VAT)</span>
-                            <span className="text-yellow-500">{cart.totalPrice} ₫</span>
+                            <span>Tổng cộng</span>
+                            <span className="text-yellow-500">{formatCurrency(totalWithShipping)}</span>
                         </div>
                     </div>
-                    <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white text-base font-semibold">
+                    <Button
+                        type="submit"
+                        className="w-full bg-red-500 hover:bg-red-600 text-white text-base font-semibold"
+                        disabled={(cart.cartItems ?? []).length === 0}
+                    >
                         Xác nhận thanh toán
                     </Button>
                 </div>

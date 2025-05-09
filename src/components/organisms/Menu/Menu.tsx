@@ -8,16 +8,27 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import { MenuIcon, ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMenu } from "@/features/menu/hooks/useMenu";
+import { fetchMenus, MenuItem } from "@/features/menu";
 
 export default function Menu() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const { data: menus = [], isLoading } = useMenu();
+  const [menus, setMenus] = useState<MenuItem[]>([]);
+  useEffect(() => {
+    const loadMenus = async () => {
+      try {
+        const data = await fetchMenus()
+        setMenus(data)
+      } catch (error) {
+        console.error("Lỗi khi load Menu:", error)
+      }
+    }
 
-  if (isLoading) return null;
+    loadMenus()
+  }, [])
 
   const toggleDropdown = (menuId: string) => {
     setOpenDropdown(openDropdown === menuId ? null : menuId);

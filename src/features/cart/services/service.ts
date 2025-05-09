@@ -1,16 +1,16 @@
 import { CartItemType } from "@/features/cart/services/type";
 import axiosInstance from "@/lib/api/Config";
+import envConfig from "@/lib/api/envConfig";
 import { callApi } from "@/lib/api/Service";
-const API = process.env.NEXT_PUBLIC_API
 export const fetchCart = async (cartId: any): Promise<CartItemType> => {
-    const endpoint = `${API}/public/carts/${cartId}`;
+    const endpoint = `${envConfig.NEXT_PUBLIC_API}/public/carts/${cartId}`;
     return await callApi<CartItemType>(endpoint, "GET");
 };
 export const deleteCartItem = async (
     cartId: string | number,
     productId: string | number
 ): Promise<void> => {
-    const endpoint = `${API}/public/carts/${cartId}/product`
+    const endpoint = `${envConfig.NEXT_PUBLIC_API}/public/carts/${cartId}/product`
     // Gọi DELETE, body chứa productId
     await callApi<void>(endpoint, "DELETE", productId)
 }
@@ -19,7 +19,7 @@ export const updateQuantityCart = async (
     productId: string | number,
     quantity: number
 ): Promise<void> => {
-    const endpoint = `${API}/public/carts`;
+    const endpoint = `${envConfig.NEXT_PUBLIC_API}/public/carts`;
     const data = {
         cartId: cartId,
         productId: productId,

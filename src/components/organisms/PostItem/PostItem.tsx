@@ -7,14 +7,9 @@ import { PostItemProps } from "@/features/post/services/type"
 
 
 
-const PostItem: React.FC<PostItemProps> = ({ postId, title, image, content }) => {
+const PostItem: React.FC<PostItemProps> = ({ postId, title, content }) => {
     return (
         <div className={styles.postItem}>
-            <div className={styles.imageGrid}>
-                <div className={styles.imageWrapper} >
-                    <Image src={`${process.env.NEXT_PUBLIC_FILE}${image}`} alt={""} fill className={styles.image} />
-                </div>
-            </div>
             <div className={styles.content}>
                 <Link href={`/posts/${postId}`} className={styles.title}>
                     {title}

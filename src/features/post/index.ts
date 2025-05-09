@@ -1,4 +1,4 @@
 
 export * from "./services/type"
-export * from "./services/home.service"
+export * from "./services/post.service"
 

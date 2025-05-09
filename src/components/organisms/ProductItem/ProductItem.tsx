@@ -1,15 +1,22 @@
+'use client'
+
 import Image from "next/image";
 import Link from "next/link";
-import type { FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import styles from "./ProductItem.module.css";
 import { ProductItemProps } from "@/features/product/services/type";
 import { ShoppingCart } from "lucide-react";
+import { CART_ITEM_KEY, USER_ID } from "@/constants/cartConstants";
+import { POST_ADD } from "@/lib/api/Service";
+import { toast } from "react-toastify";
 
 interface ProductDetailProps {
     product: ProductItemProps;
 }
 
 const ProductItem: FC<ProductDetailProps> = ({ product }) => {
+    const [quantity, setQuantity] = useState(1);
+    const [userId, setUserId] = useState<number | null>(null)
     const discountedPrice =
         (product.discount ?? 0) > 0
             ? Math.round(product.price - (product.price * ((product.discount ?? 0) / 100)))
@@ -28,6 +35,67 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
                 .trim() + "₫"
         );
     };
+    useEffect(() => {
+        const storedUserId = localStorage.getItem(USER_ID)
+        if (storedUserId) {
+            setUserId(parseInt(storedUserId, 10))
+        }
+        // Đặt hình ảnh đầu tiên làm mặc định khi component tải
+
+    })
+    const handleAddToCart = () => {
+        const quantity = 1
+
+
+        if (userId) {
+            const url = `/public/carts`
+            POST_ADD(url, { cartId: userId, productId: product.productId, quantity })
+                .then(() => {
+                    toast.success('Thêm vào giỏ hàng thành công', {
+                        position: 'bottom-right',
+                        autoClose: 2000,
+                    })
+                    const currentLength = parseInt(localStorage.getItem('CartLength') || '0')
+                    localStorage.setItem('CartLength', (currentLength + 1).toString())
+                })
+                .catch((error) => {
+                    console.error('Add to cart error:', error)
+                    toast.error('Sản phẩm đã có trong giỏ hàng.', {
+                        position: 'bottom-right',
+                        autoClose: 2000,
+                    })
+                })
+        } else {
+            const storedCart = localStorage.getItem(CART_ITEM_KEY)
+            const cart = storedCart ? JSON.parse(storedCart) : { cartItems: [], totalPrice: 0 }
+
+            const existingIndex = cart.cartItems.findIndex((item: any) => item.product.productId === product.productId)
+
+            if (existingIndex !== -1) {
+                cart.cartItems[existingIndex].quantity += quantity
+            } else {
+                cart.cartItems.push({
+                    product: {
+                        productId: product.productId,
+                        slug: product.slug,
+                    },
+                    quantity,
+                })
+            }
+
+            cart.totalPrice = cart.cartItems.reduce((sum: number, item: any) => {
+                const discountedPrice = item.product.price * (1 - (item.product.discount || 0) / 100)
+                return sum + discountedPrice * item.quantity
+            }, 0)
+
+            localStorage.setItem(CART_ITEM_KEY, JSON.stringify(cart))
+
+            toast.success('Đã thêm sản phẩm vào giỏ hàng!', {
+                position: 'bottom-right',
+                autoClose: 2000,
+            })
+        }
+    }
 
     return (
         <div className={styles.card}>
@@ -59,7 +127,7 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
                     </div>
                 </div>
             </Link>
-            <button className={styles.addToCart}>
+            <button className={styles.addToCart} onClick={handleAddToCart}>
                 <ShoppingCart size={16} className={styles.cartIcon} />
                 Thêm vào giỏ
             </button>

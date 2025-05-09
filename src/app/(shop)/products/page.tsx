@@ -21,11 +21,13 @@ const ProductPage = () => {
     const initialMaxPrice = searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined;
     const initialLanguageIds = searchParams.get("languageIds") ? Number(searchParams.get("languageIds")) : undefined;
     const initialPublisherId = searchParams.get("publisherId") ? Number(searchParams.get("publisherId")) : undefined;
+    const initialIsSale = searchParams.get("isSale") ? Boolean(searchParams.get("isSale")) : undefined;
 
     // State để quản lý params
     const [filterParams, setFilterParams] = useState<FetchProductListParams>({
         status: true,
         pageNumber: initialPageNumber,
+        isSale: initialIsSale,
         pageSize: initialPageSize,
         sortBy: initialSortBy,
         sortOrder: initialSortOrder as "asc" | "desc",
@@ -50,6 +52,7 @@ const ProductPage = () => {
             maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined,
             languageIds: searchParams.get("languageIds") ? Number(searchParams.get("languageIds")) : undefined,
             publisherId: searchParams.get("publisherId") ? Number(searchParams.get("publisherId")) : undefined,
+            isSale: searchParams.get("isSale") ? Boolean(searchParams.get("isSale")) : undefined,
         };
         setFilterParams((prev) => {
             const updatedParams = { ...prev, ...newParams };
@@ -71,6 +74,7 @@ const ProductPage = () => {
         if (filterParams.maxPrice !== undefined) query.set("maxPrice", filterParams.maxPrice.toString());
         if (filterParams.languageIds !== undefined) query.set("languageIds", filterParams.languageIds.toString());
         if (filterParams.publisherId !== undefined) query.set("publisherId", filterParams.publisherId.toString());
+        if (filterParams.isSale !== undefined) query.set("isSale", filterParams.isSale.toString());
 
         // Cập nhật URL mà không tải lại trang
         router.push(`/products?${query.toString()}`, { scroll: false });
@@ -94,17 +98,45 @@ const ProductPage = () => {
         const sortValue = event.target.value;
         let newSortBy = "productId";
         let newSortOrder: "asc" | "desc" = "asc";
+        let newIsSale: boolean | undefined = undefined;
 
-        if (sortValue === "Bán chạy tuần") {
-            newSortBy = "weeklySales";
-            newSortOrder = "desc";
-        } else if (sortValue === "Bán chạy tháng") {
-            newSortBy = "monthlySales";
-            newSortOrder = "desc";
+        switch (sortValue) {
+            case "weeklySales_desc":
+                newSortBy = "weeklySales";
+                newSortOrder = "desc";
+                break;
+            case "monthlySales_desc":
+                newSortBy = "monthlySales";
+                newSortOrder = "desc";
+                break;
+            case "price_asc":
+                newSortBy = "price";
+                newSortOrder = "asc";
+                break;
+            case "price_desc":
+                newSortBy = "price";
+                newSortOrder = "desc";
+                break;
+            case "name_asc":
+                newSortBy = "name";
+                newSortOrder = "asc";
+                break;
+            case "name_desc":
+                newSortBy = "name";
+                newSortOrder = "desc";
+                break;
+            case "sale":
+                newIsSale = true;
+                break;
         }
 
-        updateParams({ sortBy: newSortBy, sortOrder: newSortOrder });
+        updateParams({
+            sortBy: newSortBy,
+            sortOrder: newSortOrder,
+            isSale: newIsSale,
+        });
     };
+
 
     const resetFilters = () => {
         const resetParams: FetchProductListParams = {
@@ -152,22 +184,39 @@ const ProductPage = () => {
                         <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-0">
                             Danh sách sản phẩm
                         </h2>
+                        <div className="flex items-center gap-2">
+                            <label className="flex items-center gap-2 text-sm sm:text-base text-gray-700">
+                                <input
+                                    type="checkbox"
+                                    checked={filterParams.isSale || false}
+                                    onChange={(e) => updateParams({ isSale: e.target.checked || undefined })}
+                                    className="rounded border-gray-300 focus:ring-orange-500"
+                                />
+                                Giảm giá
+                            </label>
+                        </div>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                            <div className="flex items-center gap-2">
-                                <span className="text-gray-700 text-sm sm:text-base">Sắp xếp theo:</span>
-                                <select
-                                    className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                                    onChange={handleSortChange}
-                                    value={
-                                        filterParams.sortBy === "weeklySales" ? "Bán chạy tuần" :
-                                            filterParams.sortBy === "monthlySales" ? "Bán chạy tháng" :
-                                                "Bán chạy tuần"
-                                    }
-                                >
-                                    <option value="Bán chạy tuần">Bán chạy tuần</option>
-                                    <option value="Bán chạy tháng">Bán chạy tháng</option>
-                                </select>
-                            </div>
+                            <span className="text-gray-700 text-sm sm:text-base">Sắp xếp theo:</span>
+                            <select
+                                className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                                onChange={handleSortChange}
+                                value={
+                                    filterParams.isSale
+                                        ? "sale"
+                                        : `${filterParams.sortBy}_${filterParams.sortOrder}`
+                                }
+                            >
+                                {/* <option value="weeklySales_desc">Bán chạy tuần</option>
+                                <option value="monthlySales_desc">Bán chạy tháng</option> */}
+                                <option value="price_asc">Giá tăng dần</option>
+                                <option value="price_desc">Giá giảm dần</option>
+                                {/* <option value="name_asc">Tên A → Z</option>
+                                <option value="name_desc">Tên Z → A</option> */}
+                                {/* <option value="sale">Đang khuyến mãi</option> */}
+                            </select>
+                        </div>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+
                             <div className="flex items-center gap-2">
                                 <span className="text-gray-700 text-sm sm:text-base">Hiển thị:</span>
                                 <select

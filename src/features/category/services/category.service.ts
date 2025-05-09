@@ -1,11 +1,10 @@
 import { CategoryItemProps } from "@/features/category/services/type"
 import axiosInstance from "@/lib/api/Config"
+import envConfig from "@/lib/api/envConfig"
 
-
-const API = process.env.NEXT_PUBLIC_API
 
 export const fetchCategories = async (): Promise<CategoryItemProps[]> => {
-    const response = await axiosInstance.get(`${API}/public/categories`, {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/categories`, {
         params: {
             status: true,
             type: "parent",
@@ -20,7 +19,7 @@ export const fetchCategories = async (): Promise<CategoryItemProps[]> => {
     return data.content
 }
 export const fetchAllCategories = async (): Promise<CategoryItemProps[]> => {
-    const response = await axiosInstance.get(`${API}/public/categories`, {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/categories`, {
         params: {
             status: true,
             type: "parent",
@@ -34,6 +33,6 @@ export const fetchAllCategories = async (): Promise<CategoryItemProps[]> => {
     return data.content
 }
 export const fetchCategoryById = async (categoryId: number): Promise<CategoryItemProps> => {
-    const response = await axiosInstance.get(`${API}/public/categories/${categoryId}`)
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/categories/${categoryId}`)
     return response.data as CategoryItemProps
 }

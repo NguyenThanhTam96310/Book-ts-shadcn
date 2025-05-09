@@ -1,8 +1,8 @@
 import axiosInstance from "@/lib/api/Config"
+import envConfig from "@/lib/api/envConfig"
 import { Publisher } from "@/types"
-const API = process.env.NEXT_PUBLIC_API
 export const fetchPublishersForm = async (): Promise<PublisherShowcaseProps[]> => {
-    const response = await axiosInstance.get(`${API}/public/publishers`, {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/publishers`, {
         params: {
             status: true,
             pageNumber: 0,
@@ -15,7 +15,7 @@ export const fetchPublishersForm = async (): Promise<PublisherShowcaseProps[]> =
     return data.content
 }
 export const fetchAllPublishers = async (): Promise<Publisher[]> => {
-    const response = await axiosInstance.get(`${API}/public/publishers`, {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/publishers`, {
         params: {
             status: true,
             pageNumber: 0,

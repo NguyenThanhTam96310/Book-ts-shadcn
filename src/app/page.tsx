@@ -1,9 +1,7 @@
 import Banner from "@/features/banner/components";
 import CategoryHomeForm from "@/features/category/components";
 import PostHome from "@/features/post/components";
-import { ProductFlashSaleForm, ProductNewForm } from "@/features/product/components";
-import ProductByCategoryForm from "@/features/product/components/ProductByCategoryForm";
-import ProductByCategoryHomeForm from "@/features/product/components/ProductByCategoryHomeForm";
+import { ProductByCategoryHomeForm, ProductFlashSaleForm, ProductNewForm } from "@/features/product/components";
 import PublisherShowForm from "@/features/publisher/components";
 
 export default function Home() {

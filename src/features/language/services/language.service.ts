@@ -1,8 +1,8 @@
 import axiosInstance from "@/lib/api/Config"
+import envConfig from "@/lib/api/envConfig"
 import { Languages } from "@/types"
-const API = process.env.NEXT_PUBLIC_API
 export const fetchAllLanguages = async (): Promise<Languages[]> => {
-    const response = await axiosInstance.get(`${API}/public/languages`, {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/languages`, {
         params: {
             status: true,
             pageNumber: 0,

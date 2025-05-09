@@ -39,7 +39,7 @@ export default function BannerTop() {
                             alt={b.bannerName}
                             fill
                             className="object-cover"
-                            sizes="100vw"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                     </div>
                 </Link>
