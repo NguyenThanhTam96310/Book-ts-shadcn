@@ -38,9 +38,7 @@ const ProductList = ({ fetchApi, params, onTotalPagesChange }: ProductListProps)
 
     return (
         <main className="py-4">
-            {loading ? (
-                <div className="text-center text-gray-500">Đang tải...</div>
-            ) : products.length === 0 ? (
+            {products.length === 0 ? (
                 <div className="text-center text-gray-500">Không có sản phẩm nào</div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

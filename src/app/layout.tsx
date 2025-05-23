@@ -1,16 +1,9 @@
-"use client"
-import type { Metadata } from "next";
+
 import { Roboto } from "next/font/google";
 import '../styles/globals.css';
 import Header from "@/components/organisms/Header";
-import Menu from "@/components/organisms/Menu";
-import { Providers } from "@/app/Providers";
 import Footer from "@/components/organisms/Footer";
 import { ToastContainer } from "react-toastify";
-import CategoryMenu from "@/features/category/components/CategoryMenu";
-import BannerTop from "@/features/banner/components/BannerTop";
-
-
 const roboto = Roboto({
   subsets: ["vietnamese"],
   variable: "--font-roboto",
@@ -18,22 +11,21 @@ const roboto = Roboto({
   weight: ["400", "500", "700"],
 });
 
-
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+
+}) {
   return (
     <html lang="en" className="mdl-js">
-      <body className={roboto.className}>
-        <Providers>
-          <Header />
-          <Menu />
+      <body className={`${roboto.className} flex flex-col min-h-[830px]`}>
+        <Header />
+        <main className="flex-grow">
           {children}
-          <Footer />
-          <ToastContainer />
-        </Providers>
+        </main>
+        <Footer />
+        <ToastContainer />
       </body>
     </html>
   );

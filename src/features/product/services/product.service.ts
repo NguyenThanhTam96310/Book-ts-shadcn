@@ -48,10 +48,10 @@ export const fetchProductByCategory = async (categoryId: number): Promise<Produc
 }
 
 
-export const fetchProductByAuthor = async (): Promise<ProductItemProps[]> => {
+export const fetchProductByAuthor = async (authorId: number): Promise<ProductItemProps[]> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
         params: {
-            authorId: 6,
+            authorId: authorId,
             status: true,
             pageNumber: 0,
             pageSize: 5,

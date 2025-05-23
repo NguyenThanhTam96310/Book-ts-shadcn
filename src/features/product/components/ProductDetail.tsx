@@ -10,8 +10,6 @@ import { POST_ADD } from '@/lib/api/Service'
 import { toast } from 'react-toastify'
 import { useRouter } from 'next/navigation'
 import { CART_ITEM_KEY } from '@/constants/cartConstants'
-import { isTokenExpired } from '@/lib/utils/auth'
-
 interface ProductDetailProps {
     product: ProductItemProps
 }
@@ -50,7 +48,7 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
 
         if (userId) {
             const url = `/public/carts`
-            POST_ADD(url, { cartId: userId, productId: product.productId, quantity })
+            POST_ADD(url, { userId: userId, productId: product.productId, quantity })
                 .then(() => {
                     toast.success('Thêm vào giỏ hàng thành công', {
                         position: 'bottom-right',
@@ -105,12 +103,10 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
     return (
         <div>
             <div className={styles.container}>
-                {/* Top section */}
                 <div className={styles.flexRow}>
                     {/* Ảnh sản phẩm */}
                     <div className={styles.imageBox}>
                         <div className={styles.imageWrapper}>
-                            {/* Hình ảnh chính */}
                             <Image
                                 src={selectedImage || '/placeholder.png'}
                                 alt={product.productName}
@@ -119,9 +115,8 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                 className={styles.imageStyle}
                             />
                         </div>
-                        {/* Danh sách hình ảnh phụ */}
                         {product.images && product.images.length > 1 && (
-                            <div className={styles.thumbnailList}>
+                            <div className={styles.thumbnailListVertical}>
                                 {product.images.map((image: any, index: number) => (
                                     <div
                                         key={index}
@@ -136,8 +131,8 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                         <Image
                                             src={`${process.env.NEXT_PUBLIC_FILE}${image.fileName}`}
                                             alt={`${product.productName} thumbnail ${index}`}
-                                            width={80}
-                                            height={100}
+                                            width={60} // Điều chỉnh chiều rộng ảnh phụ
+                                            height={80} // Điều chỉnh chiều cao ảnh phụ
                                             className={styles.thumbnailImage}
                                         />
                                     </div>
@@ -145,15 +140,14 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                             </div>
                         )}
                     </div>
-
                     {/* Thông tin sản phẩm */}
                     <div className={styles.infoColumn}>
                         {/* Tiêu đề + giá */}
                         <div className={styles.infoBox}>
                             <div className="flex items-center gap-3 my-3">
-                                <div className="text-sm text-orange-400 font-semibold bg-red-600 inline-block px-2 py-1 rounded-full">
+                                {/* <div className="text-sm text-orange-400 font-semibold bg-red-600 inline-block px-2 py-1 rounded-full">
                                     Xu hướng
-                                </div>
+                                </div> */}
                                 <h1 className="text-2xl font-bold">{product.productName}</h1>
                             </div>
 
@@ -204,7 +198,7 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                     </div>
                                 </li>
                                 <li>
-                                    <strong>Trạng thái:</strong> {product.status === 'active' ? 'Còn hàng' : 'Hết hàng'}
+                                    <strong>Trạng thái:</strong> {(product.quantity ?? 0) > 0 ? 'Còn hàng' : 'Hết hàng'}
                                 </li>
                                 <li>
                                     <strong>Thời gian giao hàng:</strong> 2-3 ngày

@@ -1,26 +1,27 @@
-'use client'
+"use client"
 
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState, type FC } from "react";
-import styles from "./ProductItem.module.css";
-import { ProductItemProps } from "@/features/product/services/type";
-import { ShoppingCart } from "lucide-react";
-import { CART_ITEM_KEY, USER_ID } from "@/constants/cartConstants";
-import { POST_ADD } from "@/lib/api/Service";
-import { toast } from "react-toastify";
+import type React from "react"
+
+import Image from "next/image"
+import Link from "next/link"
+import { useEffect, useState, type FC } from "react"
+import styles from "./ProductItem.module.css"
+import type { ProductItemProps } from "@/features/product/services/type"
+import { ShoppingCart } from "lucide-react"
+import { CART_ITEM_KEY, USER_ID } from "@/constants/cartConstants"
+import { POST_ADD } from "@/lib/api/Service"
+import { toast } from "react-toastify"
 
 interface ProductDetailProps {
-    product: ProductItemProps;
+    product: ProductItemProps
 }
 
 const ProductItem: FC<ProductDetailProps> = ({ product }) => {
-    const [quantity, setQuantity] = useState(1);
     const [userId, setUserId] = useState<number | null>(null)
     const discountedPrice =
         (product.discount ?? 0) > 0
-            ? Math.round(product.price - (product.price * ((product.discount ?? 0) / 100)))
-            : product.price;
+            ? Math.round(product.price - product.price * ((product.discount ?? 0) / 100))
+            : product.price
 
     const formatPrice = (price: number) => {
         return (
@@ -33,35 +34,37 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
                 .format(price)
                 .replace("₫", "")
                 .trim() + "₫"
-        );
-    };
+        )
+    }
+
     useEffect(() => {
         const storedUserId = localStorage.getItem(USER_ID)
         if (storedUserId) {
-            setUserId(parseInt(storedUserId, 10))
+            setUserId(Number.parseInt(storedUserId, 10))
         }
-        // Đặt hình ảnh đầu tiên làm mặc định khi component tải
+    }, [])
 
-    })
-    const handleAddToCart = () => {
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.preventDefault() // Prevent navigation when clicking the button
+        e.stopPropagation() // Stop event propagation
+
         const quantity = 1
-
 
         if (userId) {
             const url = `/public/carts`
-            POST_ADD(url, { cartId: userId, productId: product.productId, quantity })
+            POST_ADD(url, { userId: userId, productId: product.productId, quantity })
                 .then(() => {
-                    toast.success('Thêm vào giỏ hàng thành công', {
-                        position: 'bottom-right',
+                    toast.success("Thêm vào giỏ hàng thành công", {
+                        position: "bottom-right",
                         autoClose: 2000,
                     })
-                    const currentLength = parseInt(localStorage.getItem('CartLength') || '0')
-                    localStorage.setItem('CartLength', (currentLength + 1).toString())
+                    const currentLength = Number.parseInt(localStorage.getItem("CartLength") || "0")
+                    localStorage.setItem("CartLength", (currentLength + 1).toString())
                 })
                 .catch((error) => {
-                    console.error('Add to cart error:', error)
-                    toast.error('Sản phẩm đã có trong giỏ hàng.', {
-                        position: 'bottom-right',
+                    console.error("Add to cart error:", error)
+                    toast.error("Sản phẩm đã có trong giỏ hàng.", {
+                        position: "bottom-right",
                         autoClose: 2000,
                     })
                 })
@@ -90,8 +93,8 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
 
             localStorage.setItem(CART_ITEM_KEY, JSON.stringify(cart))
 
-            toast.success('Đã thêm sản phẩm vào giỏ hàng!', {
-                position: 'bottom-right',
+            toast.success("Đã thêm sản phẩm vào giỏ hàng!", {
+                position: "bottom-right",
                 autoClose: 2000,
             })
         }
@@ -101,9 +104,7 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
         <div className={styles.card}>
             <Link href={`/products/${product.slug}`} className={styles.productLink}>
                 <div className={styles.imageWrapper}>
-                    {(product.discount ?? 0) > 0 && (
-                        <span className={styles.discountBadge}>-{product.discount}%</span>
-                    )}
+                    {(product.discount ?? 0) > 0 && <span className={styles.discountBadge}>-{product.discount}%</span>}
                     <Image
                         src={
                             product.images && product.images.length > 0 && process.env.NEXT_PUBLIC_FILE
@@ -121,18 +122,16 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
                     <h3 className={styles.title}>{product.productName}</h3>
                     <div className={styles.priceWrapper}>
                         <span className={styles.currentPrice}>{formatPrice(discountedPrice)}</span>
-                        {(product.discount ?? 0) > 0 && (
-                            <span className={styles.oldPrice}>{formatPrice(product.price)}</span>
-                        )}
+                        {(product.discount ?? 0) > 0 && <span className={styles.oldPrice}>{formatPrice(product.price)}</span>}
                     </div>
                 </div>
+                <button className={styles.addToCart} onClick={handleAddToCart} aria-label="Thêm vào giỏ hàng">
+                    <ShoppingCart size={16} className={styles.cartIcon} />
+                    Thêm vào giỏ
+                </button>
             </Link>
-            <button className={styles.addToCart} onClick={handleAddToCart}>
-                <ShoppingCart size={16} className={styles.cartIcon} />
-                Thêm vào giỏ
-            </button>
         </div>
-    );
-};
+    )
+}
 
-export default ProductItem;
+export default ProductItem

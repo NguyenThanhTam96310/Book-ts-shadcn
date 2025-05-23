@@ -1,7 +1,7 @@
 import Cart from "@/features/cart/components/Cart"
 
 
-const CartIndex = () => {
+const CartPage = () => {
     return (
         <>
             <Cart />
@@ -9,4 +9,4 @@ const CartIndex = () => {
     )
 }
 
-export default CartIndex
+export default CartPage

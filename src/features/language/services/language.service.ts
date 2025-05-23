@@ -6,7 +6,6 @@ export const fetchAllLanguages = async (): Promise<Languages[]> => {
         params: {
             status: true,
             pageNumber: 0,
-            pageSize: 5,
             sortBy: "languageId",
             sortOrder: "asc"
         }

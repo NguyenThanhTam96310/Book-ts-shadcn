@@ -1,5 +1,5 @@
 
-import { PaymentBodyType } from "@/features/order/services/order.Schema";
+import { OrderOTPRes, PaymentBodyType } from "@/features/order/services/order.Schema";
 import axiosInstance from "@/lib/api/Config";
 import envConfig from "@/lib/api/envConfig";
 import { callApi } from "@/lib/api/Service";
@@ -26,3 +26,18 @@ export const paymentUser = async (
     const endpoint = `${envConfig.NEXT_PUBLIC_API}/public/orders`;
     await callApi<void>(endpoint, "POST", body);
 };
+export function otpCustomer(body: OrderOTPRes) {
+    const response = axiosInstance.post(`${envConfig.NEXT_PUBLIC_API}/public/orders/otp`, body, {
+        headers: {
+            accept: "*/*",
+            "Content-Type": "application/json",
+        },
+    })
+        .then((response) => response.data)
+        .catch((error) => {
+            console.log(error)
+            throw error
+        });
+
+    return response; // validate với Zod
+}

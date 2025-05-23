@@ -4,7 +4,7 @@ export interface CategoryItemProps {
     slug: string
     parentId?: number
     size?: string
-    status?: "active" | "inactive" | string
+    status?: boolean
     image?: string
     childrens?: CategoryItemProps[]
 }

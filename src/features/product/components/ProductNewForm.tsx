@@ -22,7 +22,7 @@ const ProductNewForm = () => {
     }, [])
     return (
         <>
-            <main className="py-8">
+            <main className="py-5">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {product.map((product) => (
                         <ProductItem key={product.productId} product={product} />

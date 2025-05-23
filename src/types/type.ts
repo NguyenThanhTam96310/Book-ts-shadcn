@@ -23,7 +23,7 @@ export interface Categories {
     slug: string
     parentId?: number
     size?: string
-    status?: "active" | "inactive" | string
+    status?: boolean
     image?: string
 }
 export interface Supplier {
@@ -42,7 +42,7 @@ export interface Category {
     slug: string
     parentId?: number
     size?: string
-    status?: "active" | "inactive" | string
+    status?: boolean
     image?: string
     childrens?: Category[]
 }

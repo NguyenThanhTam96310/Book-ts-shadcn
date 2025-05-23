@@ -3,25 +3,30 @@ import Sidebar from "@/components/organisms/Sidebar";
 import ProductList from "@/features/product/components/ProductList";
 import { fetchProductList } from "@/features/product/services/product.service";
 import { FetchProductListParams } from "@/features/product/services/type";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 const ProductPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-
+    const scrollToTop = () => {
+        if (typeof window !== "undefined") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    };
     // Lấy các tham số từ query string, nếu không có thì sử dụng giá trị mặc định
-    const initialSortBy = searchParams.get("sortBy") || "productId";
-    const initialSortOrder = searchParams.get("sortOrder") || "asc";
-    const initialPageSize = searchParams.get("pageSize") ? Number(searchParams.get("pageSize")) : 5;
-    const initialPageNumber = searchParams.get("pageNumber") ? Number(searchParams.get("pageNumber")) : 1;
-    const initialCategoryId = searchParams.get("categoryId") ? Number(searchParams.get("categoryId")) : undefined;
-    const initialMinPrice = searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined;
-    const initialMaxPrice = searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined;
-    const initialLanguageIds = searchParams.get("languageIds") ? Number(searchParams.get("languageIds")) : undefined;
-    const initialPublisherId = searchParams.get("publisherId") ? Number(searchParams.get("publisherId")) : undefined;
-    const initialIsSale = searchParams.get("isSale") ? Boolean(searchParams.get("isSale")) : undefined;
+    const initialSortBy = searchParams?.get("sortBy") || "productId";
+    const initialSortOrder = searchParams?.get("sortOrder") || "asc";
+    const initialPageSize = searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 5;
+    const initialPageNumber = searchParams?.get("pageNumber") ? Number(searchParams?.get("pageNumber")) : 1;
+    const initialCategoryId = searchParams?.get("categoryId") ? Number(searchParams?.get("categoryId")) : undefined;
+    const initialMinPrice = searchParams?.get("minPrice") ? Number(searchParams?.get("minPrice")) : undefined;
+    const initialMaxPrice = searchParams?.get("maxPrice") ? Number(searchParams?.get("maxPrice")) : undefined;
+    const initialLanguageIds = searchParams?.get("languageIds") ? Number(searchParams?.get("languageIds")) : undefined;
+    const initialPublisherId = searchParams?.get("publisherId") ? Number(searchParams?.get("publisherId")) : undefined;
+    const initialIsSale = searchParams?.get("isSale") ? Boolean(searchParams?.get("isSale")) : undefined;
+    const initialKeyWord = searchParams?.get("keyword") ? String(searchParams?.get("keyword")) : undefined;
 
     // State để quản lý params
     const [filterParams, setFilterParams] = useState<FetchProductListParams>({
@@ -36,6 +41,7 @@ const ProductPage = () => {
         maxPrice: initialMaxPrice,
         languageIds: initialLanguageIds,
         publisherId: initialPublisherId,
+        keyword: initialKeyWord,
     });
 
     const [totalPages, setTotalPages] = useState<number>(0);
@@ -43,16 +49,17 @@ const ProductPage = () => {
     // Đồng bộ params với searchParams khi URL thay đổi
     useEffect(() => {
         const newParams: Partial<FetchProductListParams> = {
-            sortBy: searchParams.get("sortBy") || "productId",
-            sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || "asc",
-            pageSize: searchParams.get("pageSize") ? Number(searchParams.get("pageSize")) : 5,
-            pageNumber: searchParams.get("pageNumber") ? Number(searchParams.get("pageNumber")) : 1,
-            categoryId: searchParams.get("categoryId") ? Number(searchParams.get("categoryId")) : undefined,
-            minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined,
-            maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined,
-            languageIds: searchParams.get("languageIds") ? Number(searchParams.get("languageIds")) : undefined,
-            publisherId: searchParams.get("publisherId") ? Number(searchParams.get("publisherId")) : undefined,
-            isSale: searchParams.get("isSale") ? Boolean(searchParams.get("isSale")) : undefined,
+            sortBy: searchParams?.get("sortBy") || "productId",
+            sortOrder: (searchParams?.get("sortOrder") as "asc" | "desc") || "asc",
+            pageSize: searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 5,
+            pageNumber: searchParams?.get("pageNumber") ? Number(searchParams?.get("pageNumber")) : 1,
+            categoryId: searchParams?.get("categoryId") ? Number(searchParams?.get("categoryId")) : undefined,
+            minPrice: searchParams?.get("minPrice") ? Number(searchParams?.get("minPrice")) : undefined,
+            maxPrice: searchParams?.get("maxPrice") ? Number(searchParams?.get("maxPrice")) : undefined,
+            languageIds: searchParams?.get("languageIds") ? Number(searchParams?.get("languageIds")) : undefined,
+            publisherId: searchParams?.get("publisherId") ? Number(searchParams?.get("publisherId")) : undefined,
+            isSale: searchParams?.get("isSale") ? Boolean(searchParams?.get("isSale")) : undefined,
+            keyword: searchParams?.get("keyword") ? String(searchParams?.get("keyword")) : undefined,
         };
         setFilterParams((prev) => {
             const updatedParams = { ...prev, ...newParams };
@@ -63,7 +70,7 @@ const ProductPage = () => {
     // Đồng bộ URL với filterParams sau khi filterParams thay đổi
     useEffect(() => {
         const query = new URLSearchParams();
-
+        const currentQuery = new URLSearchParams(window.location.search);
         // Chỉ thêm các tham số nếu chúng có giá trị và không phải giá trị mặc định
         if (filterParams.sortBy && filterParams.sortBy !== "productId") query.set("sortBy", filterParams.sortBy);
         if (filterParams.sortOrder && filterParams.sortOrder !== "asc") query.set("sortOrder", filterParams.sortOrder);
@@ -75,9 +82,16 @@ const ProductPage = () => {
         if (filterParams.languageIds !== undefined) query.set("languageIds", filterParams.languageIds.toString());
         if (filterParams.publisherId !== undefined) query.set("publisherId", filterParams.publisherId.toString());
         if (filterParams.isSale !== undefined) query.set("isSale", filterParams.isSale.toString());
+        if (filterParams.keyword !== undefined) query.set("keyword", filterParams.keyword.toString());
 
         // Cập nhật URL mà không tải lại trang
-        router.push(`/products?${query.toString()}`, { scroll: false });
+        // router.push(`/products?${query.toString()}`, { scroll: false });
+        const queryString = query.toString();
+        const currentQueryString = currentQuery.toString();
+
+        if (queryString !== currentQueryString) {
+            router.push(`/products?${queryString}`, { scroll: false });
+        }
     }, [filterParams, router]);
 
     // Cập nhật params khi bộ lọc thay đổi
@@ -157,6 +171,7 @@ const ProductPage = () => {
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) {
             updateParams({ pageNumber: page });
+            scrollToTop();
         }
     };
 
@@ -242,7 +257,7 @@ const ProductPage = () => {
                         />
                     </div>
 
-                    {totalPages > 1 && (
+                    {totalPages > 0 && (
                         <div className="flex justify-center items-center mt-6 space-x-2">
                             <button
                                 onClick={() => goToPage((filterParams.pageNumber || 1) - 1)}

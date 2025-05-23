@@ -3,19 +3,17 @@
 import Image from "next/image"
 import Link from "next/link"
 import styles from "./PostItem.module.css"
-import { PostItemProps } from "@/features/post/services/type"
+import { PostItemRes } from "@/features/post/services/type"
 
-
-
-const PostItem: React.FC<PostItemProps> = ({ postId, title, content }) => {
+const PostItem: React.FC<PostItemRes> = ({ postId, title, content, slug }) => {
     return (
         <div className={styles.postItem}>
             <div className={styles.content}>
-                <Link href={`/posts/${postId}`} className={styles.title}>
+                <Link href={`/post/${slug}`} className={styles.title}>
                     {title}
                 </Link>
                 <p className={styles.excerpt}>{content}</p>
-                <Link href={`/posts/${postId}`} className={styles.readMore}>
+                <Link href={`/post/${slug}`} className={styles.readMore}>
                     Xem thêm
                 </Link>
             </div>

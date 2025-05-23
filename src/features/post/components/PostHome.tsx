@@ -1,11 +1,11 @@
 "use client"
 import PostItem from '@/components/organisms/PostItem'
 import { fetchPosts } from '@/features/post/services/post.service'
-import { PostItemProps } from '@/features/post/services/type'
+import { PostItemRes } from '@/features/post/services/type'
 import React, { useEffect, useState } from 'react'
 
 const PostHome = () => {
-    const [posts, setPosts] = useState<PostItemProps[]>([])
+    const [posts, setPosts] = useState<PostItemRes[]>([])
     useEffect(() => {
         const loadPosts = async () => {
             try {
@@ -18,19 +18,19 @@ const PostHome = () => {
         loadPosts()
     }, [])
     return (
-        <div className="p-4">
-            <h2 className="text-lg font-bold mb-4">Bài viết nổi bật</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {posts.map((post) => (
-                    <PostItem
-                        key={post.postId}
-                        postId={post.postId}
-                        title={post.title}
-                        content={post.content}
-                    />
-                ))}
-            </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {posts.map((post) => (
+                <PostItem
+                    key={post.postId}
+                    postId={post.postId}
+                    title={post.title}
+                    slug={post.slug}
+                    content={post.content}
+                />
+            ))}
         </div>
+
     )
 }
 

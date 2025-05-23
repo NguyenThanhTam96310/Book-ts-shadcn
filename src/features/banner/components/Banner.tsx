@@ -21,7 +21,7 @@ export default function Banner() {
         fetchData()
     }, [])
 
-    const mainSlides = banners.filter((b) => b.position === "HOME_MAIN")
+    const mainSlides = banners.filter((b) => b.position === "SLIDESHOW")
 
     useEffect(() => {
         if (mainSlides.length === 0) return
@@ -55,6 +55,7 @@ export default function Banner() {
                             src={`${process.env.NEXT_PUBLIC_FILE}${b.image}`}
                             alt={b.bannerName}
                             fill
+                            quality={100}
                             className="object-cover rounded-lg"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             priority

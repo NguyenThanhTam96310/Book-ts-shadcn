@@ -25,7 +25,6 @@ import { CartItemType, CartProps } from "@/features/cart";
 import { PAYMENT_ITEM_KEY } from "@/constants/orderConstants";
 import PaymentItem from "@/components/organisms/PaymentItem";
 import { fetchPromotions, PromotionItemProps } from "@/features/promotion";
-
 import { paymentCustomer, paymentUser } from "@/features/order/services/order.service";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -33,7 +32,8 @@ import { USER_ID } from "@/constants/cartConstants";
 import { orderSchema } from "@/features/order/services/order.Schema";
 import { fetchUserByToken } from "@/features/auth/services/auth.service";
 import { UserProps } from "@/features/auth/services/type";
-
+import { calculateShippingFee, getDistricts, getProvinces, getWards } from "@/features/order/services/ghn.service";
+import { OtpForm } from "@/features/order/components/otpForm";
 
 const cartSchema = z.object({
     cartItems: z.array(
@@ -47,22 +47,16 @@ const cartSchema = z.object({
     totalPrice: z.number().min(0),
 });
 
-const addressFields: Array<keyof z.infer<typeof orderSchema>['order']['address']> = [
-    'ward',
-    'buildingName',
-    'city',
-    'district',
-    'country',
-    'pincode',
-];
-
-const addressFieldLabels: Record<keyof z.infer<typeof orderSchema>['order']['address'], string> = {
+const addressFieldLabels: Record<keyof z.infer<typeof orderSchema>["order"]["address"], string> = {
     ward: "Phường/Xã",
     buildingName: "Tên tòa nhà/Số nhà",
     city: "Thành phố",
     district: "Quận/Huyện",
     country: "Quốc gia",
     pincode: "Mã bưu điện",
+    cityCode: "",
+    districtCode: "",
+    wardCode: "",
 };
 
 export default function PaymentForm() {
@@ -70,6 +64,7 @@ export default function PaymentForm() {
         resolver: zodResolver(orderSchema),
         defaultValues: {
             order: {
+                userId: undefined,
                 email: "",
                 deliveryName: "",
                 deliveryPhone: "",
@@ -80,57 +75,74 @@ export default function PaymentForm() {
                     district: "",
                     country: "Việt Nam",
                     pincode: "",
+                    cityCode: "",
+                    districtCode: "",
+                    wardCode: "",
                 },
                 payment: {
                     paymentMethod: "COD",
                 },
                 freeship: undefined,
             },
-            productIds: [
-                1
-            ],
-            productQuantities: []
-
+            productIds: [],
+            productQuantities: [],
         },
     });
-    const [userId, setUserId] = useState<number | null>(null)
-    const [user, setUser] = useState<UserProps | null>(null)
+
+    const [userId, setUserId] = useState<number | null>(null);
+    const [user, setUser] = useState<UserProps | null>(null);
     const [showCouponOptions, setShowCouponOptions] = useState(false);
     const [couponInput, setCouponInput] = useState("");
     const [appliedCoupons, setAppliedCoupons] = useState<string[]>([]);
+    const [otpOpen, setOtpOpen] = useState(false)
     const [cart, setCart] = useState<CartProps>({
-        cartId: undefined,
+        userId: undefined,
         cartItems: [],
         totalPrice: 0,
     });
     const [promotions, setPromotions] = useState<PromotionItemProps[]>([]);
+    const [provinces, setProvinces] = useState<any[]>([]);
+    const [districts, setDistricts] = useState<any[]>([]);
+    const [wards, setWards] = useState<any[]>([]);
+    const [shippingFee, setShippingFee] = useState<number>(32000); // Giá trị mặc định từ PaymentForm
+
+    const selectedProvince = form.watch("order.address.city");
+    const selectedDistrict = form.watch("order.address.district");
+    const router = useRouter();
+    const [otpInfo, setOtpInfo] = useState<{
+        orderId: number
+        email: string
+        deliveryPhone: string
+        orderCode: string
+    } | null>(null)
+    // Fetch user info
     useEffect(() => {
         const fetchData = async () => {
             const storedUserId = localStorage.getItem(USER_ID);
             if (storedUserId) {
-                form.setValue("productIds", [Number(storedUserId)]);
+                form.setValue("order.userId", Number(storedUserId));
                 setUserId(parseInt(storedUserId, 10));
                 const token = localStorage.getItem("authToken");
                 if (!token) {
                     throw new Error("Không nhận được token từ server");
                 }
 
-                // Fetch user info from token
-                const user = await fetchUserByToken();
+                const user = await fetchUserByToken(token);
                 if (user?.userId && user?.email) {
                     localStorage.setItem("userId", user.userId.toString());
                     localStorage.setItem("username", user.email);
                 }
-                setUser(user)
+                setUser(user);
                 form.setValue("order.deliveryName", user.fullName || "");
                 form.setValue("order.email", user.email || "");
                 form.setValue("order.deliveryPhone", user.mobileNumber || "");
             }
         };
 
-        fetchData(); // Call the async function
-    }, []); // Chạy một lần khi component mount
+        fetchData();
+    }, [form]);
 
+    // Fetch cart and promotions
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -144,13 +156,9 @@ export default function PaymentForm() {
                         totalPrice: number;
                     };
                     const validated = cartSchema.safeParse(data);
-                    if (raw) {
-                        const data = JSON.parse(raw) as {
-                            cartItems: CartItemType[];
-                            totalPrice: number;
-                        };
+                    if (validated.success) {
                         setCart({
-                            cartId: undefined,
+                            userId: undefined,
                             cartItems: data.cartItems || [],
                             totalPrice: data.totalPrice || 0,
                         });
@@ -159,10 +167,11 @@ export default function PaymentForm() {
                             productId: Number(item.product.productId),
                             quantity: item.quantity,
                         }));
-
+                        const productIds = data.cartItems.map((item) => Number(item.product.productId));
                         form.reset({
                             ...form.getValues(),
                             productQuantities,
+                            productIds,
                         });
                     } else {
                         console.error("Invalid cart data:", validated.error);
@@ -177,6 +186,60 @@ export default function PaymentForm() {
 
         fetchData();
     }, [form]);
+
+    // Fetch provinces
+    useEffect(() => {
+        getProvinces().then(setProvinces);
+    }, []);
+
+    // Fetch districts based on selected province
+    useEffect(() => {
+        const provinceId = parseInt(selectedProvince);
+        if (provinceId) {
+            getDistricts(provinceId).then(setDistricts);
+            form.setValue("order.address.district", ""); // Reset district
+            form.setValue("order.address.ward", ""); // Reset ward
+            setDistricts([]);
+            setWards([]);
+        }
+    }, [selectedProvince, form]);
+
+    // Fetch wards based on selected district
+    useEffect(() => {
+        const districtId = parseInt(selectedDistrict);
+        if (districtId) {
+            getWards(districtId).then(setWards);
+            form.setValue("order.address.ward", ""); // Reset ward
+        }
+    }, [selectedDistrict, form]);
+
+    // Calculate shipping fee when ward is selected
+    useEffect(() => {
+        const calculateFee = async () => {
+            const toDistrict = parseInt(selectedDistrict);
+            const toWardCode = form.getValues("order.address.ward");
+            if (toDistrict && toWardCode) {
+                try {
+                    const fee = await calculateShippingFee({
+                        fromDistrict: 1451, // District ID của shop
+                        toDistrict,
+                        toWardCode,
+                        // height: 10,
+                        // length: 20,
+                        weight: totalWeight, // gram
+                        // width: 15,
+                        insurance_value: totalWithShipping,
+                    });
+                    setShippingFee(fee);
+                } catch (error) {
+                    console.error("Lỗi tính phí GHN:", error);
+                    setShippingFee(32000); // Fallback to default
+                }
+            }
+        };
+
+        calculateFee();
+    }, [selectedDistrict, form.watch("order.address.ward")]);
 
     const handleApplyCoupon = (promotion_code?: string) => {
         const coupon = promotions.find(
@@ -213,23 +276,50 @@ export default function PaymentForm() {
             form.setValue("order.freeship", undefined);
         }
     };
-    const router = useRouter();
+
     const onSubmit = async (values: z.infer<typeof orderSchema>) => {
         try {
+            let orderData = { ...values.order };
+
+            // Lấy tên Tỉnh/Thành phố
+            const selectedProvinceObject = provinces.find((p) => String(p.ProvinceID) === values.order.address.city);
+            orderData.address.city = selectedProvinceObject?.ProvinceName || "";
+
+            // Lấy tên Quận/Huyện
+            const selectedDistrictObject = districts.find((d) => String(d.DistrictID) === values.order.address.district);
+            orderData.address.district = selectedDistrictObject?.DistrictName || "";
+
+            // Lấy tên Phường/Xã
+            const selectedWardObject = wards.find((w) => w.WardCode === values.order.address.ward);
+            orderData.address.ward = selectedWardObject?.WardName || "";
+
+            const finalOrderData = { ...values, order: orderData };
             if (userId) {
-                console.log("Form data:", values); // Log dữ liệu gửi đi
+                console.log("Form data:", values);
                 const result = await paymentUser(values);
                 toast.success("Đặt hàng thành công!");
                 localStorage.removeItem(PAYMENT_ITEM_KEY);
-                router.push("/")
+                // router.push("/");
             } else {
-                console.log("Form data:", values); // Log dữ liệu gửi đi
-                const result = await paymentCustomer(values);
-                toast.success("Đặt hàng thành công!");
-                localStorage.removeItem(PAYMENT_ITEM_KEY);
-                router.push("/")
+                console.log("Form data:", values);
+                if (values.order.payment.paymentMethod === "VNPAY") {
+                    const result: { status: string; message: string; url: string } = await paymentCustomer(values);
+                    router.push(result.url);
+                } else {
+                    const result: { orderId: number; email: string; deliveryPhone: string, orderCode: string } = await paymentCustomer(values);
+                    console.log(result)
+                    toast.success('Đặt hàng thành công! Vui lòng nhập OTP để xác nhận.');
+                    setOtpInfo({
+                        orderId: result.orderId,
+                        email: result.email,
+                        deliveryPhone: result.deliveryPhone,
+                        orderCode: result.orderCode
+                    })
+                    setOtpOpen(true)
+                    // localStorage.removeItem(PAYMENT_ITEM_KEY);
+                    // router.push("/payment/otp");
+                }
             }
-
         } catch (error) {
             if (error instanceof Error) {
                 toast.error(error.message);
@@ -245,215 +335,351 @@ export default function PaymentForm() {
             style: "currency",
             currency: "VND",
         }).format(value);
-    const baseShippingFee = 32000;
+
     const appliedFreeship = appliedCoupons
         .map((code) => promotions.find((p) => p.promotionCode === code))
         .find((p) => p?.promotionType === "FREESHIP");
-    const shippingFee =
+    const finalShippingFee =
         appliedFreeship && Number(appliedFreeship.value) === 100 && Number(appliedFreeship.valueType) === 1
             ? 0
-            : baseShippingFee;
-    const totalWithShipping = Number(cart.totalPrice) + shippingFee;
-
+            : shippingFee;
+    const totalWithShipping = Number(cart.totalPrice) + finalShippingFee;
+    const totalWeight = (cart.cartItems ?? []).reduce(
+        (sum, item) => sum + item.product.weight * item.quantity,
+        0
+    );
     return (
-        <Form {...form}>
-            <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="max-w-3xl mx-auto space-y-6 p-4 bg-white"
-            >
-                {/* ĐỊA CHỈ */}
-                <h2 className="text-xl font-semibold">ĐỊA CHỈ GIAO HÀNG</h2>
+        <>
+            <Form {...form}>
+                <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="max-w-3xl mx-auto space-y-6 p-4 bg-white"
+                >
+                    {/* ĐỊA CHỈ */}
+                    <h2 className="text-xl font-semibold">ĐỊA CHỈ GIAO HÀNG</h2>
 
-                <FormField
-                    control={form.control}
-                    name="order.deliveryName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Họ và tên người nhận</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Nhập họ và tên người nhận" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        control={form.control}
+                        name="order.deliveryName"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Họ và tên người nhận</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Nhập họ và tên người nhận" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="order.email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Nhập email" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <FormField
-                    control={form.control}
-                    name="order.email"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Nhập email" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        control={form.control}
+                        name="order.deliveryPhone"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Số điện thoại</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Ví dụ: 0979123xxx (10 ký tự số)" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <FormField
-                    control={form.control}
-                    name="order.deliveryPhone"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Số điện thoại</FormLabel>
-                            <FormControl>
-                                <Input
-                                    placeholder="Ví dụ: 0979123xxx (10 ký tự số)"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Địa chỉ chi tiết */}
-                <div className="grid grid-cols-2 gap-4">
-                    {addressFields.map((fieldName) => (
+                    {/* Địa chỉ chi tiết với GHN */}
+                    <div className="grid grid-cols-2 gap-4">
                         <FormField
-                            key={fieldName}
                             control={form.control}
-                            name={`order.address.${fieldName}`}
+                            name="order.address.city"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{addressFieldLabels[fieldName]}</FormLabel>
+                                    <FormLabel>{addressFieldLabels.city}</FormLabel>
                                     <FormControl>
-                                        <Input placeholder={`Nhập ${addressFieldLabels[fieldName].toLowerCase()}`} {...field} />
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={(value) => {
+                                                field.onChange(value);
+                                                const selected = provinces.find((p) => String(p.ProvinceID) === value);
+                                                form.setValue("order.address.cityCode", selected?.ProvinceID?.toString() || "");
+                                                form.setValue("order.address.district", ""); // Reset district
+                                                form.setValue("order.address.ward", ""); // Reset ward
+                                                setDistricts([]);
+                                                setWards([]);
+                                            }}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Chọn tỉnh" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {provinces.map((p) => (
+                                                    <SelectItem key={p.ProvinceID} value={String(p.ProvinceID)}>
+                                                        {p.ProvinceName}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                    ))}
-                </div>
 
-                {/* THANH TOÁN */}
-                <h2 className="text-xl font-semibold border-b-2 pb-1">PHƯƠNG THỨC THANH TOÁN</h2>
-                <FormField
-                    control={form.control}
-                    name="order.payment.paymentMethod"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Phương thức</FormLabel>
-                            <FormControl>
-                                <Select value={field.value} onValueChange={field.onChange}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Chọn phương thức thanh toán" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="COD">Thanh toán khi nhận hàng</SelectItem>
-                                        <SelectItem value="PAYPAL">Thanh toán Paypal</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                        <FormField
+                            control={form.control}
+                            name="order.address.district"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{addressFieldLabels.district}</FormLabel>
+                                    <FormControl>
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={(value) => {
+                                                field.onChange(value);
+                                                const selected = districts.find((d) => String(d.DistrictID) === value);
+                                                form.setValue("order.address.districtCode", selected?.DistrictID?.toString() || "");
+                                                form.setValue("order.address.ward", ""); // Reset ward
+                                                setWards([]);
+                                            }}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Chọn quận" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {districts.map((d) => (
+                                                    <SelectItem key={d.DistrictID} value={String(d.DistrictID)}>
+                                                        {d.DistrictName}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                {/* KHUYẾN MÃI */}
-                <h2 className="text-xl font-semibold border-b-2 pb-1">MÃ KHUYẾN MÃI</h2>
-                <div className="flex gap-2">
-                    <Input
-                        placeholder="Nhập mã khuyến mãi (không phân biệt hoa thường)"
-                        value={couponInput}
-                        onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                        <FormField
+                            control={form.control}
+                            name="order.address.ward"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{addressFieldLabels.ward}</FormLabel>
+                                    <FormControl>
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={(value) => {
+                                                field.onChange(value);
+                                                form.setValue("order.address.wardCode", value);
+                                            }}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Chọn phường" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {wards.map((w) => (
+                                                    <SelectItem key={w.WardCode} value={w.WardCode}>
+                                                        {w.WardName}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="order.address.buildingName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{addressFieldLabels.buildingName}</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Nhập số nhà, tên đường" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="order.address.country"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{addressFieldLabels.country}</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Nhập quốc gia" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="order.address.pincode"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{addressFieldLabels.pincode}</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Nhập mã bưu điện" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    {/* THANH TOÁN */}
+                    <h2 className="text-xl font-semibold border-b-2 pb-1">PHƯƠNG THỨC THANH TOÁN</h2>
+                    <FormField
+                        control={form.control}
+                        name="order.payment.paymentMethod"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Phương thức</FormLabel>
+                                <FormControl>
+                                    <Select value={field.value} onValueChange={field.onChange}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Chọn phương thức thanh toán" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="COD">Thanh toán khi nhận hàng</SelectItem>
+                                            <SelectItem value="VNPAY">Thanh toán VNPAY</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    <Button type="button" onClick={() => handleApplyCoupon()}>
-                        Áp dụng
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="link"
-                        onClick={() => setShowCouponOptions(!showCouponOptions)}
-                    >
-                        {showCouponOptions ? "Ẩn mã" : "Chọn mã"}
-                    </Button>
-                </div>
 
-                {appliedCoupons.length > 0 && (
-                    <div className="mt-4">
-                        <h4 className="font-semibold">Đã áp dụng</h4>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            {appliedCoupons.map((coupon) => (
-                                <div
-                                    key={coupon}
-                                    className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
-                                >
-                                    <span>{coupon}</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveCoupon(coupon)}
-                                        className="text-red-500 hover:text-red-700"
+                    {/* KHUYẾN MÃI */}
+                    <h2 className="text-xl font-semibold border-b-2 pb-1">MÃ KHUYẾN MÃI</h2>
+                    <div className="flex gap-2">
+                        <Input
+                            placeholder="Nhập mã khuyến mãi (không phân biệt hoa thường)"
+                            value={couponInput}
+                            onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                        />
+                        <Button type="button" onClick={() => handleApplyCoupon()}>
+                            Áp dụng
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="link"
+                            onClick={() => setShowCouponOptions(!showCouponOptions)}
+                        >
+                            {showCouponOptions ? "Ẩn mã" : "Chọn mã"}
+                        </Button>
+                    </div>
+
+                    {appliedCoupons.length > 0 && (
+                        <div className="mt-4">
+                            <h4 className="font-semibold">Đã áp dụng</h4>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {appliedCoupons.map((coupon) => (
+                                    <div
+                                        key={coupon}
+                                        className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
                                     >
-                                        ✕
-                                    </button>
+                                        <span>{coupon}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveCoupon(coupon)}
+                                            className="text-red-500 hover:text-red-700"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {showCouponOptions && (
+                        <div className="mt-2 border p-3 rounded-md bg-gray-50 space-y-2">
+                            {promotions.map((coupon) => (
+                                <div
+                                    key={coupon.promotionId}
+                                    className="flex justify-between items-center"
+                                >
+                                    <span>{coupon.promotionName}</span>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={() => handleApplyCoupon(coupon.promotionCode)}
+                                        disabled={appliedCoupons.includes(coupon.promotionCode)}
+                                    >
+                                        {appliedCoupons.includes(coupon.promotionCode) ? "Đã áp dụng" : "Áp dụng"}
+                                    </Button>
                                 </div>
                             ))}
                         </div>
-                    </div>
-                )}
-
-                {showCouponOptions && (
-                    <div className="mt-2 border p-3 rounded-md bg-gray-50 space-y-2">
-                        {promotions.map((coupon) => (
-                            <div
-                                key={coupon.promotionId}
-                                className="flex justify-between items-center"
-                            >
-                                <span>{coupon.promotionName}</span>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={() => handleApplyCoupon(coupon.promotionCode)}
-                                    disabled={appliedCoupons.includes(coupon.promotionCode)}
-                                >
-                                    {appliedCoupons.includes(coupon.promotionCode) ? "Đã áp dụng" : "Áp dụng"}
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* DANH SÁCH SẢN PHẨM */}
-                <h2 className="text-xl font-semibold border-b-2 pb-1">ĐƠN HÀNG</h2>
-                <div className="space-y-4">
-                    {(cart.cartItems ?? []).length > 0 ? (
-                        (cart.cartItems ?? []).map((ci, index) => (
-                            <PaymentItem key={`${ci.product.productId}-${index}`} item={ci} />
-                        ))
-                    ) : (
-                        <p>Giỏ hàng trống</p>
                     )}
-                </div>
 
-                {/* TỔNG TIỀN */}
-                <div className="sticky bottom-0 bg-white p-4 border-t mt-4">
-                    <div className="space-y-2 mb-4">
-                        <div className="flex justify-between">
-                            <span>Thành tiền</span>
-                            <span>{formatCurrency(Number(cart.totalPrice))}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Phí vận chuyển</span>
-                            <span>{formatCurrency(shippingFee)}</span>
-                        </div>
-                        <div className="flex justify-between font-semibold border-t pt-2">
-                            <span>Tổng cộng</span>
-                            <span className="text-yellow-500">{formatCurrency(totalWithShipping)}</span>
-                        </div>
+                    {/* DANH SÁCH SẢN PHẨM */}
+                    <h2 className="text-xl font-semibold border-b-2 pb-1">ĐƠN HÀNG</h2>
+                    <div className="space-y-4">
+                        {(cart.cartItems ?? []).length > 0 ? (
+                            (cart.cartItems ?? []).map((ci, index) => (
+                                <PaymentItem key={`${ci.product.productId}-${index}`} item={ci} />
+                            ))
+                        ) : (
+                            <p>Giỏ hàng trống</p>
+                        )}
                     </div>
-                    <Button
-                        type="submit"
-                        className="w-full bg-red-500 hover:bg-red-600 text-white text-base font-semibold"
-                        disabled={(cart.cartItems ?? []).length === 0}
-                    >
-                        Xác nhận thanh toán
-                    </Button>
-                </div>
-            </form>
-        </Form>
+
+                    {/* TỔNG TIỀN */}
+                    <div className="sticky bottom-0 bg-white p-4 border-t mt-4">
+                        <div className="space-y-2 mb-4">
+                            <div className="flex justify-between">
+                                <span>Thành tiền</span>
+                                <span>{formatCurrency(Number(cart.totalPrice))}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Phí vận chuyển</span>
+                                <span>{formatCurrency(finalShippingFee)}</span>
+                            </div>
+                            <div className="flex justify-between font-semibold border-t pt-2">
+                                <span>Tổng cộng</span>
+                                <span className="text-yellow-500">{formatCurrency(totalWithShipping)}</span>
+                            </div>
+                        </div>
+                        <Button
+                            type="submit"
+                            className="w-full bg-red-500 hover:bg-red-600 text-white text-base font-semibold"
+                            disabled={(cart.cartItems ?? []).length === 0}
+                        >
+                            Xác nhận thanh toán
+                        </Button>
+                    </div>
+                </form>
+            </Form>
+            {otpInfo && (
+                <OtpForm
+                    email={otpInfo.email}
+                    orderId={otpInfo.orderId}
+                    deliveryPhone={otpInfo.deliveryPhone}
+                    orderCode={otpInfo.orderCode}
+                    open={otpOpen}
+                    onClose={() => setOtpOpen(false)}
+                />
+            )}
+        </>
     );
 }

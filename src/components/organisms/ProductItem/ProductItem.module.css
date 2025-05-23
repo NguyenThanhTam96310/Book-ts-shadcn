@@ -7,6 +7,10 @@
     flex-direction: column;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
+    width: 100%;
+    /* Ensure full width */
+    border: 1px solid #e5e7eb;
+    position: relative;
 }
 
 .card:hover {
@@ -20,13 +24,19 @@
     flex-grow: 1;
     text-decoration: none;
     color: inherit;
+    position: relative;
+    width: 100%;
+    /* Ensure full width */
 }
 
 .imageWrapper {
     position: relative;
     padding-top: 100%;
-    /* Giảm từ 130% xuống 80% để làm hình ảnh nhỏ lại */
+    /* Maintain aspect ratio */
     overflow: hidden;
+    flex-grow: 1;
+    width: 100%;
+    /* Ensure full width */
 }
 
 .productImage {
@@ -37,22 +47,17 @@
 
 .card:hover .productImage {
     transform: scale(1.05);
-    /* Zoom nhẹ khi hover */
 }
 
 .discountBadge {
     position: absolute;
     top: 8px;
-    /* Giảm top để phù hợp với hình ảnh nhỏ hơn */
     left: 8px;
-    /* Giảm left */
     background: linear-gradient(135deg, #ff4d4f, #f5222d);
     color: white;
     font-size: 10px;
-    /* Giảm font-size để cân đối */
     font-weight: 600;
     padding: 3px 6px;
-    /* Giảm padding */
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     z-index: 10;
@@ -61,16 +66,12 @@
 .authenticBadge {
     position: absolute;
     top: 8px;
-    /* Giảm top */
     right: 8px;
-    /* Giảm right */
     background: linear-gradient(135deg, #1890ff, #096dd9);
     color: white;
     font-size: 10px;
-    /* Giảm font-size */
     font-weight: 600;
     padding: 3px 8px;
-    /* Giảm padding */
     border-radius: 20px;
     z-index: 10;
     display: flex;
@@ -101,10 +102,11 @@
 
 .content {
     padding: 16px;
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 1;
 }
 
 .title {
@@ -117,14 +119,14 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: normal;
+    /* white-space: normal; */
+    white-space: nowrap;
 }
 
 .priceWrapper {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: auto;
 }
 
 .currentPrice {
@@ -140,25 +142,35 @@
 }
 
 .addToCart {
-    margin: 0 16px 16px 16px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 10px;
     background: linear-gradient(135deg, #ff4d4f, #f5222d);
     color: white;
     font-weight: 600;
     font-size: 14px;
-    border-radius: 8px;
+    border-radius: 0;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    transform: translateY(100%);
+    z-index: 20;
+}
+
+.card:hover .addToCart {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .addToCart:hover {
     background: linear-gradient(135deg, #f5222d, #cf1322);
-    transform: scale(1.02);
 }
 
 .cartIcon {

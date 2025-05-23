@@ -15,7 +15,7 @@ import { PAYMENT_ITEM_KEY } from "@/constants/orderConstants";
 
 export default function Cart() {
     const [cart, setCart] = useState<CartProps>({
-        cartId: undefined,
+        userId: undefined,
         cartItems: [],
         totalPrice: 0,
     });
@@ -79,9 +79,9 @@ export default function Cart() {
         const fetchData = async () => {
             const storedUserId = localStorage.getItem(USER_ID);
             if (storedUserId) {
-                const cartId = parseInt(storedUserId, 10);
+                const userId = parseInt(storedUserId, 10);
                 try {
-                    const data = await fetchCart(cartId);
+                    const data = await fetchCart(userId);
                     setCart(data);
                 } catch (error) {
                     console.error("Failed to fetch cart from server:", error);
@@ -125,7 +125,7 @@ export default function Cart() {
     }, [isMounted]);
     const router = useRouter();
     const handleCheckout = () => {
-        const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+        // const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
         // Lưu giỏ hàng đã chọn vào localStorage
         const updatedCart = {
             ...cart,
@@ -205,17 +205,17 @@ export default function Cart() {
         }
     };
 
-    const removeFromCart = async (id: string | number) => {
+    const removeFromCart = async (prodictId: string | number) => {
         try {
             if (userId) {
-                await deleteCartItem(userId, id);
+                await deleteCartItem(userId, prodictId);
                 const updatedCart = await fetchCart(userId);
                 setCart(updatedCart);
-                setSelectedItems((prev) => prev.filter((itemId) => itemId !== Number(id)));
+                setSelectedItems((prev) => prev.filter((itemId) => itemId !== Number(prodictId)));
                 setRemoveSuccess(true); // Kích hoạt thông báo toast
             } else {
                 setCart((prev) => {
-                    const updatedCartItems = prev.cartItems?.filter((ci) => ci.product.productId !== id) || [];
+                    const updatedCartItems = prev.cartItems?.filter((ci) => ci.product.productId !== prodictId) || [];
                     const updatedTotalPrice = updatedCartItems.reduce((sum, item) => {
                         return sum + (item.product.price - (item.product.price * ((item.product.discount ?? 0) / 100))) * item.quantity;
                     }, 0);

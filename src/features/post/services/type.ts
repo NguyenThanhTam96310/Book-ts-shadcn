@@ -1,9 +1,10 @@
-export interface PostItemProps {
+export interface PostItemRes {
     postId?: number
     content: string
     title: string
     slug?: string
     type?: string
-    topic_id?: number
+    topicId?: number
+    createdAt: number
     status?: boolean
 }

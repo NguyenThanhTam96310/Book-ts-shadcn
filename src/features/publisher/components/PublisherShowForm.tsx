@@ -2,8 +2,6 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import styles from "./PublisherShowForm.module.css"
 import PublisherItem from "@/components/organisms/PublisherItem"
@@ -18,7 +16,7 @@ const PublisherShowForm = () => {
                 const data = await fetchPublishersForm()
                 setPublisher(data)
             } catch (error) {
-                console.error("Lỗi khi load product:", error)
+                console.error("Lỗi khi load pub:", error)
             }
         }
         loadPublishers()

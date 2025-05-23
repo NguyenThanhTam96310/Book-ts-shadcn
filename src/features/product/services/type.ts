@@ -12,7 +12,7 @@ export interface ProductItemProps {
     quantity?: number
     size?: string
     slug: string
-    status?: "active" | "inactive" | string
+    status?: boolean
     weight?: number
     year?: number
     languages?: Languages[]

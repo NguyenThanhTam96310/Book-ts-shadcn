@@ -45,6 +45,34 @@ export const RegisterBody = z.object({
         }
     })
 export type RegisterBodyType = z.TypeOf<typeof RegisterBody>
+export const LoginGoogleResponseSchema = z.object({
+    accessToken: z.string(),
+    refreshToken: z.string().optional(),
+    user: z.object({
+        id: z.number(),
+        email: z.string().email(),
+        name: z.string().optional(),
+        role: z.string().optional(),
+    }),
+});
+export type LoginGoogleResponse = z.infer<typeof LoginGoogleResponseSchema>;
+
+
+export const LoginGoogleResSchema = z.object({
+    credential: z.string(),
+    clientId: z.string(),
+    select_by: z.string(),
+});
+export type LoginGoogleRes = z.infer<typeof LoginGoogleResSchema>;
+
+
+
+export const GoogleCredentialSchema = z.object({
+    credential: z.string(),
+    clientId: z.string(),
+    select_by: z.string(),
+});
+export type GoogleCredential = z.infer<typeof GoogleCredentialSchema>;
 // export const RegisterRes = z.object({
 //     data: z.object({
 //         token: z.string(),
@@ -59,7 +87,7 @@ export type RegisterBodyType = z.TypeOf<typeof RegisterBody>
 // })
 export const RegisterRes = z.object({
     message: z.string(),
-    status: z.number()
+    status: z.boolean()
 });
 export type RegisterResType = z.TypeOf<typeof RegisterRes>
 
@@ -71,7 +99,9 @@ export const LoginBody = z
     .strict()
 
 export type LoginBodyType = z.TypeOf<typeof LoginBody>
-
+export const emailVerifySchema = z.object({
+    result: z.boolean()
+});
 // export const LoginRes = RegisterRes
 
 // export type LoginResType = z.TypeOf<typeof LoginRes>
