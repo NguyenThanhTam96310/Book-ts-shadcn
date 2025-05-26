@@ -27,7 +27,7 @@ const PostHome = () => {
                     title={post.title}
                     slug={post.slug}
                     content={post.content}
-                />
+                    createdAt={0} />
             ))}
         </div>
 

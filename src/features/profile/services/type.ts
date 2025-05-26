@@ -5,14 +5,17 @@ export type UserRes = {
     email?: string
     avatar?: string
     mobileNumber?: string
-    addressId?: number
+    address: AddressRes
 };
 export type AddressRes = {
     addressId: number,
-    buildinggName: string,
+    buildingName: string,
     city: string,
     country: string,
     district: string,
-    pincode: string,
     ward: string
+}
+export interface MenuProfileProps {
+    fullname?: string
+    avatar?: string
 }

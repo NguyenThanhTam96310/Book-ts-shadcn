@@ -297,7 +297,7 @@ export default function Cart() {
                         cart.cartItems.map((ci, index) => (
                             <CartItem
                                 index={index}
-                                key={`${ci.product.productId}-${index}`}
+                                key={ci.product.productId}
                                 item={ci}
                                 checked={selectedItems.includes(Number(ci.product.productId))}
                                 onCheck={() => toggleSelectItem(Number(ci.product.productId))}

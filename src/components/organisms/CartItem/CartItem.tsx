@@ -18,11 +18,12 @@ const CartItem = ({ item, checked, onCheck, onDecrease, onIncrease, onRemove }: 
     const product: ProductCartProps = item.product;
 
     return (
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b py-4 gap-4">
-            {/* Left - image + name + price */}
-            <div className="flex items-start lg:items-center gap-4 w-full lg:w-[40%]">
+        <div className="flex items-center justify-between border-b py-4 gap-4 overflow-x-auto min-w-full">
+            <div className="flex items-start gap-4 w-full lg:w-[60%]">
 
-                <Checkbox checked={checked} onCheckedChange={onCheck} />
+                <label className="cursor-pointer p-2 rounded">
+                    <Checkbox checked={checked} onCheckedChange={onCheck} />
+                </label>
                 <Link href={`/products/${product.slug}`}>
                     <img
                         src={
@@ -47,12 +48,12 @@ const CartItem = ({ item, checked, onCheck, onDecrease, onIncrease, onRemove }: 
                                 <span className="text-red-600 font-semibold text-lg">
                                     {(product.price - (Math.round(product.price * (product.discount / 100)))).toLocaleString()} đ
                                 </span>
-                                <span className="text-gray-500 line-through text-sm">
+                                <span className="hidden sm:block text-gray-500 line-through text-sm">
                                     {product.price.toLocaleString()} đ
                                 </span>
                             </>
                         ) : (
-                            <span className="text-gray-800 text-lg font-semibold">
+                            <span className=" text-gray-800 text-lg font-semibold">
                                 {product?.price?.toLocaleString()} đ
                             </span>
                         )}
@@ -61,7 +62,7 @@ const CartItem = ({ item, checked, onCheck, onDecrease, onIncrease, onRemove }: 
             </div>
 
             {/* Quantity */}
-            <div className="flex items-center gap-2 w-32 justify-center">
+            <div className="flex items-center gap-2 w-[20%] min-w-[100px] justify-center flex-shrink-0">
                 <button
                     onClick={() => onDecrease(product.productId)}
                     className="w-8 h-8 flex items-center justify-center bg-gray-100 border rounded hover:bg-gray-200 text-lg"
@@ -78,12 +79,12 @@ const CartItem = ({ item, checked, onCheck, onDecrease, onIncrease, onRemove }: 
             </div>
 
             {/* Total price */}
-            <div className="font-semibold text-red-600 w-32 text-center">
+            <div className=" hidden sm:block text-red-600 font-semibold w-[20%] min-w-[100px] text-center flex-shrink-0">
                 {(((product.price - (Math.round(product.price * ((product.discount ?? 0) / 100))))) * item.quantity).toLocaleString()} đ
             </div>
 
             {/* Delete button */}
-            <div className="w-16 flex justify-center">
+            <div className="w-[10%] min-w-[60px] flex justify-center flex-shrink-0">
                 <button
                     onClick={() => onRemove(product.productId)}
                     className="text-xl hover:text-red-700"

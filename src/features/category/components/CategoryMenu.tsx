@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, LayoutGrid, X } from "lucide-react"
 import type { CategoryItemProps } from "@/features/category/services/type"
@@ -42,7 +42,7 @@ const CategoryDrawer = () => {
     return (
         <Drawer direction="left" open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2 hover:bg-gray-100 transition-colors">
+                <Button variant="outline" className="flex items-center gap-2 hover:bg-gray-100 transition-colors cursor-pointer">
                     <LayoutGrid className="w-5 h-5" />
                     <span className="font-medium">Danh mục</span>
                 </Button>
@@ -56,10 +56,14 @@ const CategoryDrawer = () => {
                     transition: "transform 0.3s ease-in-out",
                 }}
             >
+
                 <div className="flex flex-col h-full">
                     <DrawerHeader className="border-b sticky top-0 bg-white z-10 px-6 py-4">
                         <div className="flex items-center justify-between">
                             <DrawerTitle className="text-xl font-bold text-gray-900">Danh mục sản phẩm</DrawerTitle>
+                            <DrawerDescription className="text-sm text-gray-500">
+                                Duyệt qua các danh mục và menu chính của cửa hàng.
+                            </DrawerDescription>
                             <DrawerClose asChild>
                                 <Button variant="ghost" size="icon" className="rounded-full">
                                     <X className="h-5 w-5" />

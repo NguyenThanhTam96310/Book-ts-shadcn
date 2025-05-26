@@ -1,12 +1,13 @@
-export interface PromotionItemProps {
+export interface PromotionItemRes {
     promotionId?: number
     promotionCode: string
-    endDate?: Date
-    startDate?: Date
-    promotionName?: string
-    promotionType?: string
-    valueType?: string
-    value?: number
-    valueApply?: number
+    description: string
+    endDate: string
+    startDate: string
+    promotionName: string
+    promotionType: string
+    valueType: number
+    value: number
+    valueApply: number
     status?: boolean
 }

@@ -2,8 +2,8 @@ import RegisterForm from "@/features/auth/components/RegisterForm"
 
 const RegisterPage = () => {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10">
-            <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
+        <div className="min-h-screen flex items-center justify-center bg-gray-900 py-8">
+            <div className="w-full max-w-5xl px-4">
                 <RegisterForm />
             </div>
         </div>

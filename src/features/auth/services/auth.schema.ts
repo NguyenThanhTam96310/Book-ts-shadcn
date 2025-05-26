@@ -20,19 +20,18 @@ import z from 'zod'
 
 // export type RegisterBodyType = z.TypeOf<typeof RegisterBody>
 export const RegisterBody = z.object({
-    fullName: z.string().min(1, "Họ tên không được bỏ trống"),
-    mobileNumber: z.string().min(10, "Số điện thoại không hợp lệ"),
+    fullName: z.string().min(3, "Họ tên phải từ 3 ký tự"),
+    mobileNumber: z.string().min(10, "Số điện thoại phải 10 ký tự").max(10, "Số điện thoại phải 10 ký tự"),
     email: z.string().email("Email không hợp lệ"),
-    username: z.string().min(3, "Tên đăng nhập quá ngắn"),
+    username: z.string().min(3, "Tên đăng nhập phải từ 3 ký tự"),
     password: z.string().min(1, "Mật khẩu phải từ 1 ký tự"),
-    confirmPassword: z.string().min(1).max(100),
+    confirmPassword: z.string().min(1, "Mật khẩu phải từ 1 ký tự").max(100),
     address: z.object({
         ward: z.string(),
         buildingName: z.string(),
         city: z.string(),
         district: z.string(),
         country: z.string(),
-        pincode: z.string()
     }),
 }).strict()
     .superRefine(({ confirmPassword, password }, ctx) => {

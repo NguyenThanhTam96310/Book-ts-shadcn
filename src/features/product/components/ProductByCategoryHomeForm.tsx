@@ -67,14 +67,14 @@ const ProductByCategoryHomeForm = ({ categoryId }: ProductByCategoryHomeFormProp
     }, [categories])
 
     return (
-        <div className="bg-white rounded-xl shadow-lg">
+        <div>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className=" border-b w-full justify-start rounded-none bg-transparent p-0 h-auto">
                     {categories.map((category) => (
                         <TabsTrigger
                             key={category.categoryId}
                             value={category.categoryId.toString()}
-                            className="px-4 py-2 font-medium text-sm border-0 border-b-2 border-transparent data-[state=active]:border-orange-600 data-[state=active]:text-orange-600 bg-transparent rounded-none"
+                            className="px-4 py-2 font-medium text-sm border-0 border-b-2 border-transparent data-[state=active]:border-orange-600 data-[state=active]:text-orange-600 bg-transparent rounded-none cursor-pointer"
                         >
                             {category.categoryName}
                         </TabsTrigger>
@@ -101,9 +101,9 @@ const ProductByCategoryHomeForm = ({ categoryId }: ProductByCategoryHomeFormProp
                                         </div>
 
                                         {/* Nút "Xem tất cả" đặt bên dưới, căn giữa */}
-                                        <div className="flex justify-center mt-6">
+                                        <div className="flex justify-center mt-6 mb-3">
                                             <Link href={`products?categoryId=${category.categoryId}`}>
-                                                <button className="px-6 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 transition-colors">
+                                                <button className="px-8 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 transition-colors cursor-pointer">
                                                     Xem thêm
                                                 </button>
                                             </Link>

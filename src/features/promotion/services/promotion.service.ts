@@ -1,13 +1,13 @@
 
-import { PostItemProps } from "@/features/post/services/type"
-import { PromotionItemProps } from "@/features/promotion/services/type"
+import { PromotionItemRes } from "@/features/promotion/services/type"
 import axiosInstance from "@/lib/api/Config"
 import envConfig from "@/lib/api/envConfig"
+import { callApi } from "@/lib/api/Service"
 
 
-export async function fetchPromotions(): Promise<PromotionItemProps[]> {
+export async function fetchPromotions(): Promise<PromotionItemRes[]> {
     const res = await axiosInstance.get<{
-        content: PromotionItemProps[]
+        content: PromotionItemRes[]
     }>(`${envConfig.NEXT_PUBLIC_API}/public/promotions`, {
         params: {
             status: true,
@@ -17,6 +17,6 @@ export async function fetchPromotions(): Promise<PromotionItemProps[]> {
             sortOrder: "desc",
         },
     })
-    const data = res.data as { content: PromotionItemProps[] }
+    const data = res.data as { content: PromotionItemRes[] }
     return data.content
 }   

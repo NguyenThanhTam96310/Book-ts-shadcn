@@ -79,7 +79,8 @@ export default function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-50 bg-orange-500 md:bg-white shadow-md border-b border-gray-200">
+        // sticky
+        <header className=" top-0 z-50 bg-orange-500 md:bg-white shadow-md border-b border-gray-200">
 
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-col md:flex-row items-center justify-between gap-4">
                 <Link href="/" passHref>
@@ -91,7 +92,7 @@ export default function Header() {
                     </span>
                 </Link>
                 {/* Search Bar */}
-                <div className="flex items-center w-full md:w-1/2 lg:w-2/5 border border-gray-300 rounded overflow-hidden text-sm shadow-sm hover:shadow-md transition-shadow p-1 bg-white">
+                <div className="flex items-center w-full md:w-1/2 lg:w-1/2 border border-gray-300 rounded overflow-hidden text-sm shadow-sm hover:shadow-md transition-shadow p-1 bg-white">
                     <CategoryMenu />
                     <input
                         value={keyword}
@@ -100,7 +101,7 @@ export default function Header() {
                         placeholder="Tìm kiếm sách, tác giả..."
                         className=" flex-1 px-4 py-2 outline-none text-gray-700 placeholder-gray-400"
                     />
-                    <button onClick={handleSearch} className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded hover:from-orange-600 hover:to-orange-700 transition-all hidden sm:block">
+                    <button onClick={handleSearch} className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded hover:from-orange-600 hover:to-orange-700 transition-all hidden sm:block cursor-pointer">
                         <Search className="w-4 h-4" />
                     </button>
                 </div>
@@ -142,17 +143,18 @@ export default function Header() {
                         <TruckIcon className="w-7 h-7 group-hover:scale-110 transition-transform" />
                         <span className="text-xs sm:text-sm font-medium hidden sm:block">Đơn hàng</span>
                     </Link>
-
-                    <Link
-                        href="/cart"
-                        className="flex flex-col items-center group hover:text-orange-600 transition-colors"
-                    >
-                        <ShoppingCartIcon className="w-7 h-7 group-hover:scale-110 transition-transform" />
-                        <span className="text-xs sm:text-sm font-medium hidden sm:block">Giỏ hàng</span>
-                        <span className="absolute -top-1 -right-2 text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">
-                            1
-                        </span>
-                    </Link>
+                    <div className="relative inline-block">
+                        <Link
+                            href="/cart"
+                            className="flex flex-col items-center group hover:text-orange-600 transition-colors"
+                        >
+                            <ShoppingCartIcon className="w-7 h-7 group-hover:scale-110 transition-transform" />
+                            <span className="text-xs sm:text-sm font-medium hidden sm:block">Giỏ hàng</span>
+                            <span className="absolute -top-1 -right-2 text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">
+                                1
+                            </span>
+                        </Link>
+                    </div>
                 </div>
             </div>
 

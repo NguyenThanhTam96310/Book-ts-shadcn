@@ -20,12 +20,27 @@ export function paymentCustomer(body: PaymentBodyType) {
     return response; // validate với Zod
 }
 
-export const paymentUser = async (
-    body: PaymentBodyType
-): Promise<void> => {
-    const endpoint = `${envConfig.NEXT_PUBLIC_API}/public/orders`;
-    await callApi<void>(endpoint, "POST", body);
-};
+// export const paymentUser = async (
+//     body: PaymentBodyType
+// ): Promise<void> => {
+//     const endpoint = `${envConfig.NEXT_PUBLIC_API}/public/orders`;
+//     await callApi<void>(endpoint, "POST", body);
+// };
+export function paymentUser(body: PaymentBodyType) {
+    const response = axiosInstance.post(`${envConfig.NEXT_PUBLIC_API}/public/orders`, body, {
+        headers: {
+            accept: "*/*",
+            "Content-Type": "application/json",
+        },
+    })
+        .then((response) => response.data)
+        .catch((error) => {
+            console.log(error)
+            throw error
+        });
+
+    return response; // validate với Zod
+}
 export function otpCustomer(body: OrderOTPRes) {
     const response = axiosInstance.post(`${envConfig.NEXT_PUBLIC_API}/public/orders/otp`, body, {
         headers: {

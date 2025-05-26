@@ -138,10 +138,10 @@ const LoginForm = () => {
     }
 
     return (
-        <div className="flex justify-center items-center min-h-[80vh] ">
+        <div className="flex justify-center items-center min-h-[70vh] ">
             <Card className="w-full max-w-md  border-0 overflow-hidden">
                 <CardTitle className="text-2xl font-bold text-center">ĐĂNG NHẬP</CardTitle>
-                <CardContent className="pt-6 pb-2 px-6">
+                <CardContent className=" px-6">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             {form.formState.errors.root && (
@@ -201,7 +201,7 @@ const LoginForm = () => {
 
                             <Button
                                 type="submit"
-                                className="w-full bg-orange-500 hover:bg-orange-600 text-white h-11 font-medium"
+                                className="w-full bg-orange-500 hover:bg-orange-600 text-white h-11 font-medium cursor-pointer"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
@@ -229,7 +229,7 @@ const LoginForm = () => {
                                         Đang xử lý...
                                     </span>
                                 ) : (
-                                    <span className="flex items-center justify-center">
+                                    <span className="flex items-center justify-center ">
                                         <LogIn className="mr-2 h-4 w-4" />
                                         Đăng nhập
                                     </span>
@@ -248,7 +248,7 @@ const LoginForm = () => {
                     <Button
                         onClick={handleGoogleLogin}
                         variant="outline"
-                        className="w-full h-11 border-gray-300 hover:bg-gray-50 mb-4"
+                        className="w-full h-11 border-gray-300 hover:bg-gray-50 mb-4 cursor-pointer"
                     >
                         <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                             <path
@@ -273,7 +273,7 @@ const LoginForm = () => {
                     </Button>
                 </CardContent>
 
-                <CardFooter className="bg-gray-50 py-4 px-6 flex justify-center">
+                <CardFooter className="px-6 flex justify-center">
                     <p className="text-gray-600">
                         Chưa có tài khoản?
                         <a href="/register" className="text-orange-600 hover:text-orange-700 font-medium ml-1">

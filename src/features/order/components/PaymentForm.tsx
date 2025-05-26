@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { CartItemType, CartProps } from "@/features/cart";
 import { PAYMENT_ITEM_KEY } from "@/constants/orderConstants";
 import PaymentItem from "@/components/organisms/PaymentItem";
-import { fetchPromotions, PromotionItemProps } from "@/features/promotion";
+import { fetchPromotions, PromotionItemRes } from "@/features/promotion";
 import { paymentCustomer, paymentUser } from "@/features/order/services/order.service";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -34,6 +34,10 @@ import { fetchUserByToken } from "@/features/auth/services/auth.service";
 import { UserProps } from "@/features/auth/services/type";
 import { calculateShippingFee, getDistricts, getProvinces, getWards } from "@/features/order/services/ghn.service";
 import { OtpForm } from "@/features/order/components/otpForm";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import PromotionForm from "@/features/promotion/components/PromotionForm";
 
 const cartSchema = z.object({
     cartItems: z.array(
@@ -53,7 +57,6 @@ const addressFieldLabels: Record<keyof z.infer<typeof orderSchema>["order"]["add
     city: "Thành phố",
     district: "Quận/Huyện",
     country: "Quốc gia",
-    pincode: "Mã bưu điện",
     cityCode: "",
     districtCode: "",
     wardCode: "",
@@ -74,7 +77,6 @@ export default function PaymentForm() {
                     city: "",
                     district: "",
                     country: "Việt Nam",
-                    pincode: "",
                     cityCode: "",
                     districtCode: "",
                     wardCode: "",
@@ -82,6 +84,7 @@ export default function PaymentForm() {
                 payment: {
                     paymentMethod: "COD",
                 },
+                coupon: undefined,
                 freeship: undefined,
             },
             productIds: [],
@@ -100,11 +103,12 @@ export default function PaymentForm() {
         cartItems: [],
         totalPrice: 0,
     });
-    const [promotions, setPromotions] = useState<PromotionItemProps[]>([]);
+    const [promotions, setPromotions] = useState<PromotionItemRes[]>([]);
     const [provinces, setProvinces] = useState<any[]>([]);
     const [districts, setDistricts] = useState<any[]>([]);
     const [wards, setWards] = useState<any[]>([]);
-    const [shippingFee, setShippingFee] = useState<number>(32000); // Giá trị mặc định từ PaymentForm
+    const [shippingFee, setShippingFee] = useState<number>(0); // Giá trị mặc định từ PaymentForm
+    const [couponFee, setCouponFee] = useState<number>(0); // Giá trị mặc định từ PaymentForm
 
     const selectedProvince = form.watch("order.address.city");
     const selectedDistrict = form.watch("order.address.district");
@@ -115,11 +119,14 @@ export default function PaymentForm() {
         deliveryPhone: string
         orderCode: string
     } | null>(null)
+    const [voucherOpen, setVoucherOpen] = useState(false);
     // Fetch user info
     useEffect(() => {
         const fetchData = async () => {
             const storedUserId = localStorage.getItem(USER_ID);
             if (storedUserId) {
+                const dataPromo = await fetchPromotions();
+                setPromotions(dataPromo);
                 form.setValue("order.userId", Number(storedUserId));
                 setUserId(parseInt(storedUserId, 10));
                 const token = localStorage.getItem("authToken");
@@ -147,8 +154,6 @@ export default function PaymentForm() {
         const fetchData = async () => {
             try {
                 const raw = localStorage.getItem(PAYMENT_ITEM_KEY);
-                const dataPromo = await fetchPromotions();
-                setPromotions(dataPromo);
 
                 if (raw) {
                     const data = JSON.parse(raw) as {
@@ -212,7 +217,7 @@ export default function PaymentForm() {
             form.setValue("order.address.ward", ""); // Reset ward
         }
     }, [selectedDistrict, form]);
-
+    const ChecktoWardCode = form.getValues("order.address.ward");
     // Calculate shipping fee when ward is selected
     useEffect(() => {
         const calculateFee = async () => {
@@ -240,7 +245,10 @@ export default function PaymentForm() {
 
         calculateFee();
     }, [selectedDistrict, form.watch("order.address.ward")]);
-
+    const handleSelectPromotion = (promotionCode: string) => {
+        handleApplyCoupon(promotionCode); // Áp dụng mã khuyến mãi
+        setVoucherOpen(false); // Đóng VoucherForm
+    };
     const handleApplyCoupon = (promotion_code?: string) => {
         const coupon = promotions.find(
             (c) => c.promotionCode === (promotion_code || couponInput.toUpperCase())
@@ -268,12 +276,18 @@ export default function PaymentForm() {
         if (coupon.promotionType === "FREESHIP") {
             form.setValue("order.freeship", { promotionCode: coupon.promotionCode });
         }
+        if (coupon.promotionType === "VOUCHER") {
+            form.setValue("order.coupon", { promotionCode: coupon.promotionCode });
+        }
     };
 
     const handleRemoveCoupon = (coupon: string) => {
         setAppliedCoupons(appliedCoupons.filter((c) => c !== coupon));
         if (form.getValues("order.freeship")?.promotionCode === coupon) {
             form.setValue("order.freeship", undefined);
+        }
+        if (form.getValues("order.coupon")?.promotionCode === coupon) {
+            form.setValue("order.coupon", undefined);
         }
     };
 
@@ -295,11 +309,15 @@ export default function PaymentForm() {
 
             const finalOrderData = { ...values, order: orderData };
             if (userId) {
-                console.log("Form data:", values);
-                const result = await paymentUser(values);
-                toast.success("Đặt hàng thành công!");
-                localStorage.removeItem(PAYMENT_ITEM_KEY);
-                // router.push("/");
+                if (values.order.payment.paymentMethod === "VNPAY") {
+                    const result: { status: string; message: string; url: string } = await paymentUser(values);
+                    router.push(result.url);
+                } else {
+                    const result = await paymentUser(values);
+                    toast.success("Đặt hàng thành công!");
+                    localStorage.removeItem(PAYMENT_ITEM_KEY);
+                    // router.push("/");
+                }
             } else {
                 console.log("Form data:", values);
                 if (values.order.payment.paymentMethod === "VNPAY") {
@@ -316,8 +334,8 @@ export default function PaymentForm() {
                         orderCode: result.orderCode
                     })
                     setOtpOpen(true)
-                    // localStorage.removeItem(PAYMENT_ITEM_KEY);
-                    // router.push("/payment/otp");
+                    localStorage.removeItem(PAYMENT_ITEM_KEY);
+                    router.push("/payment/otp");
                 }
             }
         } catch (error) {
@@ -339,11 +357,18 @@ export default function PaymentForm() {
     const appliedFreeship = appliedCoupons
         .map((code) => promotions.find((p) => p.promotionCode === code))
         .find((p) => p?.promotionType === "FREESHIP");
+    const appliedCoupon = appliedCoupons
+        .map((code) => promotions.find((p) => p.promotionCode === code))
+        .find((p) => p?.promotionType === "VOUCHER");
     const finalShippingFee =
         appliedFreeship && Number(appliedFreeship.value) === 100 && Number(appliedFreeship.valueType) === 1
             ? 0
             : shippingFee;
-    const totalWithShipping = Number(cart.totalPrice) + finalShippingFee;
+    const finalCouponFee =
+        appliedCoupon && Number(appliedCoupon.valueType) === 1
+            ? Number(cart.totalPrice) * (appliedCoupon.value / 100)
+            : appliedCoupon?.value;
+    const totalWithShipping = Number(cart.totalPrice) + finalShippingFee - (finalCouponFee ?? 0);
     const totalWeight = (cart.cartItems ?? []).reduce(
         (sum, item) => sum + item.product.weight * item.quantity,
         0
@@ -353,7 +378,7 @@ export default function PaymentForm() {
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="max-w-3xl mx-auto space-y-6 p-4 bg-white"
+                    className=" mx-auto space-y-6 p-4 bg-white"
                 >
                     {/* ĐỊA CHỈ */}
                     <h2 className="text-xl font-semibold">ĐỊA CHỈ GIAO HÀNG</h2>
@@ -362,10 +387,16 @@ export default function PaymentForm() {
                         control={form.control}
                         name="order.deliveryName"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Họ và tên người nhận</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Nhập họ và tên người nhận" {...field} />
+                            <FormItem className="flex items-center gap-4 w-full">
+                                <FormLabel className="w-[150px] min-w-[50px] text-sm font-medium">
+                                    Họ và tên người nhận
+                                </FormLabel>
+                                <FormControl className="flex-1">
+                                    <Input
+                                        {...field}
+                                        placeholder="Nhập họ và tên người nhận"
+                                        className="w-full"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -375,9 +406,11 @@ export default function PaymentForm() {
                         control={form.control}
                         name="order.email"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
+                            <FormItem className="flex items-center gap-4 w-full">
+                                <FormLabel className="w-[150px] min-w-[50px] text-sm font-medium">
+                                    Email
+                                </FormLabel>
+                                <FormControl className="flex-1">
                                     <Input placeholder="Nhập email" {...field} />
                                 </FormControl>
                                 <FormMessage />
@@ -389,9 +422,9 @@ export default function PaymentForm() {
                         control={form.control}
                         name="order.deliveryPhone"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Số điện thoại</FormLabel>
-                                <FormControl>
+                            <FormItem className="flex items-center gap-4 w-full">
+                                <FormLabel className="w-[150px] min-w-[50px] text-sm font-medium">Số điện thoại</FormLabel>
+                                <FormControl className="flex-1">
                                     <Input placeholder="Ví dụ: 0979123xxx (10 ký tự số)" {...field} />
                                 </FormControl>
                                 <FormMessage />
@@ -400,7 +433,7 @@ export default function PaymentForm() {
                     />
 
                     {/* Địa chỉ chi tiết với GHN */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <FormField
                             control={form.control}
                             name="order.address.city"
@@ -420,7 +453,7 @@ export default function PaymentForm() {
                                                 setWards([]);
                                             }}
                                         >
-                                            <SelectTrigger>
+                                            <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Chọn tỉnh" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -454,7 +487,7 @@ export default function PaymentForm() {
                                                 setWards([]);
                                             }}
                                         >
-                                            <SelectTrigger>
+                                            <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Chọn quận" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -485,7 +518,7 @@ export default function PaymentForm() {
                                                 form.setValue("order.address.wardCode", value);
                                             }}
                                         >
-                                            <SelectTrigger>
+                                            <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Chọn phường" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -501,6 +534,8 @@ export default function PaymentForm() {
                                 </FormItem>
                             )}
                         />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
                             name="order.address.buildingName"
@@ -529,39 +564,43 @@ export default function PaymentForm() {
                             )}
                         />
 
-                        <FormField
-                            control={form.control}
-                            name="order.address.pincode"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{addressFieldLabels.pincode}</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Nhập mã bưu điện" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
                     </div>
 
                     {/* THANH TOÁN */}
                     <h2 className="text-xl font-semibold border-b-2 pb-1">PHƯƠNG THỨC THANH TOÁN</h2>
+
                     <FormField
                         control={form.control}
                         name="order.payment.paymentMethod"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Phương thức</FormLabel>
                                 <FormControl>
-                                    <Select value={field.value} onValueChange={field.onChange}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Chọn phương thức thanh toán" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="COD">Thanh toán khi nhận hàng</SelectItem>
-                                            <SelectItem value="VNPAY">Thanh toán VNPAY</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <RadioGroup value={field.value} onValueChange={field.onChange} className="space-y-3">
+                                        {/* VNPAY */}
+                                        <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                                            <RadioGroupItem value="VNPAY" id="vnpay" className="mt-1" />
+                                            <div className="flex-1">
+                                                <Label htmlFor="vnpay" className="flex items-center space-x-2 cursor-pointer">
+                                                    <div className="w-8 h-8 bg-red-500 rounded flex items-center justify-center text-white text-xs font-bold">
+                                                        VN
+                                                    </div>
+                                                    <span className="font-medium">Thanh toán bằng VNPAY</span>
+                                                </Label>
+                                            </div>
+                                        </div>
+                                        {/* Cash on Delivery */}
+                                        <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                                            <RadioGroupItem value="COD" id="cod" className="mt-1" />
+                                            <div className="flex-1">
+                                                <Label htmlFor="cod" className="flex items-center space-x-2 cursor-pointer">
+                                                    <div className="w-8 h-8 bg-gray-500 rounded flex items-center justify-center text-white text-xs font-bold">
+                                                        COD
+                                                    </div>
+                                                    <span className="font-medium">Thanh toán bằng tiền mặt khi nhận hàng</span>
+                                                </Label>
+                                            </div>
+                                        </div>
+                                    </RadioGroup>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -570,8 +609,12 @@ export default function PaymentForm() {
 
                     {/* KHUYẾN MÃI */}
                     <h2 className="text-xl font-semibold border-b-2 pb-1">MÃ KHUYẾN MÃI</h2>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
+                        <label className="whitespace-nowrap text-sm font-medium text-gray-700">
+                            Mã KM/Quà tặng
+                        </label>
                         <Input
+                            className="border border-gray-300 rounded-md px-4 py-2 w-72 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Nhập mã khuyến mãi (không phân biệt hoa thường)"
                             value={couponInput}
                             onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
@@ -582,9 +625,12 @@ export default function PaymentForm() {
                         <Button
                             type="button"
                             variant="link"
-                            onClick={() => setShowCouponOptions(!showCouponOptions)}
+                            onClick={() => {
+                                console.log(promotions)
+                                setVoucherOpen(true);
+                            }}
                         >
-                            {showCouponOptions ? "Ẩn mã" : "Chọn mã"}
+                            Chọn mã
                         </Button>
                     </div>
 
@@ -611,26 +657,6 @@ export default function PaymentForm() {
                         </div>
                     )}
 
-                    {showCouponOptions && (
-                        <div className="mt-2 border p-3 rounded-md bg-gray-50 space-y-2">
-                            {promotions.map((coupon) => (
-                                <div
-                                    key={coupon.promotionId}
-                                    className="flex justify-between items-center"
-                                >
-                                    <span>{coupon.promotionName}</span>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        onClick={() => handleApplyCoupon(coupon.promotionCode)}
-                                        disabled={appliedCoupons.includes(coupon.promotionCode)}
-                                    >
-                                        {appliedCoupons.includes(coupon.promotionCode) ? "Đã áp dụng" : "Áp dụng"}
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
 
                     {/* DANH SÁCH SẢN PHẨM */}
                     <h2 className="text-xl font-semibold border-b-2 pb-1">ĐƠN HÀNG</h2>
@@ -646,23 +672,26 @@ export default function PaymentForm() {
 
                     {/* TỔNG TIỀN */}
                     <div className="sticky bottom-0 bg-white p-4 border-t mt-4">
-                        <div className="space-y-2 mb-4">
-                            <div className="flex justify-between">
-                                <span>Thành tiền</span>
-                                <span>{formatCurrency(Number(cart.totalPrice))}</span>
+                        {ChecktoWardCode && (
+                            <div className="space-y-2 mb-4">
+                                <div className="flex justify-between">
+                                    <span>Thành tiền</span>
+                                    <span>{formatCurrency(Number(cart.totalPrice))}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Phí vận chuyển</span>
+                                    <span>{formatCurrency(finalShippingFee)}</span>
+                                </div>
+                                <div className="flex justify-between font-semibold border-t pt-2">
+                                    <span>Tổng cộng</span>
+                                    <span className="text-yellow-500">{formatCurrency(totalWithShipping)}</span>
+                                </div>
                             </div>
-                            <div className="flex justify-between">
-                                <span>Phí vận chuyển</span>
-                                <span>{formatCurrency(finalShippingFee)}</span>
-                            </div>
-                            <div className="flex justify-between font-semibold border-t pt-2">
-                                <span>Tổng cộng</span>
-                                <span className="text-yellow-500">{formatCurrency(totalWithShipping)}</span>
-                            </div>
-                        </div>
+                        )}
+
                         <Button
                             type="submit"
-                            className="w-full bg-red-500 hover:bg-red-600 text-white text-base font-semibold"
+                            className="w-full bg-red-500 hover:bg-red-600 text-white text-base font-semibold p-5"
                             disabled={(cart.cartItems ?? []).length === 0}
                         >
                             Xác nhận thanh toán
@@ -670,6 +699,14 @@ export default function PaymentForm() {
                     </div>
                 </form>
             </Form>
+            <PromotionForm
+                open={voucherOpen}
+                totalPrice={Number(cart.totalPrice)}
+                onClose={() => setVoucherOpen(false)}
+                onSelectPromotion={handleSelectPromotion}
+                appliedCoupons={appliedCoupons}
+                promotions={promotions} // Truyền promotions
+            />
             {otpInfo && (
                 <OtpForm
                     email={otpInfo.email}
@@ -683,3 +720,38 @@ export default function PaymentForm() {
         </>
     );
 }
+
+//  if (!appliedCoupons.includes(coupon.promotionCode)) {
+//             setAppliedCoupons([...appliedCoupons, coupon.promotionCode]);
+//             setCouponInput("");
+
+//             // Thêm mã vào mảng tương ứng trong form với kiểu rõ ràng
+//             if (coupon.promotionType === "FREESHIP") {
+//                 const currentFreeship = form.getValues("order.freeship") || [];
+//                 if (!Array.isArray(currentFreeship) || !currentFreeship.some((f: { promotionCode: string }) => f.promotionCode === coupon.promotionCode)) {
+//                     form.setValue("order.freeship", [...(currentFreeship as { promotionCode: string }[]), { promotionCode: coupon.promotionCode }]);
+//                 }
+//             } else if (coupon.promotionType === "VOUCHER") {
+//                 const currentCoupon = form.getValues("order.coupon") || [];
+//                 if (!Array.isArray(currentCoupon) || !currentCoupon.some((c: { promotionCode: string }) => c.promotionCode === coupon.promotionCode)) {
+//                     form.setValue("order.coupon", [...(currentCoupon as { promotionCode: string }[]), { promotionCode: coupon.promotionCode }]);
+//                 }
+//             }
+//         }
+//           const handleRemoveCoupon = (coupon: string) => {
+//         setAppliedCoupons(appliedCoupons.filter((c) => c !== coupon));
+
+//         // Xóa mã khỏi mảng freeship trong form
+//         const currentFreeship = form.getValues("order.freeship") || [];
+//         const updatedFreeship = Array.isArray(currentFreeship)
+//             ? currentFreeship.filter((f: { promotionCode: string }) => f.promotionCode !== coupon)
+//             : [];
+//         form.setValue("order.freeship", updatedFreeship.length > 0 ? updatedFreeship : undefined);
+
+//         // Xóa mã khỏi mảng coupon trong form
+//         const currentCoupon = form.getValues("order.coupon") || [];
+//         const updatedCoupon = Array.isArray(currentCoupon)
+//             ? currentCoupon.filter((c: { promotionCode: string }) => c.promotionCode !== coupon)
+//             : [];
+//         form.setValue("order.coupon", updatedCoupon.length > 0 ? updatedCoupon : undefined);
+//     };

@@ -5,7 +5,7 @@ export async function callApi<T>(
     method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
     body?: any,
     params?: Record<string, any>
-): Promise<T> {
+): Promise<any> {
     const token = localStorage.getItem("authToken")
     const queryString = params ? `?${new URLSearchParams(params).toString()}` : ""
     const url = `${endpoint}${queryString}`

@@ -12,7 +12,6 @@ export const orderSchema = z.object({
             city: z.string().min(1, "Vui lòng nhập tên thành phố"),
             district: z.string().min(1, "Vui lòng nhập tên quận/huyện"),
             country: z.string().min(1, "Vui lòng nhập tên quốc gia"),
-            pincode: z.string().min(1, "Mã bưu điện không hợp lệ"),
             cityCode: z.string(),
             districtCode: z.string(),
             wardCode: z.string(),
@@ -20,9 +19,14 @@ export const orderSchema = z.object({
         payment: z.object({
             paymentMethod: z.string().min(1, "Vui lòng chọn phương thức thanh toán"),
         }),
+        coupon: z
+            .object({
+                promotionCode: z.string(),
+            })
+            .optional(),
         freeship: z
             .object({
-                promotionCode: z.string().min(1, "Vui lòng nhập mã khuyến mãi"),
+                promotionCode: z.string(),
             })
             .optional(),
     }),

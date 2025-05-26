@@ -29,8 +29,8 @@ export interface FetchProductListParams {
     minPrice?: number
     maxPrice?: number
     categoryId?: number
-    authorIds?: number
-    languageIds?: number
+    authorIds?: number[]
+    languageIds?: number[]
     supplierId?: number
     publisherId?: number
     isSale?: boolean

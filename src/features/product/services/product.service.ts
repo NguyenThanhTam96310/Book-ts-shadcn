@@ -1,8 +1,7 @@
 import { FetchProductListParams, ProductItemProps, ProductListResponse } from "@/features/product/services/type"
 import axiosInstance from "@/lib/api/Config"
 import envConfig from "@/lib/api/envConfig"
-
-
+import qs from 'qs';
 
 export const fetchProductFlashSaleForm = async (): Promise<ProductItemProps[]> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
@@ -69,9 +68,16 @@ export const fetchProductBySlug = async (slug: string): Promise<ProductItemProps
 
 }
 
+
+
 export const fetchProductList = async (params: FetchProductListParams): Promise<ProductListResponse> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
-        params: params // truyền thẳng params từ ngoài vào
+        params,
+        paramsSerializer: (params) => {
+            return qs.stringify(params, {
+                arrayFormat: 'repeat' // authorIds=1&authorIds=2
+            });
+        }
     });
 
     const data = response.data as {
@@ -90,6 +96,7 @@ export const fetchProductList = async (params: FetchProductListParams): Promise<
         pageSize: data.pageSize
     };
 }
+
 export const fetchProductsByIds = async (productIds: number[]): Promise<ProductItemProps[]> => {
     if (productIds.length === 0) return []
 

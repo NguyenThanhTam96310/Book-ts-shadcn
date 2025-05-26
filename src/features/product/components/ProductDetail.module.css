@@ -43,7 +43,7 @@
     flex-shrink: 0;
     margin-left: auto;
     margin-right: auto;
-
+    object-fit: cover;
 }
 
 .thumbnailListVertical {
@@ -82,7 +82,7 @@
 
 @media (min-width: 1024px) {
     .imageBox {
-        width: 50%;
+        width: 40%;
         min-height: 100%;
         /* Đảm bảo chiều cao bằng với .infoColumn */
 
@@ -100,7 +100,7 @@
 
 @media (min-width: 1024px) {
     .infoColumn {
-        width: 50%;
+        width: 60%;
         min-height: 100%;
         /* Đảm bảo chiều cao bằng với .imageBox */
     }
@@ -109,7 +109,7 @@
 .infoBox {
     width: 100%;
     background-color: #ffffff;
-    padding: 1rem;
+    padding: 1.5rem;
     border-radius: 0.5rem;
     color: rgb(0, 0, 0);
 }

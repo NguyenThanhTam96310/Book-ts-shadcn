@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fetchEmailVerify } from "@/features/auth/services/auth.service";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const EmailVerifyForm = () => {
     const router = useRouter();
@@ -58,7 +60,13 @@ const EmailVerifyForm = () => {
                     ❌ Xác minh thất bại. Liên kết có thể đã hết hạn hoặc không hợp lệ.
                 </p>
             )}
+            <Link href="/login">
+                <Button className="my-4 bg-orange-500 hover:bg-orange-800">
+                    Về trang đăng nhập
+                </Button>
+            </Link>
         </div>
+
     );
 };
 

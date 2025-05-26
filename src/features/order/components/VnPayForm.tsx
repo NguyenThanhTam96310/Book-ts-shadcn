@@ -15,7 +15,7 @@ const VnPayForm = () => {
     const isSuccess = vnp_ResponseCode === "00" && vnp_TransactionStatus === "00";
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 py-8">
+        <div className="min-h-[70vh] flex py-5 justify-center bg-gray-100">
             <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
                 <div className="flex items-center justify-center mb-6">
                     <span className={`text-4xl ${isSuccess ? "text-green-500" : "text-red-500"}`}>
@@ -46,15 +46,24 @@ const VnPayForm = () => {
                             {isSuccess ? "Thành công" : "Thất bại"}
                         </span>
                     </div>
+                    {!isSuccess && (
+                        <div className="flex justify-between">
+                            <span className="text-gray-600">Có thắt mắc vui lòng liên hệ:</span>
+                            <span className="font-semibold text-green-600">
+                                1234567890
+                            </span>
+                        </div>
+                    )}
                 </div>
                 <div className="mt-8 space-y-4">
                     <Link href={`/order-details/${vnp_TxnRef}`}>
-                        <button className="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-colors duration-200 font-semibold">
+
+                        <button className="w-full py-3 border border-orange-600 rounded-lg hover:bg-orange-500 hover:text-white cursor-pointer transition-colors duration-200 font-semibold bg-white">
                             Xem chi tiết đơn hàng
                         </button>
                     </Link>
                     <Link href="/">
-                        <button className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold mt-5">
+                        <button className="w-full py-3 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white cursor-pointer transition-colors duration-200 font-semibold bg-white mt-5">
                             Tiếp tục mua sắm
                         </button>
                     </Link>

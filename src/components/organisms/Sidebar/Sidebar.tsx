@@ -7,6 +7,7 @@ import { FetchProductListParams } from "@/features/product/services/type";
 import { Author, Category, Languages, Publisher, Supplier } from "@/types";
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { fetchAllAuthors } from "@/features/author/services/author.service";
 
 interface SidebarProps {
     onFilterChange: (newParams: Partial<FetchProductListParams>) => void;
@@ -21,15 +22,16 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
     const [isSale, setIsSale] = useState<boolean>();
     const [status, setStatus] = useState<boolean>();
     const [keyword, setKeyword] = useState<string>("");
-    const [isbn, setIsbn] = useState<Number>();
-    const [maxPrice, setMaxPrice] = useState<Number>();
-    const [minPrice, setMinPrice] = useState<Number>();
+    const [isbn, setIsbn] = useState<number>(); // Sửa Number thành number
+    const [maxPrice, setMaxPrice] = useState<number>(); // Sửa Number thành number
+    const [minPrice, setMinPrice] = useState<number>(); // Sửa Number thành number
     const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
     const [openCategories, setOpenCategories] = useState<{ [key: string]: boolean }>({});
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
     const [selectedPublisherId, setSelectedPublisherId] = useState<number | null>(null);
-    const [selectedLanguageId, setSelectedLanguageId] = useState<number | null>(null);
-    const [selectedPriceRange, setSelectedPriceRange] = useState<string | null>(null); // Thêm state để theo dõi khoảng giá
+    const [selectedAuthorIds, setSelectedAuthorIds] = useState<number[]>([]); // Thay đổi thành mảng
+    const [selectedLanguageIds, setSelectedLanguageId] = useState<number[]>([]);
+    const [selectedPriceRange, setSelectedPriceRange] = useState<string | null>(null);
 
     useEffect(() => {
         const loadSidebar = async () => {
@@ -37,17 +39,19 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 const dataCate = await fetchAllCategories();
                 const dataPub = await fetchAllPublishers();
                 const dataLua = await fetchAllLanguages();
+                const dataAut = await fetchAllAuthors();
                 setCategories(dataCate);
                 setPublishers(dataPub);
                 setLanguages(dataLua);
+                setAuthors(dataAut);
             } catch (error) {
-                console.error("Lỗi khi load categories:", error);
+                console.error("Lỗi khi load data:", error);
             }
         };
         loadSidebar();
     }, []);
 
-    const handlePriceChange = (min: number, max: number, rangeKey: string) => {
+    const handlePriceChange = (min: number, max: number | undefined, rangeKey: string) => {
         if (selectedPriceRange === rangeKey) {
             setSelectedPriceRange(null);
             setMinPrice(undefined);
@@ -73,11 +77,34 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
         onFilterChange({ publisherId: newPublisherId ?? undefined });
     };
 
-    const handleLanguageChange = (languageId: number) => {
-        const newLanguageId = languageId === selectedLanguageId ? null : languageId;
-        setSelectedLanguageId(newLanguageId);
-        onFilterChange({ languageIds: newLanguageId ?? undefined });
+    const handleAuthorChange = (authorId: number) => {
+        setSelectedAuthorIds((prevSelected) => {
+            if (prevSelected.includes(authorId)) {
+                return prevSelected.filter((id) => id !== authorId); // Bỏ chọn
+            } else {
+                return [...prevSelected, authorId]; // Chọn
+            }
+        });
     };
+    useEffect(() => {
+        onFilterChange({
+            authorIds: selectedAuthorIds.length > 0 ? selectedAuthorIds : undefined,
+        });
+    }, [selectedAuthorIds]);
+    const handleLanguageChange = (languageId: number) => {
+        setSelectedLanguageId((prevSelected) => {
+            if (prevSelected.includes(languageId)) {
+                return prevSelected.filter((id) => id !== languageId); // Bỏ chọn
+            } else {
+                return [...prevSelected, languageId]; // Chọn
+            }
+        });
+    };
+    useEffect(() => {
+        onFilterChange({
+            languageIds: selectedLanguageIds.length > 0 ? selectedLanguageIds : undefined,
+        });
+    }, [selectedLanguageIds]);
 
     const toggleSection = (section: string) => {
         setOpenSections((prev) => ({
@@ -92,19 +119,35 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
             [categoryId]: !prev[categoryId],
         }));
     };
+
     const resetFilters = () => {
         setSelectedCategoryId(null);
         setSelectedPublisherId(null);
-        setSelectedLanguageId(null);
+        setSelectedAuthorIds([]); // Đặt lại thành mảng rỗng
+        setSelectedLanguageId([]);
         setSelectedPriceRange(null);
         setMinPrice(undefined);
         setMaxPrice(undefined);
+        setIsSale(undefined);
+        setStatus(undefined);
+        setKeyword("");
+        setIsbn(undefined);
+
         onFilterChange({
             categoryId: undefined,
             publisherId: undefined,
+            authorIds: undefined, // Đặt lại authorIds
             languageIds: undefined,
             minPrice: undefined,
             maxPrice: undefined,
+            isSale: undefined,
+            status: undefined,
+            keyword: "",
+            isbn: undefined,
+            pageNumber: 1,
+            pageSize: undefined,
+            sortBy: "productId",
+            sortOrder: "asc",
         });
     };
 
@@ -122,7 +165,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                         onClick={() => toggleSection('categories')}
                         className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors"
                     >
-                        <span>All Categories</span>
+                        <span>TẤT CẢ DANH MỤC</span>
                         {openSections['categories'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </button>
                     <div
@@ -244,14 +287,13 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                         type="checkbox"
                                         className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
                                         checked={selectedPriceRange === '700000-Infinity'}
-                                        onChange={() => handlePriceChange(700000, Infinity, '700000-Infinity')}
+                                        onChange={() => handlePriceChange(700000, undefined, '700000-Infinity')}
                                     />
                                     <span>700,000đ - Trở lên</span>
                                 </label>
                             </li>
                         </ul>
                     </div>
-
                 </div>
 
                 {/* Nhà xuất bản */}
@@ -285,6 +327,37 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                     </div>
                 </div>
 
+                {/* Tác giả */}
+                <div>
+                    <button
+                        onClick={() => toggleSection('authors')}
+                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors"
+                    >
+                        <span>Tác giả </span>
+                        {openSections['authors'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </button>
+                    <div
+                        className={`overflow-hidden transition-all duration-300 ${openSections['authors'] ? 'max-h-screen' : 'max-h-0'
+                            }`}
+                    >
+                        <ul className="space-y-2 mt-2 text-gray-700">
+                            {authors.map((author) => (
+                                <li key={author.authorId}>
+                                    <label className="flex items-center gap-2 hover:text-orange-500 transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                            checked={selectedAuthorIds.includes(Number(author.authorId))}
+                                            onChange={() => handleAuthorChange(Number(author.authorId))}
+                                        />
+                                        <span>{author.authorName}</span>
+                                    </label>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
                 {/* Ngôn ngữ */}
                 <div>
                     <button
@@ -305,7 +378,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                         <input
                                             type="checkbox"
                                             className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
-                                            checked={selectedLanguageId === language.languageId}
+                                            checked={selectedLanguageIds.includes(Number(language.languageId))}
                                             onChange={() => handleLanguageChange(Number(language.languageId))}
                                         />
                                         <span>{language.name}</span>
