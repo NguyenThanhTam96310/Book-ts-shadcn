@@ -43,12 +43,9 @@ const EditPasswordForm = () => {
     }
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            {/* Sidebar */}
-            <MenuProfile />
-
+        <div>
             {/* Main content */}
-            <div className="flex-1 p-6">
+            <div className="flex-1">
                 <Card className="mx-auto shadow-md">
                     <CardHeader className="text-center">
                         <CardTitle className="text-2xl font-bold text-orange-600">

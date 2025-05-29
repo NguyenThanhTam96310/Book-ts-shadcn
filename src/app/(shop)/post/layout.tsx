@@ -6,7 +6,7 @@ export default function PostLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <div className="bg-gray-100 pb-5">
+        <div className="bg-gray-100">
             <TopicMenu />
             {children}
         </div>

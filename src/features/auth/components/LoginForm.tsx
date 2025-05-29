@@ -21,9 +21,10 @@ import { CART_ITEM_KEY } from "@/constants/cartConstants"
 
 const LoginForm = () => {
     const router = useRouter()
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams?.get("callbackUrl") || "/";
     const { data: session } = useSession()
     const [isLoading, setIsLoading] = useState(false)
-    const searchParams = useSearchParams()
 
     const form = useForm<z.infer<typeof LoginBody>>({
         resolver: zodResolver(LoginBody),
@@ -55,7 +56,8 @@ const LoginForm = () => {
                     localStorage.setItem("googleSynced", "true")
 
                     // Điều hướng
-                    window.location.href = "/"
+                    const redirect = searchParams?.get("redirect") || "/"
+                    window.location.href = redirect
                 } catch (error) {
                     console.error("Đồng bộ Google thất bại:", error)
                 }

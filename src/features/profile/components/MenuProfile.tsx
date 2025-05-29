@@ -47,7 +47,7 @@ const MenuProfile = () => {
         { label: 'Đổi mật khẩu', icon: Settings, href: '/profile/password' },
         // { label: 'Thông tin xuất hóa đơn GTGT', icon: CreditCard, href: '/profile/invoice' },
         // { label: 'Ưu đãi thành viên', icon: Star, href: '/profile/rewards' },
-        // { label: 'Đơn hàng của tôi', icon: Package, href: '/profile/orders' },
+        { label: 'Đơn hàng của tôi', icon: Package, href: '/profile/order' },
         // { label: 'Ví voucher', icon: CreditCard, href: '/profile/voucher', badge: 14 },
         // { label: 'F-Point / Freeship', icon: CreditCard, href: '/profile/fpoint' },
     ]
@@ -67,19 +67,19 @@ const MenuProfile = () => {
                         </svg>
                     </AvatarFallback>
                 </Avatar>
-                <h2 className="text-xl font-semibold">{profile?.fullName}</h2>
-                <div className="mt-2">
+                <h2 className="text-3xl font-semibold">{profile?.fullName}</h2>
+                {/* <div className="mt-2">
                     <Badge variant="secondary" className="px-3 py-1 rounded-full">
                         Thành viên Bạc
                     </Badge>
-                </div>
-                <div className="mt-3 text-sm text-center">
-                    <p>F-Point tích lũy 0</p>
-                    <p className="text-amber-600 mt-1">Thêm 30.000 để nâng hạng Vàng</p>
-                </div>
+                </div> */}
+                {/* <div className="mt-3 text-sm text-center">
+                        <p>F-Point tích lũy 0</p>
+                        <p className="text-amber-600 mt-1">Thêm 30.000 để nâng hạng Vàng</p>
+                    </div> */}
             </div>
 
-            <div className="space-y-1 mt-4">
+            <div className="space-y-1">
                 {menuItems.map((item, index) => {
                     const isActive = pathname === item.href
                     const Icon = item.icon
@@ -88,7 +88,7 @@ const MenuProfile = () => {
                         <Link href={item.href} key={index}>
                             <Button
                                 variant={isActive ? 'secondary' : 'ghost'}
-                                className={`w-full justify-start relative  ${isActive ? 'text-red-600 font-semibold' : ' cursor-pointer'}`}
+                                className={`text-base w-full justify-start relative  ${isActive ? 'text-orange-600 font-semibold' : ' cursor-pointer'}`}
                                 size="sm"
                             >
                                 {/* {item.badge && (
@@ -109,7 +109,7 @@ const MenuProfile = () => {
     return (
         <>
             {/* Desktop menu */}
-            <div className="hidden md:flex border-r">{renderMenu()}</div>
+            <div className="hidden md:flex">{renderMenu()}</div>
 
             {/* Mobile menu button */}
             <div className="md:hidden ">

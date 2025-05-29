@@ -14,3 +14,7 @@ export const fetchAllAuthors = async (): Promise<AuthorRes[]> => {
     const data = response.data as { content: AuthorRes[] }
     return data.content
 }
+export const fetchAuthorDetail = async (authorId: number): Promise<AuthorRes> => {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/authors/${authorId}`)
+    return response.data as AuthorRes
+}

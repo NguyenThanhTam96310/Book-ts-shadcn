@@ -1,16 +1,19 @@
 "use client"
 
+import type React from "react"
+
 import Image from "next/image"
 import Link from "next/link"
 import styles from "./PostItem.module.css"
-import { PostItemRes } from "@/features/post/services/type"
+import type { PostItemRes } from "@/features/post/services/type"
 
-const PostItem: React.FC<PostItemRes> = ({ postId, title, content, slug }) => {
+const PostItem: React.FC<PostItemRes> = ({ postId, title, content, slug, image }) => {
     const decodeHtml = (html: string) => {
         const txt = document.createElement("textarea")
         txt.innerHTML = html
         return txt.value
     }
+
     return (
         <div className={styles.postItem}>
             <div className={styles.content}>
@@ -24,6 +27,9 @@ const PostItem: React.FC<PostItemRes> = ({ postId, title, content, slug }) => {
                 <Link href={`/post/${slug}`} className={styles.readMore}>
                     Xem thêm
                 </Link>
+            </div>
+            <div className={styles.imageWrapper}>
+                <Image src={`${process.env.NEXT_PUBLIC_FILE}${image}`} alt={title} fill className={styles.image} />
             </div>
         </div>
     )

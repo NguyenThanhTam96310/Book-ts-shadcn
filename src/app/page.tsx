@@ -1,12 +1,12 @@
 import Banner from "@/features/banner/components";
 import CategoryHomeForm from "@/features/category/components";
-import PostHome from "@/features/post/components";
+import PostNewHomeForm from "@/features/post/components";
 import { ProductByCategoryHomeForm, ProductFlashSaleForm, ProductNewForm } from "@/features/product/components";
 import PublisherShowForm from "@/features/publisher/components";
 
 export default function Home() {
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-gray-100 min-h-screen pb-8">
       {/* Section 1: Banner và Category */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Banner />
@@ -20,7 +20,7 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white bg-opacity-95 backdrop-blur-lg py-5 rounded-xl shadow-xl text-center">
             <h1 className="text-red-600 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-wide uppercase drop-shadow-lg">
-              ⚡ Flash Sale
+              ⚡ Giảm giá sốc
             </h1>
           </div>
           <ProductFlashSaleForm />
@@ -54,16 +54,15 @@ export default function Home() {
       </div>
 
       {/* Section 6: Post (khôi phục và cải thiện) */}
-      <div className="py-10 bg-gray-100">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-green-500 to-teal-500 py-5 rounded-xl shadow-xl text-center">
-            <h1 className="text-white text-2xl sm:text-3xl lg:text-4xl font-bold tracking-wide uppercase drop-shadow-lg">
-              Bài Viết Nổi Bật
-            </h1>
-          </div>
-          <div className="mt-8">
-            <PostHome />
-          </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 bg-white rounded-xl shadow-lg pb-6">
+        <div className="flex items-center gap-4 py-6">
+          <h1 className="text-2xl sm:text-2xl lg:text-2xl font-semibold whitespace-nowrap">
+            BÀI VIẾT NỔI BẬT
+          </h1>
+          <div className=" flex-1 h-1 bg-gray-300"></div>
+        </div>
+        <div>
+          <PostNewHomeForm />
         </div>
       </div>
     </div>

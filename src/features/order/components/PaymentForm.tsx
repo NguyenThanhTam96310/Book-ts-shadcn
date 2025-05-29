@@ -125,8 +125,6 @@ export default function PaymentForm() {
         const fetchData = async () => {
             const storedUserId = localStorage.getItem(USER_ID);
             if (storedUserId) {
-                const dataPromo = await fetchPromotions();
-                setPromotions(dataPromo);
                 form.setValue("order.userId", Number(storedUserId));
                 setUserId(parseInt(storedUserId, 10));
                 const token = localStorage.getItem("authToken");
@@ -154,7 +152,8 @@ export default function PaymentForm() {
         const fetchData = async () => {
             try {
                 const raw = localStorage.getItem(PAYMENT_ITEM_KEY);
-
+                const dataPromo = await fetchPromotions();
+                setPromotions(dataPromo);
                 if (raw) {
                     const data = JSON.parse(raw) as {
                         cartItems: CartItemType[];

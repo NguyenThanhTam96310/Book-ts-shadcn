@@ -1,0 +1,33 @@
+/* orderDetail.module.css */
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.orderInfo {
+    background-color: #f9fafb;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.productList {
+    margin-bottom: 16px;
+}
+
+.totalSection {
+    padding: 12px 0;
+}
+
+.actionButtons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import styles from './ProductDetail.module.css'
 import { ProductItemProps } from '@/features/product/services/type'
@@ -12,16 +12,19 @@ import { useRouter } from 'next/navigation'
 import { CART_ITEM_KEY } from '@/constants/cartConstants'
 import { PAYMENT_ITEM_KEY } from '@/constants/orderConstants'
 import { CartProps } from '@/features/cart'
+import { Truck, Undo2, Users } from 'lucide-react';
 interface ProductDetailProps {
     product: ProductItemProps
 }
 
 const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
     const router = useRouter()
-    const [activeTab, setActiveTab] = useState('technical')
     const [selectedImage, setSelectedImage] = useState<string | null>(null) // State để quản lý hình ảnh chính
     const [quantity, setQuantity] = useState(1);
     const [userId, setUserId] = useState<number | null>(null)
+    const [isExpanded, setIsExpanded] = useState(false) // Trạng thái mở rộng nội dung
+    const [showReadMore, setShowReadMore] = useState(false) // Hiển thị nút "Xem thêm"
+    const descriptionRef = useRef<HTMLDivElement>(null) // Ref để kiểm tra chiều cao nội dung
     const [cart, setCart] = useState<CartProps>({
         userId: undefined,
         cartItems: [],
@@ -29,10 +32,36 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
     });
     const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
-    const handleTabChange = (tab: string) => {
-        setActiveTab(tab)
-    }
+    // Theo dõi vị trí cuộn
+    useEffect(() => {
+        const handleScroll = () => {
+            const infoColumn = document.querySelector(`.${styles.infoColumn}`);
+            if (infoColumn) {
+                const infoColumnHeight = infoColumn.scrollHeight; // Chiều cao thực của infoColumn
+                const windowHeight = window.innerHeight; // Chiều cao viewport
+                const scrollTop = window.scrollY; // Vị trí cuộn hiện tại
 
+                // Khi cuộn gần hết infoColumn, cho phép cuộn toàn trang
+                if (scrollTop + windowHeight >= infoColumnHeight) {
+                    document.body.style.overflowY = 'auto'; // Cuộn toàn trang
+                } else {
+                    // Giới hạn cuộn trong vùng infoColumn (nếu muốn)
+                    // Lưu ý: CSS hiện tại không hỗ trợ hoàn toàn điều này, cần thêm container cha
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+    // Kiểm tra chiều cao nội dung để hiển thị nút "Xem thêm"
+    useEffect(() => {
+        if (descriptionRef.current) {
+            const contentHeight = descriptionRef.current.scrollHeight
+            const maxHeight = 200 // Giới hạn chiều cao ban đầu (px)
+            setShowReadMore(contentHeight > maxHeight) // Hiển thị nút nếu nội dung vượt quá chiều cao
+        }
+    }, [product.description])
     useEffect(() => {
         const storedUserId = localStorage.getItem('userId')
         if (storedUserId) {
@@ -163,48 +192,81 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                 <div className={styles.flexRow}>
                     {/* Ảnh sản phẩm */}
                     <div className={styles.imageBox}>
-                        <div className={styles.imageWrapper}>
-                            <Image
-                                src={selectedImage || '/placeholder.png'}
-                                alt={product.productName}
-                                width={400}
-                                height={500}
-                                className={styles.imageStyle}
-                            />
-                        </div>
-                        {product.images && product.images.length > 1 && (
-                            <div className={styles.thumbnailListVertical}>
-                                {product.images.map((image: any, index: number) => (
-                                    <div
-                                        key={index}
-                                        className={`${styles.thumbnail} ${selectedImage === `${process.env.NEXT_PUBLIC_FILE}${image.fileName}`
-                                            ? styles.thumbnailActive
-                                            : ''
-                                            }`}
-                                        onClick={() =>
-                                            handleImageClick(`${process.env.NEXT_PUBLIC_FILE}${image.fileName}`)
-                                        }
-                                    >
-                                        <Image
-                                            src={`${process.env.NEXT_PUBLIC_FILE}${image.fileName}`}
-                                            alt={`${product.productName} thumbnail ${index}`}
-                                            width={60} // Điều chỉnh chiều rộng ảnh phụ
-                                            height={80} // Điều chỉnh chiều cao ảnh phụ
-                                            className={styles.thumbnailImage}
-                                        />
-                                    </div>
-                                ))}
+                        <div className={styles.imageContainer}>
+                            <div className={styles.imageWrapper}>
+                                <Image
+                                    src={selectedImage || '/placeholder.png'}
+                                    alt={product.productName}
+                                    width={400}
+                                    height={500}
+                                    className={styles.imageStyle}
+                                    priority={true}
+                                />
                             </div>
-                        )}
+                            {product.images && product.images.length > 1 && (
+                                <div className={styles.thumbnailListVertical}>
+                                    {product.images.map((image: any, index: number) => (
+                                        <div
+                                            key={index}
+                                            className={`${styles.thumbnail} ${selectedImage === `${process.env.NEXT_PUBLIC_FILE}${image.fileName}`
+                                                ? styles.thumbnailActive
+                                                : ''
+                                                }`}
+                                            onClick={() => handleImageClick(`${process.env.NEXT_PUBLIC_FILE}${image.fileName}`)}
+                                        >
+                                            <Image
+                                                src={`${process.env.NEXT_PUBLIC_FILE}${image.fileName}`}
+                                                alt={`${product.productName} thumbnail ${index}`}
+                                                width={60}
+                                                height={80}
+                                                className={styles.thumbnailImage}
+                                            // priority={true}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className={`${styles.actionSection} ${styles.desktopOnly}`}>
+                            <div className={styles.buttonGroup}>
+                                <button className={styles.addToCartBtn} onClick={handleAddToCart}>
+                                    Thêm vào giỏ hàng
+                                </button>
+                                <button className={styles.buyNowBtn} onClick={handleCheckout}>
+                                    Mua ngay
+                                </button>
+                            </div>
+                            <div className={styles.policySection}>
+                                <p>
+                                    <strong>Chính sách ưu đãi của Bookstore</strong>
+                                </p>
+                                <p className="flex items-start gap-2">
+                                    <Truck className="text-orange-600 w-4 h-4" />
+                                    <span>
+                                        <strong>Thời gian giao hàng:</strong> Giao nhanh và uy tín
+                                    </span>
+                                </p>
+                                <p className="flex items-start gap-2">
+                                    <Undo2 className="text-orange-600 w-4 h-4" />
+                                    <span>
+                                        <strong>Chính sách đổi trả:</strong> Đổi trả miễn phí toàn quốc
+                                    </span>
+                                </p>
+                                <p className="flex items-start gap-2">
+                                    <Users className="text-orange-600 w-4 h-4 " />
+                                    <span>
+                                        <strong>Chính sách khách sỉ:</strong> Ưu đãi khi mua số lượng lớn
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                     {/* Thông tin sản phẩm */}
                     <div className={styles.infoColumn}>
                         {/* Tiêu đề + giá */}
                         <div className={styles.infoBox}>
                             <div className="flex items-center gap-3">
-                                {/* <div className="text-base text-orange-400 font-semibold bg-red-600 inline-block px-2 py-1 rounded-full">
-                                    Xu hướng
-                                </div> */}
+
                                 <h1 className="text-3xl font-bold">{product.productName}</h1>
                             </div>
 
@@ -292,51 +354,38 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                     </div>
                                 </div>
 
-                                <Button
-                                    variant="outline"
-                                    className="bg-white hover:text-white border-2 border-orange-600 hover:bg-orange-500 cursor-pointer"
-                                    onClick={handleAddToCart}
-                                >
-                                    Thêm vào giỏ hàng
-                                </Button>
-                                <Button onClick={handleCheckout} variant="outline" className="bg-red-500 hover:bg-red-600 hover:text-white border-2 border-red-600 cursor-pointer">
-                                    Mua ngay
-                                </Button>
+                                <div className={`${styles.buttonContainer} ${styles.mobileOnly}`}>
+                                    {/* <Button
+                                        variant="outline"
+                                        className="bg-white hover:text-white border-2 border-orange-600 hover:bg-orange-500 cursor-pointer"
+                                        onClick={handleAddToCart}
+                                    >
+                                        Thêm vào giỏ hàng
+                                    </Button>
+                                    <Button
+                                        onClick={handleCheckout}
+                                        variant="outline"
+                                        className="bg-red-500 hover:bg-red-600 hover:text-white border-2 border-red-600 cursor-pointer"
+                                    >
+                                        Mua ngay
+                                    </Button> */}
+                                    <button className={styles.addToCartBtn} onClick={handleAddToCart}>
+                                        Thêm vào giỏ hàng
+                                    </button>
+                                    <button className={styles.buyNowBtn} onClick={handleCheckout}>
+                                        Mua ngay
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Tabs Section */}
-                <div className="mt-4 rounded-xl bg-white">
-                    {/* Tabs Navigation */}
-                    <div className="flex flex-wrap border-b border-gray-200">
-                        <button
-                            onClick={() => handleTabChange('technical')}
-                            className={`px-4 py-2 text-base font-semibold transition  ${activeTab === 'technical'
-                                ? 'text-orange-600 border-b-2 border-orange-600 '
-                                : 'text-gray-500 hover:text-orange-500 cursor-pointer'
-                                }`}
-                        >
-                            Thông số kỹ thuật
-                        </button>
-                        <button
-                            onClick={() => handleTabChange('description')}
-                            className={`ml-4 px-4 py-2 text-base font-semibold transition  ${activeTab === 'description'
-                                ? 'text-orange-600 border-b-2 border-orange-600 '
-                                : 'text-gray-500 hover:text-orange-500 cursor-pointer'
-                                }`}
-                        >
-                            Mô tả sách
-                        </button>
-                    </div>
-
-                    {/* Tab Content */}
-                    <div className="p-4">
-                        {/* Technical Specs */}
-                        {activeTab === 'technical' && (
+                        {/* Thông số */}
+                        <div className={styles.infoBox}>
                             <div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+                                    <div className="flex items-center gap-3">
+
+                                        <h1 className="text-xl font-bold">Thông tin chi tiết</h1>
+                                    </div>
                                     {[
                                         { label: 'Mã sách', value: product.isbn },
                                         { label: 'Nhà xuất bản', value: product.publisher?.publisherName },
@@ -353,6 +402,10 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                             label: 'Trọng lượng',
                                             value: product.weight ? `${product.weight}g` : 'Đang cập nhật',
                                         },
+                                        {
+                                            label: 'Trọng lượng',
+                                            value: product.weight ? `${product.weight}g` : 'Đang cập nhật',
+                                        },
                                         { label: 'Kích thước', value: product.size },
                                     ].map((row, index) => (
                                         <div key={index} className="flex">
@@ -360,18 +413,45 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                             <div className="text-gray-800">{row.value || 'Đang cập nhật'}</div>
                                         </div>
                                     ))}
+                                    <h5 className="text-gray-800">Giá sản phẩm trên BookStore đã bao gồm thuế theo luật hiện hành. Bên cạnh đó, tuỳ vào loại sản phẩm, hình thức và địa chỉ giao hàng mà có thể phát sinh thêm chi phí khác như Phụ phí đóng gói, phí vận chuyển, phụ phí hàng cồng kềnh,...
+                                    </h5>
                                 </div>
                             </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                {/* Tabs Section */}
+                <div className="mt-4 rounded-xl bg-white">
+                    {/* Tabs Navigation */}
+                    <div className="flex flex-wrap border-b border-gray-200">
+                        <div
+                            className={`text-xl font-bold  px-4 py-2 transition `}
+                        >
+                            Mô tả sách
+                        </div>
+                    </div>
+
+                    {/* Tab Content */}
+                    <div className="p-4">
+                        {/* Description */}
+                        <div
+                            ref={descriptionRef}
+                            className={`${styles.descriptionContent} p-4 rounded-lg text-base leading-relaxed whitespace-pre-line ${!isExpanded ? styles.collapsed : ''
+                                }`}
+                        >
+                            {product.description || 'Đang cập nhật...'}
+                        </div>
+                        {showReadMore && (
+                            <button
+                                onClick={() => setIsExpanded(!isExpanded)}
+                                className={styles.readMoreButton}
+                            >
+                                {isExpanded ? 'Thu gọn' : 'Xem thêm'}
+                            </button>
                         )}
 
-                        {/* Description */}
-                        {activeTab === 'description' && (
-                            <div>
-                                <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg text-base text-gray-700 leading-relaxed whitespace-pre-line">
-                                    {product.description || 'Đang cập nhật...'}
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

@@ -1,1 +1,1 @@
-export { default } from "./PostHome"
+export { default } from "./PostNewHomeForm"

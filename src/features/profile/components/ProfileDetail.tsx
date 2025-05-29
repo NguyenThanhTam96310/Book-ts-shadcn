@@ -41,11 +41,10 @@ export default function ProfileDetail() {
     }, [email]);
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
+        <div>
             {/* Sidebar */}
-            <MenuProfile />
             {/* Main content */}
-            <div className="flex-1 p-6">
+            <div className="flex-1">
                 <Alert className="mb-6 border-orange-200 bg-orange-50">
                     <Bell className="h-4 w-4 text-orange-500" />
                     <AlertTitle className="text-orange-500 font-medium">

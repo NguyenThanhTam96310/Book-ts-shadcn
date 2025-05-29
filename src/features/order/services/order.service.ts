@@ -1,5 +1,6 @@
 
 import { OrderOTPRes, PaymentBodyType } from "@/features/order/services/order.Schema";
+import { OrderRes, OrderVnPayRes } from "@/features/order/services/type";
 import axiosInstance from "@/lib/api/Config";
 import envConfig from "@/lib/api/envConfig";
 import { callApi } from "@/lib/api/Service";
@@ -55,4 +56,13 @@ export function otpCustomer(body: OrderOTPRes) {
         });
 
     return response; // validate với Zod
+}
+// export const fetchOrderbyCode = async (OrderRes: string): Promise<OrderRes> => {
+//     const endpoint = `${envConfig.NEXT_PUBLIC_API}/public/orders/code/${orderCode}`;
+//     return await callApi<OrderRes>(endpoint, "GET");
+// };
+export const fetchOrderbyCode = async (orderCode: string): Promise<OrderRes> => {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/orders/code/${orderCode}`)
+    return response.data as OrderRes
+
 }

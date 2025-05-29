@@ -3,7 +3,6 @@ import { signOut } from "next-auth/react";
 import {
     UserIcon,
     PowerIcon,
-    ChatBubbleLeftRightIcon,
     ShoppingCartIcon,
     TruckIcon,
 } from '@heroicons/react/24/outline';
@@ -13,14 +12,17 @@ import { USER_ID } from '@/constants/cartConstants';
 import CategoryMenu from '@/features/category/components/CategoryMenu';
 import { Search } from 'lucide-react';
 import { slugify } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+
 export default function Header() {
     const router = useRouter();
+    const pathname = usePathname(); // Lấy đường dẫn hiện tại
     const [keyword, setKeyword] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [userId, setUserId] = useState<number | null>(null);
+
     useEffect(() => {
         const loadUserId = () => {
             const storedUserId = localStorage.getItem(USER_ID);
@@ -52,36 +54,32 @@ export default function Header() {
             'next-auth.csrf-token',
             'next-auth.pkce.code_verifier',
             'next-auth.state',
-            'next-auth.session-token',  // Thêm cookie session-token nếu cần
-            'refreshToken',  // Thêm cookie session-token nếu cần
+            'next-auth.session-token',
+            'refreshToken',
         ];
 
         cookiesToDelete.forEach((cookieName) => {
             document.cookie = `${cookieName}=; expires=${new Date(0).toUTCString()}; path=/`;
         });
     };
+
     const handleSearch = async () => {
         if (!keyword.trim()) return;
 
         setLoading(true);
         const slug = slugify(keyword);
-        router.push(`/products?keyword=${slug}`)
+        router.push(`/products?keyword=${slug}`);
     };
+
     const handleLogout = () => {
-        // Xóa localStorage
         localStorage.clear();
-
-        // Xóa các cookie liên quan đến next-auth
         clearNextAuthCookies();
-
-        // Đăng xuất người dùng từ next-auth và chuyển hướng về trang chủ
         signOut();
+        // router.push('/');
     };
 
     return (
-        // sticky
-        <header className=" top-0 z-50 bg-orange-500 md:bg-white shadow-md border-b border-gray-200">
-
+        <header className="top-0 z-50 bg-orange-500 md:bg-white shadow-md border-b border-gray-200">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-col md:flex-row items-center justify-between gap-4">
                 <Link href="/" passHref>
                     <span
@@ -91,7 +89,6 @@ export default function Header() {
                         BOOKSTORE
                     </span>
                 </Link>
-                {/* Search Bar */}
                 <div className="flex items-center w-full md:w-1/2 lg:w-1/2 border border-gray-300 rounded overflow-hidden text-sm shadow-sm hover:shadow-md transition-shadow p-1 bg-white">
                     <CategoryMenu />
                     <input
@@ -99,14 +96,12 @@ export default function Header() {
                         onChange={(e) => setKeyword(e.target.value)}
                         type="text"
                         placeholder="Tìm kiếm sách, tác giả..."
-                        className=" flex-1 px-4 py-2 outline-none text-gray-700 placeholder-gray-400"
+                        className="flex-1 px-4 py-2 outline-none text-gray-700 placeholder-gray-400"
                     />
                     <button onClick={handleSearch} className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded hover:from-orange-600 hover:to-orange-700 transition-all hidden sm:block cursor-pointer">
                         <Search className="w-4 h-4" />
                     </button>
                 </div>
-
-                {/* Icons */}
                 <div className="flex items-center gap-4 sm:gap-6 text-gray-700">
                     {userId ? (
                         <>
@@ -118,18 +113,16 @@ export default function Header() {
                                 <span className="text-xs sm:text-sm font-medium hidden sm:block">Tài khoản</span>
                             </Link>
                             <div
-
                                 className="flex flex-col items-center group hover:text-orange-600 transition-colors relative"
+                                onClick={handleLogout}
                             >
-                                <PowerIcon onClick={() => handleLogout()} className="w-7 h-7 group-hover:scale-110 transition-transform" />
+                                <PowerIcon className="w-7 h-7 group-hover:scale-110 transition-transform" />
                                 <span className="text-xs sm:text-sm font-medium hidden sm:block">Đăng xuất</span>
-
                             </div>
-
                         </>
                     ) : (
                         <Link
-                            href="/login"
+                            href={`/login?redirect=${encodeURIComponent(pathname || "")}`}// Chuyển hướng về trang hiện tại
                             className="flex flex-col items-center group hover:text-orange-600 transition-colors"
                         >
                             <UserIcon className="w-7 h-7 group-hover:scale-110 transition-transform" />
@@ -157,8 +150,6 @@ export default function Header() {
                     </div>
                 </div>
             </div>
-
-
         </header>
     );
 }

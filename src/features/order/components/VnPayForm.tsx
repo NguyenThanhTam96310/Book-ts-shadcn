@@ -2,6 +2,9 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { OrderVnPayRes } from "@/features/order/services/type";
+import { fetchOrderbyCode } from "@/features/order/services/order.service";
 
 const VnPayForm = () => {
     const searchParams = useSearchParams();
@@ -11,8 +14,20 @@ const VnPayForm = () => {
     const vnp_OrderInfo = searchParams?.get("vnp_OrderInfo");
     const vnp_TxnRef = searchParams?.get("vnp_TxnRef");
     const vnp_SecureHash = searchParams?.get("vnp_SecureHash");
-
-    const isSuccess = vnp_ResponseCode === "00" && vnp_TransactionStatus === "00";
+    const [order, setOrder] = useState<OrderVnPayRes>();
+    useEffect(() => {
+        const loadProfile = async () => {
+            try {
+                if (!vnp_TxnRef) return;
+                const data = await fetchOrderbyCode(vnp_TxnRef);
+                setOrder(data);
+            } catch (error) {
+                console.error("Lỗi khi load profile:", error);
+            }
+        };
+        loadProfile();
+    }, [vnp_TxnRef])
+    const isSuccess = vnp_ResponseCode === "00" && vnp_TransactionStatus === "00" && order?.orderStatus === "PAID";
 
     return (
         <div className="min-h-[70vh] flex py-5 justify-center bg-gray-100">
