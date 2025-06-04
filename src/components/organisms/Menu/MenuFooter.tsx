@@ -1,124 +1,79 @@
-'use client';
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import {
-  fetchMenuFooter,
-  MenuItem,
-} from "@/features/menu";
-
-import {
-  ShoppingBag,
-  HelpCircle,
-  HeadphonesIcon,
-  TruckIcon,
-  RefreshCw,
-  PackageSearch,
-  User,
-  LogIn,
-  UserPlus,
-  Phone,
-  Mail,
-  Store,
-} from "lucide-react";
+// Mock MenuFooter component for demo
+import { HelpCircle, User, BookOpen, Award, ChevronRight } from "lucide-react"
 
 export default function MenuFooter() {
-  const [groupedMenus, setGroupedMenus] = useState<
-    (MenuItem & { childrens: MenuItem[] })[]
-  >([]);
-
-  useEffect(() => {
-    const loadMenus = async () => {
-      try {
-        const data = await fetchMenuFooter();
-        const footerMenus = data.filter((menu: MenuItem) => menu.position === "FOOTERMENU");
-
-        const parents = footerMenus.filter((menu) => !menu.parent);
-        const grouped = parents.map((parent) => ({
-          ...parent,
-          childrens: footerMenus.filter((child) => child.parent?.menuId === parent.menuId),
-        }));
-
-        setGroupedMenus(grouped);
-      } catch (error) {
-        console.error("Lỗi khi load Menu:", error);
-      }
-    };
-
-    loadMenus();
-  }, []);
+  const footerSections = [
+    {
+      title: "Dịch vụ khách hàng",
+      icon: HelpCircle,
+      links: [
+        { name: "Hướng dẫn mua hàng", href: "/guide" },
+        { name: "Chính sách đổi trả", href: "/return-policy" },
+        { name: "Phương thức thanh toán", href: "/payment" },
+        { name: "Vận chuyển & Giao hàng", href: "/shipping" },
+        { name: "Câu hỏi thường gặp", href: "/faq" },
+      ],
+    },
+    {
+      title: "Về chúng tôi",
+      icon: BookOpen,
+      links: [
+        { name: "Giới thiệu BOOKSTORE", href: "/about" },
+        { name: "Tuyển dụng", href: "/careers" },
+        { name: "Chương trình đối tác", href: "/partners" },
+        { name: "Tin tức & Sự kiện", href: "/news" },
+        { name: "Liên hệ", href: "/contact" },
+      ],
+    },
+    {
+      title: "Tài khoản",
+      icon: User,
+      links: [
+        { name: "Đăng nhập", href: "/login" },
+        { name: "Đăng ký", href: "/register" },
+        { name: "Quên mật khẩu", href: "/forgot-password" },
+        { name: "Tài khoản của tôi", href: "/profile" },
+        { name: "Lịch sử đơn hàng", href: "/orders" },
+      ],
+    },
+    {
+      title: "Danh mục sách",
+      icon: Award,
+      links: [
+        { name: "Sách văn học", href: "/category/literature" },
+        { name: "Sách kinh tế", href: "/category/business" },
+        { name: "Sách thiếu nhi", href: "/category/children" },
+        { name: "Sách học ngoại ngữ", href: "/category/language" },
+        { name: "Sách kỹ năng sống", href: "/category/self-help" },
+      ],
+    },
+  ]
 
   return (
-    <div className="md:col-span-8">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {groupedMenus.map((parent) => (
-          <div key={parent.menuId} className="text-left">
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-orange-500">
-              {getIcon(parent.name)}
-              <span>{parent.name}</span>
-            </h3>
-
-            <ul className="space-y-2 text-sm text-white">
-              {parent.childrens.map((child) => (
-                <li key={child.menuId}>
-                  <Link
-                    href={child.link}
-                    className="hover:text-orange-400 flex items-center gap-2"
-                  >
-                    {getIcon(child.name)}
-                    <span>{child.name}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {footerSections.map((section, index) => (
+        <div key={index} className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
+              <section.icon className="w-4 h-4 text-white" />
+            </div>
+            <h3 className="font-bold text-white text-lg">{section.title}</h3>
           </div>
-        ))}
-      </div>
+          <ul className="space-y-3">
+            {section.links.map((link, linkIndex) => (
+              <li key={linkIndex}>
+                <a
+                  href={link.href}
+                  className="text-gray-300 hover:text-orange-400 transition-colors duration-200 flex items-center gap-2 group text-sm"
+                >
+                  <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200" />
+                  <span className="group-hover:translate-x-1 transition-transform duration-200">{link.name}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
-  );
-}
-
-// Hàm trả về icon phù hợp với tên menu
-function getIcon(name: string) {
-  const normalized = name.toLowerCase();
-
-  switch (normalized) {
-    case "dịch vụ":
-      return <ShoppingBag size={16} />;
-    case "hỗ trợ":
-      return <HelpCircle size={16} />;
-    case "tài khoản":
-      return <User size={16} />;
-    case "liên hệ":
-      return <Phone size={16} />;
-
-    case "sản phẩm":
-      return <ShoppingBag size={14} />;
-    case "câu hỏi thường gặp":
-      return <HelpCircle size={14} />;
-    case "hỗ trợ khách hàng":
-      return <HeadphonesIcon size={14} />;
-    case "vận chuyển":
-      return <TruckIcon size={14} />;
-    case "chính sách đổi trả":
-      return <RefreshCw size={14} />;
-    case "theo dõi đơn hàng":
-      return <PackageSearch size={14} />;
-
-    case "đăng nhập":
-      return <LogIn size={14} />;
-    case "đăng ký":
-      return <UserPlus size={14} />;
-    case "tài khoản của tôi":
-      return <User size={14} />;
-
-    case "email":
-      return <Mail size={14} />;
-    case "sđt":
-      return <Phone size={14} />;
-    case "tìm cửa hàng":
-      return <Store size={14} />;
-    default:
-      return null;
-  }
+  )
 }

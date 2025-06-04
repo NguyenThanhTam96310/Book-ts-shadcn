@@ -2,74 +2,237 @@ import MenuFooter from "@/components/organisms/Menu/MenuFooter"
 import {
     BookOpen,
     MapPin,
-    Truck,
-    ShoppingBag,
-    HelpCircle,
     HeadphonesIcon,
     TruckIcon,
     RefreshCw,
-    PackageSearch,
-    LogIn,
-    UserPlus,
-    User,
     Mail,
     Phone,
-    Store,
     Shield,
-    Info,
+    Facebook,
+    Instagram,
+    Twitter,
+    Youtube,
+    Heart,
+    Award,
+    Clock,
+    CheckCircle,
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 
 export default function Footer() {
     return (
-        <footer className="bg-blue-950 text-white py-8">
-            <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                    {/* Column 1: BOOKSTORE */}
-                    <div className="md:col-span-4 text-left border-r border-orange-500 pr-4">
-                        <div className="flex items-center gap-2 text-orange-500 text-2xl font-bold w-full md:w-auto mb-4">
-                            <BookOpen className="sm:inline" />
-                            BOOKSTORE
-                        </div>
-                        <ul className="space-y-2 text-sm">
-                            <li>
-                                <a href="/about" className="block flex items-start">
-                                    <MapPin className="h-4 w-4 mr-2 mt-1 text-orange-500 shrink-0" />
-                                    <span>
-                                        Lầu 5, 387-389 Hai Bà Trưng, Quận 3, TP.HCM
-                                        <br />
-                                        Công ty CP Phát Hành Sách TP HCM – FAHASA
-                                        <br />
-                                        60–62 Lê Lợi, Quận 1, TP.HCM, Việt Nam
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/contact" className="block flex items-start">
-                                    <Truck className="h-4 w-4 mr-2 mt-1 text-orange-500 shrink-0" />
-                                    <span>
-                                        Fahasa.com nhận đặt hàng trực tuyến và giao hàng tận nơi.
-                                        <br />
-                                        KHÔNG hỗ trợ đặt mua và nhận hàng trực tiếp tại văn phòng.
-                                    </span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    <MenuFooter />
-                </div>
-
+        <footer className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-5">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Ccircle%20cx%3D%227%22%20cy%3D%227%22%20r%3D%221%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
             </div>
 
-            {/* Footer bottom */}
-            <div className="mt-8 border-t border-orange-500 pt-4 text-center text-sm space-y-1">
-                <p className="flex items-center justify-center gap-2">
-                    <Shield className="h-4 w-4 text-orange-500" />
-                    <span>© Chính sách bảo mật – Điều khoản sử dụng – Thông tin người dùng – Hướng dẫn yêu cầu pháp lý</span>
-                </p>
-                <p className="flex items-center justify-center gap-2">
-                    <Info className="h-4 w-4 text-orange-500" />
-                    <span>© 2025 Công ty XYZ. All Rights Reserved.</span>
-                </p>
+            {/* Top Section - Features */}
+            <div className="relative border-b border-orange-500/20 bg-gradient-to-r from-orange-500/10 to-red-500/10 backdrop-blur-sm">
+                <div className="container mx-auto px-4 py-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all duration-300 group">
+                            <div className="p-6 text-center">
+                                <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <TruckIcon className="w-6 h-6 text-white" />
+                                </div>
+                                <h3 className="font-bold text-white mb-2">Giao hàng nhanh</h3>
+                                <p className="text-gray-300 text-sm">Miễn phí vận chuyển đơn từ 200k</p>
+                            </div>
+                        </Card>
+
+                        <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all duration-300 group">
+                            <div className="p-6 text-center">
+                                <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <RefreshCw className="w-6 h-6 text-white" />
+                                </div>
+                                <h3 className="font-bold text-white mb-2">Đổi trả dễ dàng</h3>
+                                <p className="text-gray-300 text-sm">30 ngày đổi trả miễn phí</p>
+                            </div>
+                        </Card>
+
+                        <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all duration-300 group">
+                            <div className="p-6 text-center">
+                                <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <HeadphonesIcon className="w-6 h-6 text-white" />
+                                </div>
+                                <h3 className="font-bold text-white mb-2">Hỗ trợ 24/7</h3>
+                                <p className="text-gray-300 text-sm">Tư vấn nhiệt tình, chu đáo</p>
+                            </div>
+                        </Card>
+
+                        <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all duration-300 group">
+                            <div className="p-6 text-center">
+                                <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <Award className="w-6 h-6 text-white" />
+                                </div>
+                                <h3 className="font-bold text-white mb-2">Chất lượng đảm bảo</h3>
+                                <p className="text-gray-300 text-sm">Sách chính hãng 100%</p>
+                            </div>
+                        </Card>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Footer Content */}
+            <div className="relative py-12">
+                <div className="container mx-auto px-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* Company Info */}
+                        <div className="lg:col-span-4">
+                            <div className="space-y-6">
+                                {/* Logo */}
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                                        <BookOpen className="w-7 h-7 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+                                            BOOKSTORE
+                                        </h2>
+                                        <p className="text-gray-400 text-sm">Tri thức là sức mạnh</p>
+                                    </div>
+                                </div>
+
+                                {/* Company Description */}
+                                <p className="text-gray-300 leading-relaxed">
+                                    Hệ thống nhà sách hàng đầu Việt Nam với hơn 10 năm kinh nghiệm phục vụ độc giả.
+                                    Chúng tôi cam kết mang đến những cuốn sách chất lượng cao với giá cả hợp lý.
+                                </p>
+
+                                {/* Contact Info */}
+                                <div className="space-y-3">
+                                    <div className="flex items-start gap-3 group">
+                                        <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
+                                            <MapPin className="w-4 h-4 text-orange-400" />
+                                        </div>
+                                        <div className="text-sm text-gray-300">
+                                            <p className="font-medium text-white mb-1">Địa chỉ chính:</p>
+                                            <p>Lầu 5, 387-389 Hai Bà Trưng, Quận 3, TP.HCM</p>
+                                            <p>60–62 Lê Lợi, Quận 1, TP.HCM, Việt Nam</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3 group">
+                                        <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/30 transition-colors">
+                                            <Phone className="w-4 h-4 text-blue-400" />
+                                        </div>
+                                        <div className="text-sm text-gray-300">
+                                            <p className="font-medium text-white mb-1">Hotline:</p>
+                                            <p>1900-1234 (24/7)</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3 group">
+                                        <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/30 transition-colors">
+                                            <Mail className="w-4 h-4 text-green-400" />
+                                        </div>
+                                        <div className="text-sm text-gray-300">
+                                            <p className="font-medium text-white mb-1">Email:</p>
+                                            <p>support@bookstore.vn</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Social Media */}
+                                <div>
+                                    <h3 className="font-semibold text-white mb-3">Kết nối với chúng tôi</h3>
+                                    <div className="flex gap-3">
+                                        {[
+                                            { icon: Facebook, color: "hover:bg-blue-600", label: "Facebook" },
+                                            { icon: Instagram, color: "hover:bg-pink-600", label: "Instagram" },
+                                            { icon: Twitter, color: "hover:bg-sky-600", label: "Twitter" },
+                                            { icon: Youtube, color: "hover:bg-red-600", label: "Youtube" },
+                                        ].map((social, index) => (
+                                            <Button
+                                                key={index}
+                                                variant="ghost"
+                                                size="icon"
+                                                className={`bg-white/10 hover:bg-white/20 ${social.color} transition-all duration-300 hover:scale-110`}
+                                                aria-label={social.label}
+                                            >
+                                                <social.icon className="w-5 h-5" />
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Menu Footer */}
+                        <div className="lg:col-span-8">
+                            <MenuFooter />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Newsletter Section */}
+            <div className="relative border-t border-white/10 bg-gradient-to-r from-orange-500/10 to-red-500/10">
+                <div className="container mx-auto px-4 py-8">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="text-center md:text-left">
+                            <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                                <Heart className="w-5 h-5 text-red-400" />
+                                Đăng ký nhận tin khuyến mãi
+                            </h3>
+                            <p className="text-gray-300">Nhận thông báo về sách mới và ưu đãi đặc biệt</p>
+                        </div>
+                        <div className="flex gap-2 w-full md:w-auto max-w-md">
+                            <input
+                                type="email"
+                                placeholder="Nhập email của bạn..."
+                                className="flex-1 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent backdrop-blur-sm"
+                            />
+                            <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                                Đăng ký
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Footer */}
+            <div className="relative border-t border-white/10 bg-black/20">
+                <div className="container mx-auto px-4 py-6">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+                        <div className="flex flex-col md:flex-row items-center gap-4 text-gray-400">
+                            <div className="flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-green-400" />
+                                <span>Bảo mật thông tin 100%</span>
+                            </div>
+                            <Separator orientation="vertical" className="hidden md:block h-4 bg-white/20" />
+                            <div className="flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4 text-blue-400" />
+                                <span>Chính hãng đảm bảo</span>
+                            </div>
+                        </div>
+
+                        <div className="text-center text-gray-400">
+                            <p>© 2025 BOOKSTORE. Tất cả quyền được bảo lưu.</p>
+                        </div>
+                    </div>
+
+                    <Separator className="my-4 bg-white/10" />
+
+                    <div className="text-center text-xs text-gray-500 space-y-1">
+                        <p>
+                            <a href="/privacy" className="hover:text-orange-400 transition-colors">Chính sách bảo mật</a>
+                            {" • "}
+                            <a href="/terms" className="hover:text-orange-400 transition-colors">Điều khoản sử dụng</a>
+                            {" • "}
+                            <a href="/user-info" className="hover:text-orange-400 transition-colors">Thông tin người dùng</a>
+                            {" • "}
+                            <a href="/legal" className="hover:text-orange-400 transition-colors">Hướng dẫn pháp lý</a>
+                        </p>
+                        <p className="flex items-center justify-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            Cập nhật lần cuối: {new Date().toLocaleDateString('vi-VN')}
+                        </p>
+                    </div>
+                </div>
             </div>
         </footer>
     )

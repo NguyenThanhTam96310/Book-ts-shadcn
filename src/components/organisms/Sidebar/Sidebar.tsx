@@ -156,16 +156,16 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
             <div className="space-y-4">
                 {/* Nhóm sản phẩm */}
                 <div className="flex justify-end mb-4">
-                    <button onClick={resetFilters} className="text-orange-600 hover:text-orange-700">
+                    <button onClick={resetFilters} className="text-orange-600 hover:text-orange-700 cursor-pointer">
                         Xóa bộ lọc
                     </button>
                 </div>
                 <div>
                     <button
                         onClick={() => toggleSection('categories')}
-                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors"
+                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
-                        <span>TẤT CẢ DANH MỤC</span>
+                        <span>Tất cả danh mục</span>
                         {openSections['categories'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </button>
                     <div
@@ -179,11 +179,11 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                         <label className="flex items-center gap-2">
                                             <input
                                                 type="checkbox"
-                                                className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                                className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
                                                 checked={selectedCategoryId === category.categoryId}
                                                 onChange={() => handleCategoryChange(Number(category.categoryId))}
                                             />
-                                            <span className="font-semibold text-gray-800">{category.categoryName}</span>
+                                            <span className="font-semibold text-gray-800 cursor-pointer">{category.categoryName}</span>
                                         </label>
                                         {category.childrens && category.childrens.length > 0 && (
                                             <button onClick={() => toggleCategory(Number(category.categoryId))}>
@@ -197,16 +197,16 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                     </div>
                                     {category.childrens && category.childrens.length > 0 && (
                                         <div
-                                            className={`overflow-hidden transition-all duration-300 ${openCategories[category.categoryId] ? 'max-h-screen' : 'max-h-0'
+                                            className={`overflow-hidden transition-all duration-300 cursor-pointer ${openCategories[category.categoryId] ? 'max-h-screen' : 'max-h-0 '
                                                 }`}
                                         >
                                             <ul className="ml-6 space-y-1 mt-1">
                                                 {category.childrens.map((child) => (
                                                     <li key={child.categoryId}>
-                                                        <label className="flex items-center gap-2 text-gray-600 hover:text-orange-500 transition-colors">
+                                                        <label className="flex items-center gap-2 text-gray-600 hover:text-orange-500 transition-colors cursor-pointer">
                                                             <input
                                                                 type="checkbox"
-                                                                className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                                                className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
                                                                 checked={selectedCategoryId === child.categoryId}
                                                                 onChange={() => handleCategoryChange(Number(child.categoryId))}
                                                             />
@@ -227,9 +227,9 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 <div>
                     <button
                         onClick={() => toggleSection('price')}
-                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors"
+                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
-                        <span>Giá</span>
+                        <span >Giá</span>
                         {openSections['price'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </button>
                     <div
@@ -238,10 +238,10 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                     >
                         <ul className="space-y-2 mt-2 text-gray-700">
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors">
+                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer "
                                         checked={selectedPriceRange === '0-150000'}
                                         onChange={() => handlePriceChange(0, 150000, '0-150000')}
                                     />
@@ -249,10 +249,10 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                 </label>
                             </li>
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors">
+                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
                                         checked={selectedPriceRange === '150000-300000'}
                                         onChange={() => handlePriceChange(150000, 300000, '150000-300000')}
                                     />
@@ -260,10 +260,10 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                 </label>
                             </li>
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors">
+                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
                                         checked={selectedPriceRange === '300000-500000'}
                                         onChange={() => handlePriceChange(300000, 500000, '300000-500000')}
                                     />
@@ -271,10 +271,10 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                 </label>
                             </li>
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors">
+                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
                                         checked={selectedPriceRange === '500000-700000'}
                                         onChange={() => handlePriceChange(500000, 700000, '500000-700000')}
                                     />
@@ -282,7 +282,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                 </label>
                             </li>
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors">
+                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
                                     <input
                                         type="checkbox"
                                         className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
@@ -300,7 +300,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 <div>
                     <button
                         onClick={() => toggleSection('publishers')}
-                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors"
+                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
                         <span>Nhà xuất bản</span>
                         {openSections['publishers'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -312,10 +312,10 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                         <ul className="space-y-2 mt-2 text-gray-700">
                             {publishers.map((publisher) => (
                                 <li key={publisher.publisherId}>
-                                    <label className="flex items-center gap-2 hover:text-orange-500 transition-colors">
+                                    <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                            className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
                                             checked={selectedPublisherId === publisher.publisherId}
                                             onChange={() => handlePublisherChange(Number(publisher.publisherId))}
                                         />
@@ -331,7 +331,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 <div>
                     <button
                         onClick={() => toggleSection('authors')}
-                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors"
+                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
                         <span>Tác giả </span>
                         {openSections['authors'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -343,10 +343,10 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                         <ul className="space-y-2 mt-2 text-gray-700">
                             {authors.map((author) => (
                                 <li key={author.authorId}>
-                                    <label className="flex items-center gap-2 hover:text-orange-500 transition-colors">
+                                    <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                            className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
                                             checked={selectedAuthorIds.includes(Number(author.authorId))}
                                             onChange={() => handleAuthorChange(Number(author.authorId))}
                                         />
@@ -362,7 +362,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 <div>
                     <button
                         onClick={() => toggleSection('languages')}
-                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors"
+                        className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
                         <span>Ngôn ngữ</span>
                         {openSections['languages'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -374,10 +374,10 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                         <ul className="space-y-2 mt-2 text-gray-700">
                             {languages.map((language) => (
                                 <li key={language.languageId}>
-                                    <label className="flex items-center gap-2 hover:text-orange-500 transition-colors">
+                                    <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
+                                            className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
                                             checked={selectedLanguageIds.includes(Number(language.languageId))}
                                             onChange={() => handleLanguageChange(Number(language.languageId))}
                                         />

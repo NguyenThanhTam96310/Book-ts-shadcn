@@ -20,7 +20,7 @@ const ProductPage = () => {
     // Lấy các tham số từ query string, nếu không có thì sử dụng giá trị mặc định
     const initialSortBy = searchParams?.get("sortBy") || "productId";
     const initialSortOrder = searchParams?.get("sortOrder") || "asc";
-    const initialPageSize = searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 5;
+    const initialPageSize = searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 12;
     const initialPageNumber = searchParams?.get("pageNumber") ? Number(searchParams?.get("pageNumber")) : 1;
     const initialCategoryId = searchParams?.get("categoryId") ? Number(searchParams?.get("categoryId")) : undefined;
     const initialAuthorIds = searchParams?.getAll("authorIds").length
@@ -57,7 +57,7 @@ const ProductPage = () => {
         const newParams: Partial<FetchProductListParams> = {
             sortBy: searchParams?.get("sortBy") || "productId",
             sortOrder: (searchParams?.get("sortOrder") as "asc" | "desc") || "asc",
-            pageSize: searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 5,
+            pageSize: searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 12,
             pageNumber: searchParams?.get("pageNumber") ? Number(searchParams?.get("pageNumber")) : 1,
             categoryId: searchParams?.get("categoryId") ? Number(searchParams?.get("categoryId")) : undefined,
             authorIds: searchParams?.getAll("authorIds").length
@@ -85,7 +85,7 @@ const ProductPage = () => {
 
         if (filterParams.sortBy && filterParams.sortBy !== "productId") query.set("sortBy", filterParams.sortBy);
         if (filterParams.sortOrder && filterParams.sortOrder !== "asc") query.set("sortOrder", filterParams.sortOrder);
-        if (filterParams.pageSize && filterParams.pageSize !== 5) query.set("pageSize", filterParams.pageSize.toString());
+        if (filterParams.pageSize && filterParams.pageSize !== 12) query.set("pageSize", filterParams.pageSize.toString());
         if (filterParams.pageNumber && filterParams.pageNumber !== 1) query.set("pageNumber", filterParams.pageNumber.toString());
         if (filterParams.categoryId !== undefined) query.set("categoryId", filterParams.categoryId.toString());
         if (filterParams.authorIds !== undefined && filterParams.authorIds.length > 0) {
@@ -193,7 +193,7 @@ const ProductPage = () => {
                             </h2>
                             <div className="flex flex-wrap items-center gap-4 mb-4">
                                 <div className="flex items-center gap-2">
-                                    <label className="flex items-center gap-2 text-sm sm:text-base text-gray-700">
+                                    <label className="flex items-center gap-2 text-sm sm:text-base text-gray-700 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={filterParams.isSale || false}
@@ -203,10 +203,10 @@ const ProductPage = () => {
                                         Giảm giá
                                     </label>
                                 </div>
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 cursor-pointer">
                                     <span className="text-gray-700 text-sm sm:text-base">Sắp xếp theo:</span>
                                     <select
-                                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer"
                                         onChange={handleSortChange}
                                         value={
                                             filterParams.isSale
@@ -214,22 +214,21 @@ const ProductPage = () => {
                                                 : `${filterParams.sortBy}_${filterParams.sortOrder}`
                                         }
                                     >
-                                        <option value="price_asc">Giá tăng dần</option>
-                                        <option value="price_desc">Giá giảm dần</option>
+                                        <option className="cursor-pointer" value="price_asc">Giá tăng dần</option>
+                                        <option className="cursor-pointer" value="price_desc">Giá giảm dần</option>
                                     </select>
                                 </div>
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                                     <div className="flex items-center gap-2">
                                         <span className="text-gray-700 text-sm sm:text-base">Hiển thị:</span>
                                         <select
-                                            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                                            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer"
                                             onChange={handlePageSizeChange}
                                             value={filterParams.pageSize}
                                         >
-                                            <option value="4">4 sản phẩm</option>
-                                            <option value="8">8 sản phẩm</option>
-                                            <option value="16">16 sản phẩm</option>
-                                            <option value="32">32 sản phẩm</option>
+                                            <option value="12">12 sản phẩm</option>
+                                            <option value="24">24 sản phẩm</option>
+                                            <option value="36">36 sản phẩm</option>
                                         </select>
                                     </div>
                                 </div>

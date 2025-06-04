@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import { MessageCircle, RotateCcw, CheckCircle } from "lucide-react"
 import { OrderRes } from "@/features/order/services/type"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 function formatCurrency(amount: number): string {
     return new Intl.NumberFormat("vi-VN", {
@@ -18,6 +19,7 @@ function formatCurrency(amount: number): string {
 }
 
 function getStatusBadge(status: string) {
+
     switch (status) {
         case "PAID":
             return (
@@ -47,6 +49,10 @@ function getStatusBadge(status: string) {
 }
 
 export default function OrderItem({ order }: { order: OrderRes }) {
+    const router = useRouter();
+    const handleClick = () => {
+        router.push(`/profile/order/${order.orderCode}`);
+    };
 
     return (
         <Card className="w-full max-w-4xl ">
@@ -74,7 +80,7 @@ export default function OrderItem({ order }: { order: OrderRes }) {
                                 ? Math.round(product.price - product.price * ((product.discount ?? 0) / 100))
                                 : product.price
                         return (
-                            <div key={orderItem.orderItemId} className="flex flex-col sm:flex-row gap-4 py-4 border-b border-gray-200">
+                            <div key={orderItem.orderItemId} className="flex flex-col sm:flex-row gap-4 py-4 border-b border-gray-200 cursor-pointer" onClick={handleClick}>
                                 {/* Product image */}
                                 <div className="relative">
                                     <Image
@@ -101,13 +107,16 @@ export default function OrderItem({ order }: { order: OrderRes }) {
                                 {/* Product info */}
                                 <div className="flex-1">
                                     <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
-                                        <Link href={`/profile/order/${order.orderCode}`}>
-                                            {product?.productName}
-                                        </Link>
+                                        {product?.productName}
                                     </h3>
                                     {product?.categories && (
                                         <p className="text-xs text-gray-600 mb-1">
                                             Sách: {product.categories?.map((c) => c.categoryName).join(', ')}
+                                        </p>
+                                    )}
+                                    {product?.authors && (
+                                        <p className="text-xs text-gray-600 mb-1">
+                                            Tác giả: {product.authors?.map((a) => a.authorName).join(', ')}
                                         </p>
                                     )}
                                     <p className="text-xs text-gray-600">x{orderItem.quantity ?? 1}</p>
@@ -131,14 +140,14 @@ export default function OrderItem({ order }: { order: OrderRes }) {
                     })}
 
                     {/* Total */}
-                    <div className="flex justify-end my-4">
+                    <div className="flex justify-end mt-4">
                         <span className="text-sm font-medium">Thành tiền: <span className="text-2xl font-bold text-red-600">
                             {formatCurrency(order?.totalAmount ?? 0)}
                         </span> </span>
 
                     </div>
 
-                    {/* Action buttons */}
+                    {/* Action buttons
                     <div className="flex flex-col sm:flex-row gap-3 justify-end">
                         <Button variant="outline" className="flex items-center gap-2 text-sm h-10">
                             <RotateCcw className="w-4 h-4" />
@@ -148,7 +157,7 @@ export default function OrderItem({ order }: { order: OrderRes }) {
                             <MessageCircle className="w-4 h-4" />
                             Liên Hệ Người Bán
                         </Button>
-                    </div>
+                    </div> */}
                 </div>
             </CardContent>
         </Card>

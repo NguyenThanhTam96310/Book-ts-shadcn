@@ -270,16 +270,17 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                 <h1 className="text-3xl font-bold">{product.productName}</h1>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                                <div className="w-2/3 text-base font-semibold truncate max-w-[400px]">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                                <div className="w-full sm:w-2/3 text-base font-semibold truncate max-w-[400px]">
                                     Nhà xuất bản: {product.publisher?.publisherName || 'Đang cập nhật'}
                                 </div>
-                                <div className="w-1/3 text-base font-semibold text-right">
+                                <div className="w-full sm:w-1/3 text-base font-semibold sm:text-right">
                                     {(product.authors?.length || 0) > 1
                                         ? 'Tác giả: Nhiều tác giả'
                                         : `Tác giả: ${product.authors?.[0]?.authorName || 'Đang cập nhật'}`}
                                 </div>
                             </div>
+
 
                             <div className="flex items-center gap-3 my-3">
                                 <div className="w-2/3 text-base font-semibold truncate max-w-[300px]">
@@ -343,7 +344,7 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                                 const value = parseInt(e.target.value);
                                                 setQuantity(isNaN(value) || value < 1 ? 1 : value);
                                             }}
-                                            className="w-16 text-center border-x outline-none no-spinner"
+                                            className={`w-16 text-center border-x outline-none ${styles.noSpinner}`}
                                         />
                                         <button
                                             onClick={() => setQuantity(prev => prev + 1)}

@@ -1,5 +1,6 @@
 import { emailVerifySchema, RegisterBodyType, LoginGoogleResponseSchema, LoginGoogleResponse, LoginGoogleRes, LoginGoogleResSchema } from "@/features/auth/services/auth.schema";
 import { UserProps } from "@/features/auth/services/type";
+import { UserRes } from "@/features/profile/services/type";
 import axiosInstance from "@/lib/api/Config";
 import envConfig from "@/lib/api/envConfig";
 import { callApi } from "@/lib/api/Service";
@@ -19,7 +20,7 @@ export function login(body: { username: string; password: string }) {
         })
 }
 
-export const fetchUserByToken = async (accessToken: any): Promise<UserProps> => {
+export const fetchUserByToken = async (accessToken: any): Promise<UserRes> => {
     const response = axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/users/infor`, {
         headers: {
             accept: "*/*",

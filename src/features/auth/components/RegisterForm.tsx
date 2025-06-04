@@ -32,9 +32,9 @@ import { getDistricts, getProvinces, getWards } from "@/features/order/services/
 
 const RegisterForm = () => {
     const router = useRouter();
-    const [provinces, setProvinces] = useState<any[]>([]);
-    const [districts, setDistricts] = useState<any[]>([]);
-    const [wards, setWards] = useState<any[]>([]);
+    // const [provinces, setProvinces] = useState<any[]>([]);
+    // const [districts, setDistricts] = useState<any[]>([]);
+    // const [wards, setWards] = useState<any[]>([]);
 
     const form = useForm<z.infer<typeof RegisterBody>>({
         resolver: zodResolver(RegisterBody),
@@ -45,57 +45,50 @@ const RegisterForm = () => {
             username: "",
             password: "",
             confirmPassword: "",
-            address: {
-                ward: "",
-                buildingName: "",
-                city: "",
-                district: "",
-                country: "Việt Nam",
-            }
         }
     });
-    const selectedProvince = form.watch("address.city");
-    const selectedDistrict = form.watch("address.district");
-    // Fetch provinces
-    useEffect(() => {
-        getProvinces().then(setProvinces);
-    }, []);
+    // const selectedProvince = form.watch("address.city");
+    // const selectedDistrict = form.watch("address.district");
+    // // Fetch provinces
+    // useEffect(() => {
+    //     getProvinces().then(setProvinces);
+    // }, []);
 
-    // Fetch districts based on selected province
-    useEffect(() => {
-        const provinceId = parseInt(selectedProvince);
-        if (provinceId) {
-            getDistricts(provinceId).then(setDistricts);
-            form.setValue("address.district", ""); // Reset district
-            form.setValue("address.ward", ""); // Reset ward
-            setDistricts([]);
-            setWards([]);
-        }
-    }, [selectedProvince, form]);
+    // // Fetch districts based on selected province
+    // useEffect(() => {
+    //     const provinceId = parseInt(selectedProvince);
+    //     if (provinceId) {
+    //         getDistricts(provinceId).then(setDistricts);
+    //         form.setValue("address.district", ""); // Reset district
+    //         form.setValue("address.ward", ""); // Reset ward
+    //         setDistricts([]);
+    //         setWards([]);
+    //     }
+    // }, [selectedProvince, form]);
 
-    // Fetch wards based on selected district
-    useEffect(() => {
-        const districtId = parseInt(selectedDistrict);
-        if (districtId) {
-            getWards(districtId).then(setWards);
-            form.setValue("address.ward", ""); // Reset ward
-        }
-    }, [selectedDistrict, form]);
+    // // Fetch wards based on selected district
+    // useEffect(() => {
+    //     const districtId = parseInt(selectedDistrict);
+    //     if (districtId) {
+    //         getWards(districtId).then(setWards);
+    //         form.setValue("address.ward", ""); // Reset ward
+    //     }
+    // }, [selectedDistrict, form]);
     const onSubmit = async (values: z.infer<typeof RegisterBody>) => {
         try {
-            let orderData = { ...values };
+            // let orderData = { ...values };
 
-            // Lấy tên Tỉnh/Thành phố
-            const selectedProvinceObject = provinces.find((p) => String(p.ProvinceID) === values.address.city);
-            orderData.address.city = selectedProvinceObject?.ProvinceName || "";
+            // // Lấy tên Tỉnh/Thành phố
+            // const selectedProvinceObject = provinces.find((p) => String(p.ProvinceID) === values.address.city);
+            // orderData.address.city = selectedProvinceObject?.ProvinceName || "";
 
-            // Lấy tên Quận/Huyện
-            const selectedDistrictObject = districts.find((d) => String(d.DistrictID) === values.address.district);
-            orderData.address.district = selectedDistrictObject?.DistrictName || "";
+            // // Lấy tên Quận/Huyện
+            // const selectedDistrictObject = districts.find((d) => String(d.DistrictID) === values.address.district);
+            // orderData.address.district = selectedDistrictObject?.DistrictName || "";
 
-            // Lấy tên Phường/Xã
-            const selectedWardObject = wards.find((w) => w.WardCode === values.address.ward);
-            orderData.address.ward = selectedWardObject?.WardName || "";
+            // // Lấy tên Phường/Xã
+            // const selectedWardObject = wards.find((w) => w.WardCode === values.address.ward);
+            // orderData.address.ward = selectedWardObject?.WardName || "";
             const result = await registerUser(values) as RegisterResType;
             // console.log(result.message);
             toast.success(result.message || "Đăng ký thành công!");
@@ -224,7 +217,7 @@ const RegisterForm = () => {
                             />
                         </div>
                         <Separator className="my-4" />
-                        <h3 className="text-lg font-semibold text-gray-700">Địa chỉ</h3>
+                        {/* <h3 className="text-lg font-semibold text-gray-700">Địa chỉ</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <FormField
                                 name="address.city"
@@ -354,7 +347,7 @@ const RegisterForm = () => {
                                     </FormItem>
                                 )}
                             />
-                        </div>
+                        </div> */}
 
                         <Button
                             type="submit"

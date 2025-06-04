@@ -89,8 +89,9 @@
     /* Không có height hoặc overflow-y để cuộn tự nhiên cùng trang */
 }
 
+/* 
 :global(body) {
     margin: 0;
     overflow-y: auto;
     height: 100%;
-}
+} */

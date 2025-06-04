@@ -31,7 +31,7 @@ const CategoryHomeForm = () => {
                         key={category.categoryId}
                         categoryId={category.categoryId}
                         categoryName={category.categoryName}
-                        image={category.image || "/placeholder.svg?height=400&width=280"}
+                        image={category.image}
                         slug={category.slug} />
                 ))}
             </div>

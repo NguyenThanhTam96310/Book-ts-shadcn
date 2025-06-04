@@ -36,7 +36,6 @@ export const authOptions: NextAuthOptions = {
                         const res = await login({
                             username: credentials.email,
                             password: credentials.password
-
                         });
                         return res;
                     }
@@ -96,11 +95,9 @@ export const authOptions: NextAuthOptions = {
         },
 
         async signIn() {
-            // console.log('user::', user);
             try {
                 return true;
             } catch (err: any) {
-                // console.log('err', err);
                 throw new Error();
             }
         },

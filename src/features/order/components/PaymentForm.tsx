@@ -38,6 +38,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import PromotionForm from "@/features/promotion/components/PromotionForm";
+import { UserRes } from "@/features/profile/services/type";
 
 const cartSchema = z.object({
     cartItems: z.array(
@@ -93,7 +94,7 @@ export default function PaymentForm() {
     });
 
     const [userId, setUserId] = useState<number | null>(null);
-    const [user, setUser] = useState<UserProps | null>(null);
+    const [user, setUser] = useState<UserRes | null>(null);
     const [showCouponOptions, setShowCouponOptions] = useState(false);
     const [couponInput, setCouponInput] = useState("");
     const [appliedCoupons, setAppliedCoupons] = useState<string[]>([]);
@@ -112,6 +113,7 @@ export default function PaymentForm() {
 
     const selectedProvince = form.watch("order.address.city");
     const selectedDistrict = form.watch("order.address.district");
+    const selectedWard = form.watch("order.address.ward");
     const router = useRouter();
     const [otpInfo, setOtpInfo] = useState<{
         orderId: number
@@ -123,30 +125,75 @@ export default function PaymentForm() {
     // Fetch user info
     useEffect(() => {
         const fetchData = async () => {
-            const storedUserId = localStorage.getItem(USER_ID);
-            if (storedUserId) {
-                form.setValue("order.userId", Number(storedUserId));
-                setUserId(parseInt(storedUserId, 10));
-                const token = localStorage.getItem("authToken");
-                if (!token) {
-                    throw new Error("Không nhận được token từ server");
-                }
+            try {
+                const storedUserId = localStorage.getItem(USER_ID);
+                if (storedUserId) {
+                    form.setValue("order.userId", Number(storedUserId));
+                    setUserId(parseInt(storedUserId, 10));
+                    const token = localStorage.getItem("authToken");
+                    if (!token) {
+                        throw new Error("Không nhận được token từ server");
+                    }
 
-                const user = await fetchUserByToken(token);
-                if (user?.userId && user?.email) {
-                    localStorage.setItem("userId", user.userId.toString());
-                    localStorage.setItem("username", user.email);
+                    const user = await fetchUserByToken(token);
+                    if (user?.userId && user?.email) {
+                        localStorage.setItem("userId", user.userId.toString());
+                        localStorage.setItem("username", user.email);
+                    }
+                    setUser(user);
+                    form.setValue("order.deliveryName", user.fullName || "");
+                    form.setValue("order.email", user.email || "");
+                    form.setValue("order.deliveryPhone", user.mobileNumber || "");
+
+                    // Tự động điền địa chỉ nếu có
+                    if (user?.address) {
+                        form.setValue("order.address.buildingName", user.address.buildingName || "");
+                        form.setValue("order.address.country", user.address.country || "Việt Nam");
+
+                        // Lấy danh sách tỉnh/thành
+                        const provincesData = await getProvinces();
+                        setProvinces(provincesData);
+                        const matchedProvince = provincesData.find(
+                            (p: any) => p.ProvinceName === user.address.city
+                        );
+                        if (matchedProvince) {
+                            form.setValue("order.address.city", String(matchedProvince.ProvinceID));
+                            form.setValue("order.address.cityCode", String(matchedProvince.ProvinceID));
+
+                            // Lấy danh sách quận/huyện
+                            const districtsData = await getDistricts(matchedProvince.ProvinceID);
+                            setDistricts(districtsData);
+                            const matchedDistrict = districtsData.find(
+                                (d: any) => d.DistrictName === user.address.district
+                            );
+                            if (matchedDistrict) {
+                                form.setValue("order.address.district", String(matchedDistrict.DistrictID));
+                                form.setValue("order.address.districtCode", String(matchedDistrict.DistrictID));
+                                console.log(form.getValues("order.address.district"))
+
+                                // Lấy danh sách phường/xã
+                                const wardsData = await getWards(matchedDistrict.DistrictID);
+                                const matchedWard = wardsData.find(
+                                    (w: any) => w.WardName === user.address.ward
+                                );
+                                if (matchedWard) {
+                                    form.setValue("order.address.ward", matchedWard.WardCode);
+                                    form.setValue("order.address.wardCode", matchedWard.WardCode);
+                                    console.log(form.getValues("order.address.ward"))
+
+                                }
+                            }
+                        }
+                    }
                 }
-                setUser(user);
-                form.setValue("order.deliveryName", user.fullName || "");
-                form.setValue("order.email", user.email || "");
-                form.setValue("order.deliveryPhone", user.mobileNumber || "");
+            } catch (error) {
+                console.error("Lỗi khi lấy thông tin người dùng:", error);
+                toast.error("Không thể lấy thông tin người dùng. Vui lòng thử lại.");
             }
         };
 
         fetchData();
     }, [form]);
-
     // Fetch cart and promotions
     useEffect(() => {
         const fetchData = async () => {
@@ -217,37 +264,49 @@ export default function PaymentForm() {
         }
     }, [selectedDistrict, form]);
     const ChecktoWardCode = form.getValues("order.address.ward");
-    // Calculate shipping fee when ward is selected
-    useEffect(() => {
-        const calculateFee = async () => {
-            const toDistrict = parseInt(selectedDistrict);
-            const toWardCode = form.getValues("order.address.ward");
-            if (toDistrict && toWardCode) {
-                try {
-                    const fee = await calculateShippingFee({
-                        fromDistrict: 1451, // District ID của shop
-                        toDistrict,
-                        toWardCode,
-                        // height: 10,
-                        // length: 20,
-                        weight: totalWeight, // gram
-                        // width: 15,
-                        insurance_value: totalWithShipping,
-                    });
-                    setShippingFee(fee);
-                } catch (error) {
-                    console.error("Lỗi tính phí GHN:", error);
-                    setShippingFee(32000); // Fallback to default
-                }
-            }
-        };
 
+    // Calculate shipping fee when ward is selected
+    const calculateFee = async () => {
+        const toDistrict = parseInt(selectedDistrict);
+        const toWardCode = form.getValues("order.address.ward"); // This line gets the ward code directly from the form values
+        if (toDistrict && toWardCode) {
+            try {
+                const fee = await calculateShippingFee({
+                    fromDistrict: 1451, // District ID of the shop
+                    toDistrict,
+                    toWardCode,
+                    weight: totalWeight, // gram
+                    insurance_value: totalWithShipping,
+                });
+                setShippingFee(fee);
+            } catch (error) {
+                console.error("Lỗi tính phí GHN:", error);
+                setShippingFee(32000); // Fallback to default
+            }
+        }
+    };
+    useEffect(() => {
         calculateFee();
-    }, [selectedDistrict, form.watch("order.address.ward")]);
+    }, [selectedDistrict, form.watch("order.address.ward")]); // Dependency array
     const handleSelectPromotion = (promotionCode: string) => {
         handleApplyCoupon(promotionCode); // Áp dụng mã khuyến mãi
         setVoucherOpen(false); // Đóng VoucherForm
     };
+    useEffect(() => {
+        const districtId = parseInt(selectedDistrict);
+        if (districtId) {
+            getWards(districtId).then((wardsData) => {
+                setWards(wardsData);
+                // Chỉ reset ward nếu chưa có giá trị từ dữ liệu người dùng
+                const currentWard = form.getValues("order.address.ward");
+                if (!currentWard) {
+                    form.setValue("order.address.ward", "");
+                    form.setValue("order.address.wardCode", "");
+                }
+            });
+        }
+    }, [selectedDistrict, form]);
+
     const handleApplyCoupon = (promotion_code?: string) => {
         const coupon = promotions.find(
             (c) => c.promotionCode === (promotion_code || couponInput.toUpperCase())
@@ -292,21 +351,31 @@ export default function PaymentForm() {
 
     const onSubmit = async (values: z.infer<typeof orderSchema>) => {
         try {
-            let orderData = { ...values.order };
+            let orderData = { ...values.order }; // Bắt đầu với bản sao của values.order
 
-            // Lấy tên Tỉnh/Thành phố
+            // Lấy tên Tỉnh/Thành phố và gán vào orderData
             const selectedProvinceObject = provinces.find((p) => String(p.ProvinceID) === values.order.address.city);
             orderData.address.city = selectedProvinceObject?.ProvinceName || "";
+            // Đảm bảo gán cả cityCode nếu cần cho API
+            orderData.address.cityCode = values.order.address.city; // Giữ nguyên ID
 
-            // Lấy tên Quận/Huyện
+            // Lấy tên Quận/Huyện và gán vào orderData
             const selectedDistrictObject = districts.find((d) => String(d.DistrictID) === values.order.address.district);
             orderData.address.district = selectedDistrictObject?.DistrictName || "";
+            // Đảm bảo gán cả districtCode nếu cần cho API
+            orderData.address.districtCode = values.order.address.district; // Giữ nguyên ID
 
-            // Lấy tên Phường/Xã
+            // Lấy tên Phường/Xã và gán vào orderData
             const selectedWardObject = wards.find((w) => w.WardCode === values.order.address.ward);
             orderData.address.ward = selectedWardObject?.WardName || "";
+            // Đảm bảo gán cả wardCode nếu cần cho API
+            orderData.address.wardCode = values.order.address.ward; // Giữ nguyên ID
 
+            // Tạo đối tượng finalOrderData để gửi đi, chứa các tên đã được chuyển đổi
             const finalOrderData = { ...values, order: orderData };
+
+            // **QUAN TRỌNG: Console.log finalOrderData để xác nhận dữ liệu trước khi gửi**
+            console.log("Final order data to send:", finalOrderData);
             if (userId) {
                 if (values.order.payment.paymentMethod === "VNPAY") {
                     const result: { status: string; message: string; url: string } = await paymentUser(values);
@@ -435,32 +504,40 @@ export default function PaymentForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <FormField
                             control={form.control}
-                            name="order.address.city"
+                            name="order.address.city" // Tên trường trong form state
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>{addressFieldLabels.city}</FormLabel>
                                     <FormControl>
                                         <Select
-                                            value={field.value}
+                                            value={field.value} // Giá trị hiện tại của trường trong form state
                                             onValueChange={(value) => {
-                                                field.onChange(value);
+                                                field.onChange(value); // Cập nhật giá trị vào form state
+                                                // Cập nhật các state cục bộ và reset các trường con
                                                 const selected = provinces.find((p) => String(p.ProvinceID) === value);
-                                                form.setValue("order.address.cityCode", selected?.ProvinceID?.toString() || "");
-                                                form.setValue("order.address.district", ""); // Reset district
-                                                form.setValue("order.address.ward", ""); // Reset ward
-                                                setDistricts([]);
-                                                setWards([]);
+                                                form.setValue("order.address.cityCode", selected?.ProvinceID?.toString() || ""); // Lưu ID nếu cần
+                                                // Reset các trường con
+                                                const currentDistrict = form.getValues("order.address.city");
+                                                if (currentDistrict !== value) {
+                                                    form.setValue("order.address.district", "");
+                                                    form.setValue("order.address.ward", "");
+                                                    setDistricts([]);
+                                                    setWards([]);
+                                                }
+
                                             }}
                                         >
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Chọn tỉnh" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {provinces.map((p) => (
-                                                    <SelectItem key={p.ProvinceID} value={String(p.ProvinceID)}>
-                                                        {p.ProvinceName}
-                                                    </SelectItem>
-                                                ))}
+                                                {
+                                                    provinces.map((p) => (
+                                                        <SelectItem key={p.ProvinceID} value={String(p.ProvinceID)}>
+                                                            {p.ProvinceName}
+                                                        </SelectItem>
+                                                    ))
+                                                }
                                             </SelectContent>
                                         </Select>
                                     </FormControl>
@@ -469,32 +546,40 @@ export default function PaymentForm() {
                             )}
                         />
 
+                        {/* Select Quận/Huyện */}
                         <FormField
                             control={form.control}
-                            name="order.address.district"
+                            name="order.address.district" // Tên trường trong form state
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>{addressFieldLabels.district}</FormLabel>
                                     <FormControl>
                                         <Select
-                                            value={field.value}
+                                            value={field.value} // Giá trị hiện tại của trường trong form state
                                             onValueChange={(value) => {
-                                                field.onChange(value);
-                                                const selected = districts.find((d) => String(d.DistrictID) === value);
-                                                form.setValue("order.address.districtCode", selected?.DistrictID?.toString() || "");
-                                                form.setValue("order.address.ward", ""); // Reset ward
-                                                setWards([]);
+                                                // Chỉ reset nếu thay đổi thực sự
+                                                const currentDistrict = form.getValues("order.address.district");
+                                                if (value && value !== field.value) {
+                                                    field.onChange(value);
+                                                    const selected = districts.find((d) => String(d.DistrictID) === value);
+                                                    form.setValue("order.address.districtCode", selected?.DistrictID?.toString() || "");
+                                                    form.setValue("order.address.ward", "");
+                                                    setWards([]);
+                                                }
                                             }}
+                                            disabled={!selectedProvince || districts.length === 0}
                                         >
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Chọn quận" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {districts.map((d) => (
-                                                    <SelectItem key={d.DistrictID} value={String(d.DistrictID)}>
-                                                        {d.DistrictName}
-                                                    </SelectItem>
-                                                ))}
+                                                {
+                                                    districts.map((d) => (
+                                                        <SelectItem key={d.DistrictID} value={String(d.DistrictID)}>
+                                                            {d.DistrictName}
+                                                        </SelectItem>
+                                                    ))
+                                                }
                                             </SelectContent>
                                         </Select>
                                     </FormControl>
@@ -503,29 +588,36 @@ export default function PaymentForm() {
                             )}
                         />
 
+                        {/* Select Phường/Xã */}
                         <FormField
                             control={form.control}
-                            name="order.address.ward"
+                            name="order.address.ward" // Tên trường trong form state
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>{addressFieldLabels.ward}</FormLabel>
                                     <FormControl>
                                         <Select
-                                            value={field.value}
+                                            value={field.value} // Giá trị hiện tại của trường trong form state
                                             onValueChange={(value) => {
-                                                field.onChange(value);
-                                                form.setValue("order.address.wardCode", value);
+                                                if (value && value !== field.value) {
+                                                    field.onChange(value); // Cập nhật giá trị vào form state
+                                                    form.setValue("order.address.wardCode", value); // Lưu ID nếu cần
+                                                }
+
                                             }}
+                                            disabled={!selectedDistrict || wards.length === 0}
                                         >
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Chọn phường" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {wards.map((w) => (
-                                                    <SelectItem key={w.WardCode} value={w.WardCode}>
-                                                        {w.WardName}
-                                                    </SelectItem>
-                                                ))}
+                                                {
+                                                    wards.map((w) => (
+                                                        <SelectItem key={w.WardCode} value={w.WardCode}>
+                                                            {w.WardName}
+                                                        </SelectItem>
+                                                    ))
+                                                }
                                             </SelectContent>
                                         </Select>
                                     </FormControl>

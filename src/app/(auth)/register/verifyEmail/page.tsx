@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 
 // Export metadata cho trang /verifyEmail
 export const metadata: Metadata = {
-    title: "Verify Email - Bookstore",
-    description: "Verify your email to complete your registration.",
+    title: "Xác nhận email - Bookstore",
+    description: "Xác nhận email khi bạn đăng kí tài khoản.",
 };
 
 const EmailVerifyPage = () => {

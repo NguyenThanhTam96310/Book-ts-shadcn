@@ -7,10 +7,10 @@ export const orderSchema = z.object({
         deliveryName: z.string().min(3, "Vui lòng nhập họ tên"),
         deliveryPhone: z.string().min(10, "Số điện thoại phải có ít nhất 10 chữ số"),
         address: z.object({
-            ward: z.string().min(1, "Vui lòng nhập tên phường/xã"),
+            ward: z.string(),
             buildingName: z.string().min(1, "Vui lòng nhập tên tòa nhà"),
             city: z.string().min(1, "Vui lòng nhập tên thành phố"),
-            district: z.string().min(1, "Vui lòng nhập tên quận/huyện"),
+            district: z.string(),
             country: z.string().min(1, "Vui lòng nhập tên quốc gia"),
             cityCode: z.string(),
             districtCode: z.string(),

@@ -105,84 +105,41 @@ export default function ProfileDetail() {
                         <CardTitle className="text-xl">Hồ sơ cá nhân</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">
-                                    Họ tên
-                                </label>
-                                <Input
-                                    readOnly
-                                    value={fullName}
-                                />
+                        <div className="gap-6">
+                            <div className="flex items-center gap-4">
+                                <label className="w-32 text-sm font-medium">Họ tên</label>
+                                <Input className="flex-1" readOnly value={fullName} />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">
-                                    Email
-                                </label>
-                                <Input
-                                    readOnly
-                                    defaultValue={profile?.email} />
+                            <div className="flex items-center gap-4 mt-4">
+                                <label className="w-32 text-sm font-medium">Số điện thoại</label>
+                                <Input className="flex-1" readOnly defaultValue={profile?.mobileNumber} />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">
-                                    Số điện thoại
-                                </label>
-                                <Input readOnly defaultValue={profile?.mobileNumber} />
+                            <div className="flex items-center gap-4 mt-4">
+                                <label className="w-32 text-sm font-medium">Email</label>
+                                <Input className="flex-1" readOnly defaultValue={profile?.email} />
                             </div>
                             <div className="space-y-2 col-span-1 md:col-span-2">
-                                <label className="text-xl font-medium">
-                                    Địa chỉ
-                                </label>
+                                <label className="text-xl font-medium">Địa chỉ</label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-5">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">
-                                            Tên tòa nhà
-                                        </label>
-                                        <Input
-                                            readOnly
-                                            defaultValue={profile?.address?.buildingName || ""}
-                                            placeholder="Tên tòa nhà/Số nhà"
-                                        />
+                                        <label className="text-sm font-medium">Tên tòa nhà</label>
+                                        <Input readOnly defaultValue={profile?.address?.buildingName || ""} placeholder="Tên tòa nhà/Số nhà" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">
-                                            Phường/Xã
-                                        </label>
-                                        <Input
-                                            readOnly
-                                            defaultValue={profile?.address?.ward || ""}
-                                            placeholder="Phường/Xã"
-                                        />
+                                        <label className="text-sm font-medium">Phường/Xã</label>
+                                        <Input readOnly defaultValue={profile?.address?.ward || ""} placeholder="Phường/Xã" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">
-                                            Quận/Huyện
-                                        </label>
-                                        <Input
-                                            readOnly
-                                            defaultValue={profile?.address?.district || ""}
-                                            placeholder="Quận/Huyện"
-                                        />
+                                        <label className="text-sm font-medium">Quận/Huyện</label>
+                                        <Input readOnly defaultValue={profile?.address?.district || ""} placeholder="Quận/Huyện" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">
-                                            Thành phố
-                                        </label>
-                                        <Input
-                                            readOnly
-                                            defaultValue={profile?.address?.city || ""}
-                                            placeholder="Thành phố"
-                                        />
+                                        <label className="text-sm font-medium">Thành phố</label>
+                                        <Input readOnly defaultValue={profile?.address?.city || ""} placeholder="Thành phố" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">
-                                            Quốc gia
-                                        </label>
-                                        <Input
-                                            readOnly
-                                            defaultValue={profile?.address?.country || ""}
-                                            placeholder="Quốc gia"
-                                        />
+                                        <label className="text-sm font-medium">Quốc gia</label>
+                                        <Input readOnly defaultValue={profile?.address?.country || ""} placeholder="Quốc gia" />
                                     </div>
                                 </div>
                             </div>

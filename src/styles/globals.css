@@ -10,6 +10,18 @@
 @custom-variant dark (&:is(.dark *));
 
 
+.custom-scrollbar::-webkit-scrollbar {
+    height: 1px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 100, 100, 0.3);
+    border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
 
 @theme inline {
 

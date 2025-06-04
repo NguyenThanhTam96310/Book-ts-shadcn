@@ -37,10 +37,11 @@ const CartItem = ({ item, checked, onCheck, onDecrease, onIncrease, onRemove }: 
                 </Link>
                 <div className="flex flex-col gap-1">
                     <Link href={`/products/${product.slug}`}>
-                        <div className="text-base font-medium text-gray-800 hover:text-red-600 transition-colors duration-200">
+                        <div className="text-base font-medium text-gray-800 hover:text-red-600 transition-colors duration-200 w-[250px] line-clamp-2">
                             {product?.productName}
                         </div>
                     </Link>
+
 
                     <div className="flex items-center gap-2">
                         {product?.discount ? (

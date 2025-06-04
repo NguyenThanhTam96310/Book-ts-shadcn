@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 
 // Export metadata cho trang /login
 export const metadata: Metadata = {
-    title: "Login - Bookstore",
-    description: "Login to your Bookstore account.",
+    title: "Đăng nhập - Bookstore",
+    description: "Đăng nhập vào Bookstore.",
 };
 
 export default function LoginPage() {

@@ -46,6 +46,7 @@ const LoginForm = () => {
                     localStorage.setItem("authToken", session.accessToken)
                     localStorage.setItem("authTokenExpiry", session.expires)
                     localStorage.setItem("username", session.user.email)
+                    localStorage.setItem("accountName", session.user.name)
                     const data = await fetchUserByToken(session.accessToken)
                     if (data?.userId && data?.email) {
                         localStorage.setItem("userId", data.userId)
@@ -86,6 +87,8 @@ const LoginForm = () => {
             if (user?.userId && user?.email) {
                 localStorage.setItem("userId", user.userId)
                 localStorage.setItem("username", user.email)
+                localStorage.setItem("accountName", user.fullName)
+
             }
 
             const raw = localStorage.getItem(CART_ITEM_KEY)

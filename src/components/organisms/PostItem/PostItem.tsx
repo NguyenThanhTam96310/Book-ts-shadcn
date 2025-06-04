@@ -29,7 +29,7 @@ const PostItem: React.FC<PostItemRes> = ({ postId, title, content, slug, image }
                 </Link>
             </div>
             <div className={styles.imageWrapper}>
-                <Image src={`${process.env.NEXT_PUBLIC_FILE}${image}`} alt={title} fill className={styles.image} />
+                <Image src={`${process.env.NEXT_PUBLIC_FILE}${image}`} alt={title} fill className={styles.image} priority sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
             </div>
         </div>
     )

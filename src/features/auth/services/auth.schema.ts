@@ -26,13 +26,13 @@ export const RegisterBody = z.object({
     username: z.string().min(3, "Tên đăng nhập phải từ 3 ký tự"),
     password: z.string().min(1, "Mật khẩu phải từ 1 ký tự"),
     confirmPassword: z.string().min(1, "Mật khẩu phải từ 1 ký tự").max(100),
-    address: z.object({
-        ward: z.string(),
-        buildingName: z.string(),
-        city: z.string(),
-        district: z.string(),
-        country: z.string(),
-    }),
+    // address: z.object({
+    //     ward: z.string(),
+    //     buildingName: z.string(),
+    //     city: z.string(),
+    //     district: z.string(),
+    //     country: z.string(),
+    // }).optional(),
 }).strict()
     .superRefine(({ confirmPassword, password }, ctx) => {
         if (confirmPassword !== password) {
