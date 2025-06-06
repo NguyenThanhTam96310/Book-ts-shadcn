@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import RegisterPromotionForm from "@/features/contact/components/RegisterPromotionForm"
 
 export default function Footer() {
     return (
@@ -110,8 +111,7 @@ export default function Footer() {
                                         </div>
                                         <div className="text-sm text-gray-300">
                                             <p className="font-medium text-white mb-1">Địa chỉ chính:</p>
-                                            <p>Lầu 5, 387-389 Hai Bà Trưng, Quận 3, TP.HCM</p>
-                                            <p>60–62 Lê Lợi, Quận 1, TP.HCM, Việt Nam</p>
+                                            <p>Số 20 Tăng Nhơn Phú - Phường Phước Long B - Thành phố Thủ Đức - TP. Hồ Chí Minh</p>
                                         </div>
                                     </div>
 
@@ -121,7 +121,7 @@ export default function Footer() {
                                         </div>
                                         <div className="text-sm text-gray-300">
                                             <p className="font-medium text-white mb-1">Hotline:</p>
-                                            <p>1900-1234 (24/7)</p>
+                                            <p>1111-1111 (24/7)</p>
                                         </div>
                                     </div>
 
@@ -170,29 +170,7 @@ export default function Footer() {
             </div>
 
             {/* Newsletter Section */}
-            <div className="relative border-t border-white/10 bg-gradient-to-r from-orange-500/10 to-red-500/10">
-                <div className="container mx-auto px-4 py-8">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="text-center md:text-left">
-                            <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                                <Heart className="w-5 h-5 text-red-400" />
-                                Đăng ký nhận tin khuyến mãi
-                            </h3>
-                            <p className="text-gray-300">Nhận thông báo về sách mới và ưu đãi đặc biệt</p>
-                        </div>
-                        <div className="flex gap-2 w-full md:w-auto max-w-md">
-                            <input
-                                type="email"
-                                placeholder="Nhập email của bạn..."
-                                className="flex-1 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent backdrop-blur-sm"
-                            />
-                            <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-                                Đăng ký
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <RegisterPromotionForm />
 
             {/* Bottom Footer */}
             <div className="relative border-t border-white/10 bg-black/20">

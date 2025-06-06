@@ -94,14 +94,14 @@ export default function OrderItem({ order }: { order: OrderRes }) {
                                         height={80}
                                         className="rounded-lg object-cover w-20 h-20"
                                     />
-                                    {product?.discount && (
+                                    {/* {product?.discount && (
                                         <Badge
                                             variant="secondary"
                                             className="absolute -top-2 -left-2 bg-green-500 text-white text-xs px-1"
                                         >
                                             SALE
                                         </Badge>
-                                    )}
+                                    )} */}
                                 </div>
 
                                 {/* Product info */}

@@ -26,6 +26,7 @@ import {
 
 import { OrderOTPResSchema } from "@/features/order/services/order.Schema"
 import { otpCustomer } from "@/features/order/services/order.service"
+import { PAYMENT_ITEM_KEY } from "@/constants/orderConstants"
 
 type OtpFormProps = {
     email: string
@@ -64,7 +65,8 @@ export function OtpForm({
             await otpCustomer(values)
             toast.success("Xác thực thành công!")
             onClose()
-            router.push("/")
+            localStorage.removeItem(PAYMENT_ITEM_KEY);
+            router.push(`/payment/checkout?vnp_TxnRef=${orderCode}`);
         } catch {
             toast.error("Xác thực thất bại.")
         }

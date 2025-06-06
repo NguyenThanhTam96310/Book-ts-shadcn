@@ -17,10 +17,11 @@ export const fetchMenus = async (): Promise<MenuItem[]> => {
     const data = response.data as { content: MenuItem[] }
     return data.content
 }
+
 export const fetchMenuFooter = async (): Promise<MenuItem[]> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/menus`, {
         params: {
-            type: "chidrens",
+            type: "parent",
             pageNumber: 0,
             pageSize: 30,
             sortBy: "menuId",

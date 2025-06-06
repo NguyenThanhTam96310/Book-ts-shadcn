@@ -109,7 +109,7 @@ const ProductByCategoryHomeForm = ({ categoryId }: ProductByCategoryHomeFormProp
                 {/* Enhanced Tabs List */}
                 <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-2xl blur-xl"></div>
-                    <TabsList className="relative w-full  h-12 justify-start bg-white/80 backdrop-blur-md border border-gray-200/50 rounded-2xl p-2 shadow-lg overflow-x-auto custom-scrollbar">
+                    <TabsList className="relative w-full  h-15 justify-start bg-white/80 backdrop-blur-md border border-gray-200/50 rounded-2xl p-2 shadow-lg overflow-x-auto overflow-y-hidden  custom-scrollbar">
                         {categories.map((category) => {
                             const isActive = activeTab === category.categoryId.toString()
                             const products = productsByCategory[category.categoryId.toString()] || []
@@ -119,7 +119,7 @@ const ProductByCategoryHomeForm = ({ categoryId }: ProductByCategoryHomeFormProp
                                     key={category.categoryId}
                                     value={category.categoryId.toString()}
                                     className={`
-                                        relative px-6 py-3 font-medium text-sm rounded-xl transition-all duration-300 whitespace-nowrap group
+                                        relative px-6 py-6 font-medium text-sm rounded-xl transition-all duration-300 whitespace-nowrap group cursor-pointer
                                         ${isActive
                                             ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25 scale-105"
                                             : "text-gray-600 hover:text-orange-600 hover:bg-orange-50/80 hover:scale-102"
@@ -200,9 +200,9 @@ const ProductByCategoryHomeForm = ({ categoryId }: ProductByCategoryHomeFormProp
                                                     <div className="w-full border-t-2 border-gradient-to-r from-transparent via-orange-200 to-transparent"></div>
                                                 </div>
                                                 <div className="relative flex justify-center">
-                                                    <div className="bg-white/80 backdrop-blur-sm px-8 py-2 rounded-full shadow-lg">
+                                                    <div className="h-15 bg-white/80 backdrop-blur-sm px-8 py-2 rounded-full shadow-lg">
                                                         <Link href={`products?categoryId=${category.categoryId}`}>
-                                                            <Button className="group bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-xl hover:shadow-2xl transition-all duration-500 px-8 py-4 rounded-2xl text-lg font-semibold transform hover:scale-110">
+                                                            <Button className="h-full group bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-xl hover:shadow-2xl transition-all duration-500 px-8 py-4 rounded-2xl text-lg font-semibold transform hover:scale-110 cursor-pointer">
                                                                 <Eye className="w-5 h-5 mr-3 group-hover:scale-125 transition-transform duration-300" />
                                                                 Xem tất cả {category.categoryName}
                                                                 <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform duration-300" />

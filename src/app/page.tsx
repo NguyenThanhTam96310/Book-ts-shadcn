@@ -8,6 +8,7 @@ import { Zap, Sparkles, Clock, TrendingUp, BookOpen, Star, ArrowRight } from "lu
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
 
 // Export metadata cho trang /login
 export const metadata: Metadata = {
@@ -59,11 +60,11 @@ export default function Home() {
                 <span className="text-lg">Thời gian có hạn - Nhanh tay kẻo lỡ!</span>
               </div>
 
-              <div className="mt-4 flex justify-center">
+              {/* <div className="mt-4 flex justify-center">
                 <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-2 text-lg font-bold animate-bounce">
                   Giảm đến 70%
                 </Badge>
-              </div>
+              </div> */}
             </div>
           </Card>
 
@@ -109,13 +110,14 @@ export default function Home() {
                     <p className="text-gray-600 mt-1">Cập nhật những đầu sách mới nhất</p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  className="hidden sm:flex items-center gap-2 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-all duration-300"
-                >
-                  Xem tất cả
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
+                <Link href="/products">
+                  <Button
+                    variant="outline"
+                    className="hidden sm:flex items-center gap-2 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-all duration-300 cursor-pointer"
+                  >
+                    Xem tất cả
+                    <ArrowRight className="w-4 h-4" />
+                  </Button></Link>
               </div>
 
               {/* Decorative Line */}
@@ -170,13 +172,15 @@ export default function Home() {
                     <p className="text-gray-600 mt-1">Khám phá những bài viết thú vị về sách và đọc</p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  className="hidden sm:flex items-center gap-2 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition-all duration-300"
-                >
-                  Đọc thêm
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
+                <Link href="/post?topicId=newPost">
+                  <Button
+                    variant="outline"
+                    className="hidden sm:flex items-center gap-2 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition-all duration-300 cursor-pointer"
+                  >
+                    Đọc thêm
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
 
               {/* Decorative Line */}

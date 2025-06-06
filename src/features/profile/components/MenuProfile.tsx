@@ -59,14 +59,14 @@ const MenuProfile = () => {
             href: "/profile/order",
             description: "Theo dõi đơn hàng",
         },
+        // {
+        //     label: "Ưu đãi thành viên",
+        //     icon: Star,
+        //     href: "/profile/rewards",
+        //     description: "Điểm thưởng và ưu đãi",
+        // },
         {
-            label: "Ưu đãi thành viên",
-            icon: Star,
-            href: "/profile/rewards",
-            description: "Điểm thưởng và ưu đãi",
-        },
-        {
-            label: "Sổ địa chỉ",
+            label: "Địa chỉ của tôi",
             icon: MapPin,
             href: "/profile/address",
             description: "Quản lý địa chỉ giao hàng",
@@ -81,7 +81,7 @@ const MenuProfile = () => {
                     <div className="relative mb-4">
                         <Avatar className="h-20 w-20 ring-4 ring-white shadow-lg">
                             <AvatarImage
-                                src={profile?.avatar}
+                                src={`${process.env.NEXT_PUBLIC_FILE}${profile?.avatar}`}
                                 alt="Avatar"
                                 className="object-cover"
                             />
@@ -150,12 +150,12 @@ const MenuProfile = () => {
                 })}
             </div>
 
-            {/* Footer */}
+            {/* Footer
             <div className="mt-6 pt-4 border-t border-gray-200">
                 <div className="text-center">
                     <p className="text-xs text-gray-500">Phiên bản 2.0.1</p>
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 

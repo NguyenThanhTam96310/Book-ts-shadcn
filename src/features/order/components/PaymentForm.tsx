@@ -255,14 +255,14 @@ export default function PaymentForm() {
         }
     }, [selectedProvince, form]);
 
-    // Fetch wards based on selected district
-    useEffect(() => {
-        const districtId = parseInt(selectedDistrict);
-        if (districtId) {
-            getWards(districtId).then(setWards);
-            form.setValue("order.address.ward", ""); // Reset ward
-        }
-    }, [selectedDistrict, form]);
+    // // Fetch wards based on selected district
+    // useEffect(() => {
+    //     const districtId = parseInt(selectedDistrict);
+    //     if (districtId) {
+    //         getWards(districtId).then(setWards);
+    //         form.setValue("order.address.ward", ""); // Reset ward
+    //     }
+    // }, [selectedDistrict, form]);
     const ChecktoWardCode = form.getValues("order.address.ward");
 
     // Calculate shipping fee when ward is selected
@@ -357,19 +357,18 @@ export default function PaymentForm() {
             const selectedProvinceObject = provinces.find((p) => String(p.ProvinceID) === values.order.address.city);
             orderData.address.city = selectedProvinceObject?.ProvinceName || "";
             // Đảm bảo gán cả cityCode nếu cần cho API
-            orderData.address.cityCode = values.order.address.city; // Giữ nguyên ID
+
 
             // Lấy tên Quận/Huyện và gán vào orderData
             const selectedDistrictObject = districts.find((d) => String(d.DistrictID) === values.order.address.district);
             orderData.address.district = selectedDistrictObject?.DistrictName || "";
             // Đảm bảo gán cả districtCode nếu cần cho API
-            orderData.address.districtCode = values.order.address.district; // Giữ nguyên ID
 
             // Lấy tên Phường/Xã và gán vào orderData
             const selectedWardObject = wards.find((w) => w.WardCode === values.order.address.ward);
             orderData.address.ward = selectedWardObject?.WardName || "";
             // Đảm bảo gán cả wardCode nếu cần cho API
-            orderData.address.wardCode = values.order.address.ward; // Giữ nguyên ID
+
 
             // Tạo đối tượng finalOrderData để gửi đi, chứa các tên đã được chuyển đổi
             const finalOrderData = { ...values, order: orderData };
@@ -381,15 +380,17 @@ export default function PaymentForm() {
                     const result: { status: string; message: string; url: string } = await paymentUser(values);
                     router.push(result.url);
                 } else {
-                    const result = await paymentUser(values);
+                    const result: { orderCode: string } = await paymentUser(values);
+                    // console.log(result.orderCode, "=========")
                     toast.success("Đặt hàng thành công!");
                     localStorage.removeItem(PAYMENT_ITEM_KEY);
-                    // router.push("/");
+                    router.push(`/payment/checkout?vnp_TxnRef=${result.orderCode}`);
                 }
             } else {
                 console.log("Form data:", values);
                 if (values.order.payment.paymentMethod === "VNPAY") {
                     const result: { status: string; message: string; url: string } = await paymentCustomer(values);
+                    localStorage.removeItem(PAYMENT_ITEM_KEY);
                     router.push(result.url);
                 } else {
                     const result: { orderId: number; email: string; deliveryPhone: string, orderCode: string } = await paymentCustomer(values);
@@ -402,8 +403,6 @@ export default function PaymentForm() {
                         orderCode: result.orderCode
                     })
                     setOtpOpen(true)
-                    localStorage.removeItem(PAYMENT_ITEM_KEY);
-                    router.push("/payment/otp");
                 }
             }
         } catch (error) {
@@ -646,9 +645,9 @@ export default function PaymentForm() {
                             name="order.address.country"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{addressFieldLabels.country}</FormLabel>
+                                    <FormLabel>{addressFieldLabels.country} </FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Nhập quốc gia" {...field} />
+                                        <Input placeholder="Nhập quốc gia" {...field} readOnly />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -732,7 +731,7 @@ export default function PaymentForm() {
                                 {appliedCoupons.map((coupon) => (
                                     <div
                                         key={coupon}
-                                        className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                                        className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 rounded-xl text-sm"
                                     >
                                         <span>{coupon}</span>
                                         <button
@@ -773,6 +772,14 @@ export default function PaymentForm() {
                                     <span>Phí vận chuyển</span>
                                     <span>{formatCurrency(finalShippingFee)}</span>
                                 </div>
+                                {
+                                    finalCouponFee && (
+                                        <div className="flex justify-between">
+                                            <span>Giảm giá</span>
+                                            <span>-{formatCurrency(finalCouponFee)}</span>
+                                        </div>
+                                    )
+                                }
                                 <div className="flex justify-between font-semibold border-t pt-2">
                                     <span>Tổng cộng</span>
                                     <span className="text-yellow-500">{formatCurrency(totalWithShipping)}</span>

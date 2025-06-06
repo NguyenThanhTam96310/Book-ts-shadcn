@@ -24,10 +24,10 @@ const CategoryItem: FC<CategoryItemProps> = ({ categoryId, categoryName, slug, i
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all duration-500"></div>
 
-                    {/* Decorative Elements */}
+                    {/* Decorative Elements
                     <div className="absolute top-4 right-4 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 delay-200">
                         <Sparkles className="w-4 h-4 text-white" />
-                    </div>
+                    </div> */}
 
                     {/* Content Overlay */}
                     <div className="absolute inset-0 p-6 flex flex-col justify-between">

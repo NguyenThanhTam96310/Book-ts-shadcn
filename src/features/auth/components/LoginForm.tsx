@@ -87,7 +87,10 @@ const LoginForm = () => {
             if (user?.userId && user?.email) {
                 localStorage.setItem("userId", user.userId)
                 localStorage.setItem("username", user.email)
-                localStorage.setItem("accountName", user.fullName)
+
+            }
+            if (user?.fullName) {
+                localStorage.setItem("accountName", user?.fullName)
 
             }
 

@@ -90,8 +90,9 @@ export default function Header() {
     const handleLogout = () => {
         localStorage.clear()
         clearNextAuthCookies()
-        signOut()
-        router.push("/")
+        signOut();
+        // router.push("/")
+        // window.location.replace("/");
     }
 
     return (
@@ -141,7 +142,7 @@ export default function Header() {
                     <div className="flex-1 max-w-2xl mx-4">
                         <div className="relative group">
                             <div className="flex items-center bg-white border-2 border-gray-200 rounded-2xl shadow-sm group-hover:shadow-md group-focus-within:shadow-lg group-focus-within:border-orange-300 transition-all duration-300 overflow-hidden px-2">
-                                <div className="flex-shrink-0 border-r border-gray-200">
+                                <div className="flex-shrink-0 border-r border-gray-200 cursor-pointer" >
                                     <CategoryMenu />
                                 </div>
                                 <div className="flex-1 relative">
@@ -156,7 +157,7 @@ export default function Header() {
                                     {keyword && (
                                         <button
                                             onClick={() => setKeyword("")}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                                         >
                                             ×
                                         </button>
@@ -165,7 +166,7 @@ export default function Header() {
                                 <Button
                                     onClick={handleSearch}
                                     disabled={loading}
-                                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-none rounded-r-xl border-0 shadow-none hover:shadow-md transition-all duration-300 "
+                                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-none rounded-r-xl border-0 shadow-none hover:shadow-md transition-all duration-300 cursor-pointer"
                                 >
                                     {loading ? (
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -183,7 +184,7 @@ export default function Header() {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="hidden lg:flex relative hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                            className="hidden lg:flex relative hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
                         >
                             <Heart className="w-6 h-6" />
                             <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5">
@@ -196,7 +197,7 @@ export default function Header() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="relative hover:bg-orange-50 hover:text-orange-600 transition-colors group"
+                                className="relative hover:bg-orange-50 hover:text-orange-600 transition-colors group cursor-pointer"
                             >
                                 <ShoppingBag className="w-6 h-6 group-hover:scale-110 transition-transform" />
                                 {cartCount > 0 && (
@@ -213,10 +214,10 @@ export default function Header() {
                                 <DropdownMenuTrigger asChild>
                                     <Button
                                         variant="ghost"
-                                        className="flex items-center space-x-2 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                                        className="flex items-center space-x-2 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
                                     >
                                         <Avatar className="w-8 h-8">
-                                            <AvatarImage src="/placeholder.svg?height=32&width=32" />
+                                            {/* <AvatarImage src="/placeholder.svg?height=32&width=32" /> */}
                                             <AvatarFallback className="bg-gradient-to-br from-orange-400 to-red-500 text-white text-sm">
                                                 {nameUser?.charAt(0) || "U"}
                                             </AvatarFallback>
@@ -241,7 +242,7 @@ export default function Header() {
                                             </Avatar>
                                             <div>
                                                 <p className="text-sm">{nameUser}</p>
-                                                <p className="text-xs text-gray-500 font-normal">Thành viên VIP</p>
+                                                {/* <p className="text-xs text-gray-500 font-normal">Thành viên VIP</p> */}
                                             </div>
                                         </div>
                                     </DropdownMenuLabel>
@@ -250,13 +251,13 @@ export default function Header() {
                                         <User className="w-4 h-4 mr-2" />
                                         Tài khoản của tôi
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => router.push("/orders")} className="cursor-pointer">
+                                    <DropdownMenuItem onClick={() => router.push("/profile/order")} className="cursor-pointer">
                                         <Package className="w-4 h-4 mr-2" />
                                         Đơn hàng của tôi
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => router.push("/profile/settings")} className="cursor-pointer">
+                                    <DropdownMenuItem onClick={() => router.push("/profile/password")} className="cursor-pointer">
                                         <Settings className="w-4 h-4 mr-2" />
-                                        Cài đặt
+                                        Thay đổi mật khẩu
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
@@ -277,7 +278,7 @@ export default function Header() {
                 </div>
 
                 {/* Mobile Search - Show on small screens */}
-                <div className="lg:hidden pb-4">
+                <div className="lg:hidden md:hidden  pb-4">
                     <div className="relative group">
                         <div className="flex items-center bg-white border-2 border-gray-200 rounded-2xl shadow-sm group-hover:shadow-md group-focus-within:shadow-lg group-focus-within:border-orange-300 transition-all duration-300 overflow-hidden">
                             <div className="flex-1 relative">
