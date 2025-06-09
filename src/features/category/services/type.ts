@@ -8,3 +8,11 @@ export interface CategoryItemProps {
     image?: string
     childrens?: CategoryItemProps[]
 }
+export interface CategoriesRes {
+    content: CategoryItemProps[];
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    lastPage: boolean;
+}

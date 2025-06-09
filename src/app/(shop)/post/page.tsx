@@ -12,10 +12,11 @@ const PostPage = () => {
     return (
         <div className="py-5 bg-gray-100">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 bg-white rounded-xl shadow-lg p-6">
-                {topicId === "newPost" ? (
-                    <PostNew />
+                {topicId ? (
+                    <PostsList topicId={Number(topicId)} />
+
                 ) : (
-                    <PostsList topicId={Number(topicId)} /> // Không chuyển đổi thành Number, để topicId là chuỗi hoặc null
+                    <PostNew />
                 )}
             </div>
         </div>

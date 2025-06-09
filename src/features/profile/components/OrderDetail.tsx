@@ -1,6 +1,6 @@
 "use client"
 
-import type { FC } from "react"
+import { useEffect, useState, type FC } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -38,19 +38,32 @@ const formatCurrency = (amount: number | undefined): string => {
 }
 
 // Component hiển thị trạng thái đơn hàng
-const StatusBadge: FC<{ status: string | undefined }> = ({ status }) => {
+const StatusBadge: FC<{ status: string | undefined, paymentMethod: string | undefined }> = ({ status, paymentMethod }) => {
+    const [isPayment, setIsPayment] = useState(false);
+
+    useEffect(() => {
+        if (paymentMethod === "VNPAY") {
+            setIsPayment(true);
+        }
+    }, [paymentMethod]);
+
     switch (status) {
         case "PAID":
             return (
                 <div className="flex items-center gap-3 flex-wrap">
                     <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Giao hàng thành công
+                        Đặt hàng thành công
                     </Badge>
-                    <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        ĐÃ THANH TOÁN
-                    </Badge>
+                    {
+                        isPayment ? (<Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            ĐÃ THANH TOÁN
+                        </Badge>) : (<Badge className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            CHƯA THANH TOÁN
+                        </Badge>)
+                    }
                 </div>
             )
         case "PENDING":
@@ -114,7 +127,7 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
                                     </span>
                                 </div>
                             </div>
-                            <StatusBadge status={displayOrder.orderStatus} />
+                            <StatusBadge status={displayOrder.orderStatus} paymentMethod={displayOrder.payment.paymentMethod} />
                         </div>
                     </div>
                 </Card>

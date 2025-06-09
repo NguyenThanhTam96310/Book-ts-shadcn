@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { MapPin, Phone, Mail, MessageCircle, Send, Building } from "lucide-react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
+import type React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { MapPin, Phone, Mail, MessageCircle, Send, Building } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
     Form,
     FormControl,
@@ -15,16 +15,17 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form"
-import { useState } from "react"
-import { Textarea } from "@/components/ui/textarea"
-import { ContactSchema } from "@/features/contact/services/contact.Schema"
-import { toast } from "react-toastify"
-import { fetchContact } from "@/features/contact/services/contact.service"
-
-
+} from "@/components/ui/form";
+import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "react-toastify";
+import { fetchContact } from "@/features/contact/services/contact.service";
+import ReCAPTCHA from "react-google-recaptcha";
+import { ContactSchema } from "@/features/contact/services/contact.Schema";
 
 export default function ContactForm() {
+    const [capVal, setCapVal] = useState<string | null>(null);
+
     const form = useForm<z.infer<typeof ContactSchema>>({
         resolver: zodResolver(ContactSchema),
         defaultValues: {
@@ -34,26 +35,45 @@ export default function ContactForm() {
             content: "",
         },
     });
+
     const onSubmit = async (values: z.infer<typeof ContactSchema>) => {
         try {
-            await fetchContact(values)
+            if (!capVal) {
+                toast.error("Vui lòng xác thực rằng bạn không phải là robot.", {
+                    position: "top-right",
+                    autoClose: 2000,
+                });
+                return;
+            }
+
+            // Thêm recaptchaToken vào dữ liệu gửi đi (dù schema không yêu cầu, API có thể cần)
+            const submissionData = {
+                ...values,
+                recaptchaToken: capVal,
+            };
+
+            await fetchContact(submissionData);
             toast.success("Gửi thông tin thành công.", {
                 position: "top-right",
                 autoClose: 2000,
             });
-            form.reset()
+            form.reset();
+            setCapVal(null); // Reset reCAPTCHA token
         } catch (error) {
             if (error instanceof Error) {
-                toast.error(error.message)
+                toast.error(error.message, {
+                    position: "top-right",
+                    autoClose: 2000,
+                });
             } else {
                 toast.error("Có lỗi xảy ra, vui lòng thử lại.", {
                     position: "top-right",
                     autoClose: 2000,
-                })
+                });
             }
-            console.error(error)
+            console.error(error);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -198,8 +218,14 @@ export default function ContactForm() {
                                             )}
                                         />
 
+                                        <ReCAPTCHA
+                                            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string} // Sửa tên biến
+                                            onChange={(val) => setCapVal(val)}
+                                        />
+
                                         <Button
                                             type="submit"
+                                            disabled={!capVal}
                                             className="w-full bg-gradient-to-r from-orange-600 to-purple-600 hover:from-orange-700 hover:to-purple-700 text-white h-12 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 text-lg font-semibold"
                                         >
                                             <Send className="w-5 h-5" />
@@ -213,11 +239,18 @@ export default function ContactForm() {
                 </div>
             </div>
 
-            {/* map */}
+            {/* Map */}
             <footer className="bg-gray-800 text-white">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6590.507590508663!2d106.77265989509044!3d10.831254951450195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752701a34a5d5f%3A0x30056b2fdf668565!2zQ2FvIMSQ4bqzbmcgQ8O0bmcgVGjGsMahbmcgVFAuSENN!5e0!3m2!1svi!2s!4v1749045789727!5m2!1svi!2s" width="100%" height="800" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
-
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6590.507590508663!2d106.77265989509044!3d10.831254951450195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752701a34a5d5f%3A0x30056b2fdf668565!2zQ2FvIMSQ4bqzbmcgQ8O0bmcgVGjGsMahbmcgVFAuSENN!5e0!3m2!1svi!2s!4v1749045789727!5m2!1svi!2s"
+                    width="100%"
+                    height="800"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
             </footer>
         </div>
-    )
+    );
 }

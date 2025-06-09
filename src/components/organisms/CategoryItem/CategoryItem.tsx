@@ -42,7 +42,7 @@ const CategoryItem: FC<CategoryItemProps> = ({ categoryId, categoryName, slug, i
                         <div className="space-y-4">
                             {/* Category Title */}
                             <div className="transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                                <h3 className="text-white text-xl md:text-2xl font-bold leading-tight drop-shadow-lg">
+                                <h3 className="text-white text-lg md:text-2xl font-bold leading-tight drop-shadow-lg">
                                     {categoryName}
                                 </h3>
                                 <div className="w-12 h-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mt-2 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 delay-200"></div>

@@ -1,4 +1,4 @@
-import { CategoryItemProps } from "@/features/category/services/type"
+import { CategoriesRes, CategoryItemProps } from "@/features/category/services/type"
 import axiosInstance from "@/lib/api/Config"
 import envConfig from "@/lib/api/envConfig"
 
@@ -8,22 +8,8 @@ export const fetchCategories = async (): Promise<CategoryItemProps[]> => {
         params: {
             status: true,
             type: "parent",
-            pageNumber: 0,
+            pageNumber: 1,
             pageSize: 4,
-            sortBy: "categoryId",
-            sortOrder: "asc"
-        }
-    })
-
-    const data = response.data as { content: CategoryItemProps[] }
-    return data.content
-}
-export const fetchAllCategories = async (): Promise<CategoryItemProps[]> => {
-    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/categories`, {
-        params: {
-            status: true,
-            type: "parent",
-            pageNumber: 0,
             sortBy: "categoryId",
             sortOrder: "asc"
         }
@@ -36,3 +22,66 @@ export const fetchCategoryById = async (categoryId: number): Promise<CategoryIte
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/categories/${categoryId}`)
     return response.data as CategoryItemProps
 }
+export const fetchCategoriesFooter = async (): Promise<CategoryItemProps[]> => {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/categories`, {
+        params: {
+            status: true,
+            type: "parent",
+            pageNumber: 1,
+            pageSize: 5,
+            sortBy: "categoryId",
+            sortOrder: "asc"
+        }
+    })
+
+    const data = response.data as { content: CategoryItemProps[] }
+    return data.content
+}
+// export const fetchAllCategories = async (): Promise<CategoryItemProps[]> => {
+//     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/categories`, {
+//         params: {
+//             status: true,
+//             type: "parent",
+//             pageNumber: 0,
+//             sortBy: "categoryId",
+//             sortOrder: "asc"
+//         }
+//     })
+
+//     const data = response.data as { content: CategoryItemProps[] }
+//     return data.content
+// }
+export const fetchAllCategories = async (): Promise<CategoryItemProps[]> => {
+    let allCate: CategoryItemProps[] = [];
+    let pageNumber = 1;
+    const pageSize = 5; // Giữ nguyên pageSize như API hiện tại
+    let lastPage = false;
+
+    try {
+        while (!lastPage) {
+            const response = await axiosInstance.get<CategoriesRes>(
+                `${envConfig.NEXT_PUBLIC_API}/public/categories`,
+                {
+                    params: {
+                        status: true,
+                        type: 'parent',
+                        pageNumber,
+                        pageSize,
+                        sortBy: 'categoryId',
+                        sortOrder: 'asc',
+                    },
+                }
+            );
+
+            const data = response.data;
+            allCate = [...allCate, ...data.content]; // Gộp dữ liệu từ trang hiện tại
+            lastPage = data.lastPage; // Kiểm tra nếu là trang cuối
+            pageNumber++; // Tăng số trang cho lần gọi tiếp theo
+        }
+
+        return allCate;
+    } catch (error) {
+        console.error('Error fetching all menus:', error);
+        throw error;
+    }
+};

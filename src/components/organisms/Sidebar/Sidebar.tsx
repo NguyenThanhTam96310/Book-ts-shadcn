@@ -8,13 +8,14 @@ import { Author, Category, Languages, Publisher, Supplier } from "@/types";
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { fetchAllAuthors } from "@/features/author/services/author.service";
+import { CategoryItemProps } from "@/features/category/services/type";
 
 interface SidebarProps {
     onFilterChange: (newParams: Partial<FetchProductListParams>) => void;
 }
 
 const Sidebar = ({ onFilterChange }: SidebarProps) => {
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [categories, setCategories] = useState<CategoryItemProps[]>([]);
     const [authors, setAuthors] = useState<Author[]>([]);
     const [languages, setLanguages] = useState<Languages[]>([]);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -162,29 +163,28 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 </div>
                 <div>
                     <button
-                        onClick={() => toggleSection('categories')}
+                        onClick={() => toggleSection("categories")}
                         className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
                         <span>Tất cả danh mục</span>
-                        {openSections['categories'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        {openSections["categories"] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </button>
                     <div
-                        className={`overflow-hidden transition-all duration-300 ${openSections['categories'] ? 'max-h-screen' : 'max-h-0'
-                            }`}
+                        className={`overflow-hidden transition-all duration-300 ${openSections["categories"] ? "max-h-screen" : "max-h-0"}`}
                     >
                         <ul className="space-y-2 mt-2 text-gray-700">
                             {categories.map((category) => (
-                                <li key={category.categoryId}>
+                                <li key={`${category.categoryId}-${category.categoryName}`}>
                                     <div className="flex items-center justify-between">
-                                        <label className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
-                                                checked={selectedCategoryId === category.categoryId}
-                                                onChange={() => handleCategoryChange(Number(category.categoryId))}
-                                            />
-                                            <span className="font-semibold text-gray-800 cursor-pointer">{category.categoryName}</span>
-                                        </label>
+                                        <span
+                                            className={`cursor-pointer transition-colors ${selectedCategoryId === Number(category.categoryId)
+                                                ? "text-orange-500 font-bold font-semibold"
+                                                : "text-gray-800 hover:text-orange-500"
+                                                }`}
+                                            onClick={() => handleCategoryChange(Number(category.categoryId))}
+                                        >
+                                            {category.categoryName}
+                                        </span>
                                         {category.childrens && category.childrens.length > 0 && (
                                             <button onClick={() => toggleCategory(Number(category.categoryId))}>
                                                 {openCategories[category.categoryId] ? (
@@ -197,21 +197,54 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                     </div>
                                     {category.childrens && category.childrens.length > 0 && (
                                         <div
-                                            className={`overflow-hidden transition-all duration-300 cursor-pointer ${openCategories[category.categoryId] ? 'max-h-screen' : 'max-h-0 '
+                                            className={`overflow-hidden transition-all duration-300 ${openCategories[category.categoryId] ? "max-h-screen" : "max-h-0"
                                                 }`}
                                         >
-                                            <ul className="ml-6 space-y-1 mt-1">
+                                            <ul className="ml-2 space-y-1 mt-1">
                                                 {category.childrens.map((child) => (
-                                                    <li key={child.categoryId}>
-                                                        <label className="flex items-center gap-2 text-gray-600 hover:text-orange-500 transition-colors cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
-                                                                checked={selectedCategoryId === child.categoryId}
-                                                                onChange={() => handleCategoryChange(Number(child.categoryId))}
-                                                            />
-                                                            <span>{child.categoryName}</span>
-                                                        </label>
+                                                    <li key={`${child.categoryId}-${child.categoryName}`}>
+                                                        <div className="flex items-center justify-between">
+                                                            <span
+                                                                className={`cursor-pointer transition-colors ${selectedCategoryId === Number(child.categoryId)
+                                                                    ? "text-orange-500 font-semibold"
+                                                                    : "text-gray-600 hover:text-orange-500"
+                                                                    }`}
+                                                                onClick={() => handleCategoryChange(Number(child.categoryId))}
+                                                            >
+                                                                {child.categoryName}
+                                                            </span>
+                                                            {child.childrens && child.childrens.length > 0 && (
+                                                                <button onClick={() => toggleCategory(Number(child.categoryId))}>
+                                                                    {openCategories[child.categoryId] ? (
+                                                                        <ChevronUp size={16} className="text-orange-500" />
+                                                                    ) : (
+                                                                        <ChevronDown size={16} className="text-gray-500" />
+                                                                    )}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {child.childrens && child.childrens.length > 0 && (
+                                                            <div
+                                                                className={`overflow-hidden transition-all duration-300 ${openCategories[child.categoryId] ? "max-h-screen" : "max-h-0"
+                                                                    }`}
+                                                            >
+                                                                <ul className="ml-4 space-y-1 mt-1">
+                                                                    {child.childrens.map((child2) => (
+                                                                        <li key={`${child2.categoryId}-${child2.categoryName}`}>
+                                                                            <span
+                                                                                className={`cursor-pointer transition-colors ${selectedCategoryId === Number(child2.categoryId)
+                                                                                    ? "text-orange-500 font-semibold"
+                                                                                    : "text-gray-600 hover:text-orange-500"
+                                                                                    }`}
+                                                                                onClick={() => handleCategoryChange(Number(child2.categoryId))}
+                                                                            >
+                                                                                {child2.categoryName}
+                                                                            </span>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
                                                     </li>
                                                 ))}
                                             </ul>
@@ -229,68 +262,57 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                         onClick={() => toggleSection('price')}
                         className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
-                        <span >Giá</span>
+                        <span>Giá</span>
                         {openSections['price'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </button>
                     <div
-                        className={`overflow-hidden transition-all duration-300 ${openSections['price'] ? 'max-h-screen' : 'max-h-0'
-                            }`}
+                        className={`overflow-hidden transition-all duration-300 ${openSections['price'] ? 'max-h-screen' : 'max-h-0'}`}
                     >
                         <ul className="space-y-2 mt-2 text-gray-700">
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer "
-                                        checked={selectedPriceRange === '0-150000'}
-                                        onChange={() => handlePriceChange(0, 150000, '0-150000')}
-                                    />
-                                    <span>0đ - 150,000đ</span>
-                                </label>
+                                <span
+                                    className={`cursor-pointer transition-colors ${selectedPriceRange === '0-150000' ? 'text-orange-500 font-semibold' : 'text-gray-700 hover:text-orange-500'
+                                        }`}
+                                    onClick={() => handlePriceChange(0, 150000, '0-150000')}
+                                >
+                                    0đ - 150,000đ
+                                </span>
                             </li>
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
-                                        checked={selectedPriceRange === '150000-300000'}
-                                        onChange={() => handlePriceChange(150000, 300000, '150000-300000')}
-                                    />
-                                    <span>150,000đ - 300,000đ</span>
-                                </label>
+                                <span
+                                    className={`cursor-pointer transition-colors ${selectedPriceRange === '150000-300000' ? 'text-orange-500 font-semibold' : 'text-gray-700 hover:text-orange-500'
+                                        }`}
+                                    onClick={() => handlePriceChange(150000, 300000, '150000-300000')}
+                                >
+                                    150,000đ - 300,000đ
+                                </span>
                             </li>
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
-                                        checked={selectedPriceRange === '300000-500000'}
-                                        onChange={() => handlePriceChange(300000, 500000, '300000-500000')}
-                                    />
-                                    <span>300,000đ - 500,000đ</span>
-                                </label>
+                                <span
+                                    className={`cursor-pointer transition-colors ${selectedPriceRange === '300000-500000' ? 'text-orange-500 font-semibold' : 'text-gray-700 hover:text-orange-500'
+                                        }`}
+                                    onClick={() => handlePriceChange(300000, 500000, '300000-500000')}
+                                >
+                                    300,000đ - 500,000đ
+                                </span>
                             </li>
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
-                                        checked={selectedPriceRange === '500000-700000'}
-                                        onChange={() => handlePriceChange(500000, 700000, '500000-700000')}
-                                    />
-                                    <span>500,000đ - 700,000đ</span>
-                                </label>
+                                <span
+                                    className={`cursor-pointer transition-colors ${selectedPriceRange === '500000-700000' ? 'text-orange-500 font-semibold' : 'text-gray-700 hover:text-orange-500'
+                                        }`}
+                                    onClick={() => handlePriceChange(500000, 700000, '500000-700000')}
+                                >
+                                    500,000đ - 700,000đ
+                                </span>
                             </li>
                             <li>
-                                <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
-                                        checked={selectedPriceRange === '700000-Infinity'}
-                                        onChange={() => handlePriceChange(700000, undefined, '700000-Infinity')}
-                                    />
-                                    <span>700,000đ - Trở lên</span>
-                                </label>
+                                <span
+                                    className={`cursor-pointer transition-colors ${selectedPriceRange === '700000-Infinity' ? 'font-semibold text-orange-500' : 'text-gray-700 hover:text-orange-500'
+                                        }`}
+                                    onClick={() => handlePriceChange(700000, undefined, '700000-Infinity')}
+                                >
+                                    700,000đ - Trở lên
+                                </span>
                             </li>
                         </ul>
                     </div>
@@ -299,27 +321,29 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 {/* Nhà xuất bản */}
                 <div>
                     <button
-                        onClick={() => toggleSection('publishers')}
+                        onClick={() => toggleSection("publishers")}
                         className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
                         <span>Nhà xuất bản</span>
-                        {openSections['publishers'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        {openSections["publishers"] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </button>
                     <div
-                        className={`overflow-hidden transition-all duration-300 ${openSections['publishers'] ? 'max-h-screen' : 'max-h-0'
+                        className={`overflow-hidden transition-all duration-300 ${openSections["publishers"] ? "max-h-screen" : "max-h-0"
                             }`}
                     >
                         <ul className="space-y-2 mt-2 text-gray-700">
                             {publishers.map((publisher) => (
                                 <li key={publisher.publisherId}>
                                     <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
-                                            checked={selectedPublisherId === publisher.publisherId}
-                                            onChange={() => handlePublisherChange(Number(publisher.publisherId))}
-                                        />
-                                        <span>{publisher.publisherName}</span>
+                                        <span
+                                            className={` cursor-pointer transition-colors ${selectedPublisherId === Number(publisher.publisherId)
+                                                ? "text-orange-500 font-semibold"
+                                                : "text-gray-800 hover:text-orange-500 "
+                                                }`}
+                                            onClick={() => handlePublisherChange(Number(publisher.publisherId))}
+                                        >
+                                            {publisher.publisherName}
+                                        </span>
                                     </label>
                                 </li>
                             ))}
@@ -330,14 +354,14 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 {/* Tác giả */}
                 <div>
                     <button
-                        onClick={() => toggleSection('authors')}
+                        onClick={() => toggleSection("authors")}
                         className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
                         <span>Tác giả </span>
-                        {openSections['authors'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        {openSections["authors"] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </button>
                     <div
-                        className={`overflow-hidden transition-all duration-300 ${openSections['authors'] ? 'max-h-screen' : 'max-h-0'
+                        className={`overflow-hidden transition-all duration-300 ${openSections["authors"] ? "max-h-screen" : "max-h-0"
                             }`}
                     >
                         <ul className="space-y-2 mt-2 text-gray-700">
@@ -361,14 +385,14 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 {/* Ngôn ngữ */}
                 <div>
                     <button
-                        onClick={() => toggleSection('languages')}
+                        onClick={() => toggleSection("languages")}
                         className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
                         <span>Ngôn ngữ</span>
-                        {openSections['languages'] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        {openSections["languages"] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </button>
                     <div
-                        className={`overflow-hidden transition-all duration-300 ${openSections['languages'] ? 'max-h-screen' : 'max-h-0'
+                        className={`overflow-hidden transition-all duration-300 ${openSections["languages"] ? "max-h-screen" : "max-h-0"
                             }`}
                     >
                         <ul className="space-y-2 mt-2 text-gray-700">
@@ -390,7 +414,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 </div>
             </div>
         </aside>
-    );
+    )
 };
 
 export default Sidebar;

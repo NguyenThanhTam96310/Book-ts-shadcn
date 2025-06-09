@@ -10,7 +10,7 @@ export async function fetchPosts(): Promise<PostItemRes[]> {
     }>(`${envConfig.NEXT_PUBLIC_API}/public/posts`, {
         params: {
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             pageSize: 9,
             sortBy: "postId",
             sortOrder: "desc",
@@ -23,6 +23,10 @@ export const fetchPostDetail = async (slug: string): Promise<PostItemRes> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/posts/slug/${slug}`)
     return response.data as PostItemRes
 }
+export const fetchPageDetail = async (slug: string): Promise<PostItemRes> => {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/posts/slug/${slug}`)
+    return response.data as PostItemRes
+}
 export async function fetchPostByTopicId(topicId: number): Promise<PostItemRes[]> {
     const res = await axiosInstance.get<{
         content: PostItemRes[]
@@ -30,7 +34,7 @@ export async function fetchPostByTopicId(topicId: number): Promise<PostItemRes[]
         params: {
             status: true,
             topicId: topicId,
-            pageNumber: 0,
+            pageNumber: 1,
             pageSize: 9,
             sortBy: "postId",
             sortOrder: "desc",

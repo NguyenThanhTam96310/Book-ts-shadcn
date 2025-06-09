@@ -4,8 +4,9 @@ export const orderSchema = z.object({
     order: z.object({
         userId: z.number().optional(),
         email: z.string().email("Email không hợp lệ"),
-        deliveryName: z.string().min(3, "Vui lòng nhập họ tên"),
-        deliveryPhone: z.string().min(10, "Số điện thoại phải có ít nhất 10 chữ số"),
+        deliveryName: z.string().min(3, "Vui lòng nhập họ tên ít nhất 3 kí tự"),
+        deliveryPhone: z.string().min(10, "Số điện thoại phải có ít nhất 10 chữ số")
+            .regex(/^\d+$/, { message: "Số điện thoại giao hàng chỉ được chứa chữ số" }),
         address: z.object({
             ward: z.string(),
             buildingName: z.string().min(1, "Vui lòng nhập tên tòa nhà"),

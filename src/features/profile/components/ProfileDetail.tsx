@@ -47,8 +47,8 @@ export default function ProfileDetail() {
             <div className="max-w-6xl mx-auto space-y-6">
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Offers Card */}
+                {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
                     <Card className="border-0 shadow-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white overflow-hidden relative">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
                         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
@@ -72,10 +72,10 @@ export default function ProfileDetail() {
                                 </div>
                             </div>
                         </CardContent>
-                    </Card>
+                    </Card> */}
 
-                    {/* Achievements Card */}
-                    <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white overflow-hidden relative">
+                {/* Achievements Card */}
+                {/* <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white overflow-hidden relative">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
                         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
                         <CardHeader className="pb-3 relative z-10">
@@ -99,10 +99,10 @@ export default function ProfileDetail() {
                             </div>
                         </CardContent>
                     </Card>
-                </div>
+                </div> */}
 
                 {/* Member Rank Info */}
-                <Card className="border-0 shadow-lg bg-gradient-to-r from-yellow-50 to-orange-50">
+                {/* <Card className="border-0 shadow-lg bg-gradient-to-r from-yellow-50 to-orange-50">
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -119,7 +119,7 @@ export default function ProfileDetail() {
                             </Button>
                         </div>
                     </CardContent>
-                </Card>
+                </Card> */}
 
                 {/* Profile Card */}
                 <Card className="border-0 shadow-xl">

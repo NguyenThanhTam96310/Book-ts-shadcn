@@ -4,12 +4,13 @@ export interface ProductItemProps {
     productId: string | number
     productName: string
     description?: string
+    format?: string
     price: number
     discount?: number
     isbn?: string
     categories: Categories[]
     pageNumber?: number
-    quantity?: number
+    quantity: number
     size?: string
     slug: string
     status?: boolean

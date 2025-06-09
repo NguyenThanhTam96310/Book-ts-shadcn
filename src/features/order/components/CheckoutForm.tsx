@@ -34,7 +34,7 @@ const StatusBadge: FC<{ status: string | undefined }> = ({ status }) => {
                         className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm font-medium"
                     >
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        Giao hàng thành công
+                        Đặt hàng thành công
                     </Badge>
                     <Badge className="bg-green-600 text-white text-xs sm:text-sm font-medium">
                         ĐÃ THANH TOÁN

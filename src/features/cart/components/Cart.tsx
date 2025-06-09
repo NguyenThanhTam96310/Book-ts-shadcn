@@ -12,20 +12,17 @@ import { fetchProductsByIds } from "@/features/product";
 import { isTokenExpired } from "@/lib/utils/auth";
 import { useRouter } from "next/navigation";
 import { PAYMENT_ITEM_KEY } from "@/constants/orderConstants";
+import { removeProductIdFromLocalStorage } from "@/lib/utils/localStorege";
+import { get } from "axios";
 
 export default function Cart() {
-    const [cart, setCart] = useState<CartProps>({
-        userId: undefined,
-        cartItems: [],
-        totalPrice: 0,
-    });
+    const [cart, setCart] = useState<CartProps>({});
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [userId, setUserId] = useState<number | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const isCheckingStorage = useRef(false); // Ref để kiểm soát việc gọi loadUserId
     const [updateSuccess, setUpdateSuccess] = useState(false); // State để kích hoạt thông báo toast
     const [removeSuccess, setRemoveSuccess] = useState(false); // State để kích hoạt thông báo toast cho remove
-
     // Lấy userId, lắng nghe thay đổi localStorage, và đặt isMounted
     useEffect(() => {
         const loadUserId = () => {
@@ -82,7 +79,8 @@ export default function Cart() {
                 const userId = parseInt(storedUserId, 10);
                 try {
                     const data = await fetchCart(userId);
-                    setCart(data);
+                    setCart({ ...data });
+
                 } catch (error) {
                     console.error("Failed to fetch cart from server:", error);
                 }
@@ -95,22 +93,36 @@ export default function Cart() {
 
                         // Gọi API lấy chi tiết sản phẩm nếu muốn cập nhật lại
                         fetchProductsByIds(productIds).then((products) => {
-
-                            // Nếu bạn muốn cập nhật lại cartItems theo dữ liệu server
-                            const updatedItems = data.cartItems.map((item) => {
-                                const fullProduct = products.find((p) => Number(p.productId) === Number(item.product.productId))
+                            // Cập nhật cartItems, chỉ giữ lại các sản phẩm thỏa mãn điều kiện
+                            const updatedItems = data.cartItems
+                                .map((item) => {
+                                    const fullProduct = products.find(
+                                        (p) => Number(p.productId) === Number(item.product.productId) && p.status === true
+                                    );
+                                    // Chỉ trả về item nếu fullProduct tồn tại
+                                    if (fullProduct) {
+                                        return {
+                                            ...item,
+                                            product: {
+                                                ...item.product,
+                                                ...fullProduct, // Gộp dữ liệu từ server
+                                            },
+                                        };
+                                    }
+                                    return null; // Đánh dấu item không hợp lệ
+                                })
+                                .filter((item) => item !== null); // Loại bỏ các item null
+                            const updatedCartItems = updatedItems.map((item) => {
+                                const maxQty = item.product.quantity;
+                                const newQty = item.quantity > maxQty ? maxQty : item.quantity;
                                 return {
                                     ...item,
-                                    product: {
-                                        ...item.product,
-                                        ...fullProduct, // Gộp dữ liệu từ server
-                                    },
-                                }
-                            })
-
+                                    quantity: newQty,
+                                };
+                            });
                             setCart((prev) => ({
                                 ...prev,
-                                cartItems: updatedItems,
+                                cartItems: updatedCartItems,
                             }))
                         })
 
@@ -127,6 +139,7 @@ export default function Cart() {
     const handleCheckout = () => {
         // const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
         // Lưu giỏ hàng đã chọn vào localStorage
+        localStorage.removeItem(PAYMENT_ITEM_KEY);
         const updatedCart = {
             ...cart,
             cartItems: (cart.cartItems ?? []).filter((item) => selectedItems.includes(Number(item.product.productId)))
@@ -164,16 +177,33 @@ export default function Cart() {
                     return;
                 }
 
-                if (userId !== null) {
-                    await updateQuantityCart(userId, id, qty);
-                } else {
-                    console.error("User ID is null. Cannot update cart quantity.");
-                }
+                if (userId) {
+                    const response = await updateQuantityCart(userId, id, qty);
+                    setCart((prev) => {
+                        const updatedItems = prev.cartItems?.map((ci) =>
+                            Number(ci.product.productId) === Number(response.productId)
+                                ? { ...ci, quantity: response.quantity }
+                                : ci
+                        ) || [];
 
-                const updatedCart = await fetchCart(userId);
-                setCart(updatedCart);
-                setSelectedItems((prev) => prev.filter((itemId) => itemId !== Number(id)));
-                setUpdateSuccess(true); // Kích hoạt thông báo toast
+                        const newTotalPrice = updatedItems.reduce(
+                            (sum, item) => sum +
+                                (item.product.price -
+                                    Math.round(item.product.price * ((item.product.discount ?? 0) / 100))) *
+                                item.quantity
+                            ,
+                            0
+                        );
+
+                        return {
+                            ...prev,
+                            cartItems: updatedItems,
+                            totalPrice: newTotalPrice,
+                        };
+                    });
+                    setSelectedItems((prev) => prev.filter((itemId) => itemId !== Number(id)));
+                    setUpdateSuccess(true); // Kích hoạt thông báo toast
+                }
             } else {
                 setCart((prev) => {
                     if (!prev) return prev;
@@ -188,7 +218,14 @@ export default function Cart() {
                     const newCart = {
                         ...prev,
                         cartItems: updatedItems,
-                        totalPrice: updatedItems?.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+                        totalPrice: updatedItems?.reduce(
+                            (sum, item) =>
+                                sum +
+                                (item.product.price -
+                                    Math.round(item.product.price * ((item.product.discount ?? 0) / 100))) *
+                                item.quantity,
+                            0
+                        ),
                     };
 
                     localStorage.setItem(CART_ITEM_KEY, JSON.stringify(newCart));
@@ -204,18 +241,29 @@ export default function Cart() {
             });
         }
     };
-
-    const removeFromCart = async (prodictId: string | number) => {
+    const removeFromCart = async (productId: string | number) => {
         try {
             if (userId) {
-                await deleteCartItem(userId, prodictId);
-                const updatedCart = await fetchCart(userId);
-                setCart(updatedCart);
-                setSelectedItems((prev) => prev.filter((itemId) => itemId !== Number(prodictId)));
-                setRemoveSuccess(true); // Kích hoạt thông báo toast
+                const response = await deleteCartItem(userId, Number(productId));
+                setCart((prev) => {
+                    const updatedItems = (prev.cartItems || []).filter(
+                        (ci) => Number(ci.product.productId) !== response
+                    );
+                    const newTotal = updatedItems.reduce((sum, item) => {
+                        const discount = item.product.discount ?? 0;
+                        const price = item.product.price - Math.round(item.product.price * discount / 100);
+                        return sum + price * item.quantity;
+                    }, 0);
+
+                    return { ...prev, cartItems: updatedItems, totalPrice: newTotal };
+                });
+
+                removeProductIdFromLocalStorage(response);
+                setSelectedItems((prev) => prev.filter((id) => id !== response));
+                setRemoveSuccess(true);
             } else {
                 setCart((prev) => {
-                    const updatedCartItems = prev.cartItems?.filter((ci) => ci.product.productId !== prodictId) || [];
+                    const updatedCartItems = prev.cartItems?.filter((ci) => ci.product.productId !== productId) || [];
                     const updatedTotalPrice = updatedCartItems.reduce((sum, item) => {
                         return sum + (item.product.price - (item.product.price * ((item.product.discount ?? 0) / 100))) * item.quantity;
                     }, 0);
@@ -224,7 +272,7 @@ export default function Cart() {
                         cartItems: updatedCartItems,
                         totalPrice: updatedTotalPrice,
                     };
-
+                    removeProductIdFromLocalStorage(Number(productId))
                     localStorage.setItem(CART_ITEM_KEY, JSON.stringify(updatedCart));
                     setRemoveSuccess(true); // Kích hoạt thông báo toast
                     return updatedCart;
@@ -239,7 +287,7 @@ export default function Cart() {
         }
     };
 
-    const getTotal = () =>
+    const finalTotal = () =>
         cart.cartItems
             ?.filter((ci) => selectedItems.includes(Number(ci.product.productId)))
             .reduce(
@@ -248,26 +296,55 @@ export default function Cart() {
                     (ci.product.price - Math.round(ci.product.price * ((ci.product?.discount ?? 0) / 100))) * ci.quantity,
                 0
             ) || 0;
-
-    const isAllSelected = cart.cartItems && cart.cartItems.length > 0 && selectedItems.length === cart.cartItems.length;
+    const getTotal = () =>
+        cart.cartItems
+            ?.filter((ci) => selectedItems.includes(Number(ci.product.productId)))
+            .reduce(
+                (sum, ci) =>
+                    sum +
+                    ci.product.price * ci.quantity,
+                0
+            ) || 0;
+    const hasInvalidItems = cart.cartItems?.some(
+        (item) => !item.product.status || item.product.quantity <= 0 || item.quantity > item.product.quantity
+    ) || false;
+    const isAllSelected =
+        cart.cartItems &&
+        cart.cartItems.length > 0 &&
+        selectedItems.length === cart.cartItems.filter(
+            (item) => item.product.status && item.product.quantity > 0 && item.quantity <= item.product.quantity
+        ).length;
 
     const toggleSelectAll = () => {
         if (isAllSelected) {
             setSelectedItems([]);
         } else {
-            setSelectedItems(cart.cartItems ? cart.cartItems.map((ci) => Number(ci.product.productId)) : []);
+            setSelectedItems(
+                cart.cartItems
+                    ?.filter(
+                        (item) => item.product.status && item.product.quantity > 0 && item.quantity <= item.product.quantity
+                    )
+                    .map((ci) => Number(ci.product.productId)) || []
+            );
         }
     };
 
     const toggleSelectItem = (id: number) => {
+        const item = cart.cartItems?.find((ci) => Number(ci.product.productId) === id);
+        if (!item || !item.product.status || item.product.quantity <= 0 || item.quantity > item.product.quantity) {
+            toast.error("Sản phẩm không thể được chọn do đã ngừng bán, hết hàng, hoặc số lượng vượt quá tồn kho!", {
+                position: "bottom-right",
+                autoClose: 2000,
+            });
+            return;
+        }
+
         if (selectedItems.includes(id)) {
             setSelectedItems((prev) => prev.filter((itemId) => itemId !== id));
         } else {
             setSelectedItems((prev) => [...prev, id]);
         }
-
     };
-
     if (!isMounted) return null;
 
     return (
@@ -278,7 +355,12 @@ export default function Cart() {
 
                 {/* Select all */}
                 <div className="flex items-center mb-4">
-                    <Checkbox id="select-all" checked={isAllSelected} onCheckedChange={toggleSelectAll} />
+                    <Checkbox
+                        id="select-all"
+                        checked={isAllSelected}
+                        onCheckedChange={toggleSelectAll}
+                        disabled={hasInvalidItems || !cart.cartItems?.length}
+                    />
                     <label htmlFor="select-all" className="ml-2 text-gray-700">
                         Chọn tất cả ({cart.cartItems?.length || 0} sản phẩm)
                     </label>
@@ -303,6 +385,7 @@ export default function Cart() {
                                 onCheck={() => toggleSelectItem(Number(ci.product.productId))}
                                 onDecrease={(id) => updateQuantity(id, ci.quantity - 1)}
                                 onIncrease={(id) => updateQuantity(id, ci.quantity + 1)}
+                                refQuantity={(id) => updateQuantity(id, ci.quantity = ci.product.quantity)}
                                 onRemove={removeFromCart}
                             />
                         ))
@@ -314,24 +397,24 @@ export default function Cart() {
 
             {/* Right: Summary */}
             <div className="w-full lg:w-1/4 space-y-4">
-                <div className="bg-white p-4 rounded shadow-sm">
+                {/* <div className="bg-white p-4 rounded shadow-sm">
                     <h3 className="text-md font-semibold mb-2">KHUYẾN MÃI</h3>
                     <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white mt-2">
                         Mua thêm
                     </Button>
-                </div>
-                <div className="bg-white p-4 rounded shadow-sm space-y-2">
+                </div> */}
+                <div className="sticky top-4 bg-white p-4 rounded shadow-sm space-y-2">
                     <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Thành tiền</span>
                         <span className="text-sm text-gray-800 font-semibold">{getTotal().toLocaleString()} ₫</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Khuyến mãi</span>
-                        <span className="text-sm text-gray-800 font-semibold">0 ₫</span>
+                        <span className="text-sm text-green-800 font-semibold">- {(getTotal() - finalTotal()).toLocaleString()} ₫</span>
                     </div>
                     <div className="flex justify-between font-bold">
                         <span>Tổng Số Tiền (gồm VAT)</span>
-                        <span className="text-orange-600">{getTotal().toLocaleString()} ₫</span>
+                        <span className="text-orange-600">{finalTotal().toLocaleString()} ₫</span>
                     </div>
                     <Button
                         disabled={getTotal() === 0}

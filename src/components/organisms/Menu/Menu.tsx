@@ -12,16 +12,67 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMenu } from "@/features/menu/hooks/useMenu";
 import { fetchMenus, MenuItem } from "@/features/menu";
+import { Categories } from "@/types";
+import { fetchAllCategories, fetchCategoriesFooter } from "@/features/category";
 
 export default function Menu() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  //  const footerSections = [Add commentMore actions
+  //   {
+  //     title: "Dịch vụ khách hàng",
+  //     icon: HelpCircle,
+  //     links: [
+  //       { name: "Hướng dẫn mua hàng", href: "/guide" },
+  //       { name: "Chính sách đổi trả", href: "/return-policy" },
+  //       { name: "Phương thức thanh toán", href: "/payment" },
+  //       { name: "Vận chuyển & Giao hàng", href: "/shipping" },
+  //       { name: "Câu hỏi thường gặp", href: "/faq" },
+  //     ],
+  //   },
+  //   {
+  //     title: "Về chúng tôi",
+  //     icon: BookOpen,
+  //     links: [
+  //       { name: "Giới thiệu BOOKSTORE", href: "/about" },
+  //       { name: "Tuyển dụng", href: "/careers" },
+  //       { name: "Chương trình đối tác", href: "/partners" },
+  //       { name: "Tin tức & Sự kiện", href: "/news" },
+  //       { name: "Liên hệ", href: "/contact" },
+  //     ],
+  //   },
+  //   {
+  //     title: "Tài khoản",
+  //     icon: User,
+  //     links: [
+  //       { name: "Đăng nhập", href: "/login" },
+  //       { name: "Đăng ký", href: "/register" },
+  //       { name: "Quên mật khẩu", href: "/forgot-password" },
+  //       { name: "Tài khoản của tôi", href: "/profile" },
+  //       { name: "Lịch sử đơn hàng", href: "/orders" },
+  //     ],
+  //   },
+  //   {
+  //     title: "Danh mục sách",
+  //     icon: Award,
+  //     links: [
+  //       { name: "Sách văn học", href: "/category/literature" },
+  //       { name: "Sách kinh tế", href: "/category/business" },
+  //       { name: "Sách thiếu nhi", href: "/category/children" },
+  //       { name: "Sách học ngoại ngữ", href: "/category/language" },
+  //       { name: "Sách kỹ năng sống", href: "/category/self-help" },
+  //     ],
+  //   },Add commentMore actions
+  // ]
   const [menus, setMenus] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<Categories[]>([]);
   useEffect(() => {
     const loadMenus = async () => {
       try {
         const data = await fetchMenus()
-        setMenus(data)
+        const dataCate = await fetchCategoriesFooter()
+        const mainMenus = data.filter((menu: MenuItem) => menu.position === "MAINMENU");
+        setMenus(mainMenus)
       } catch (error) {
         console.error("Lỗi khi load Menu:", error)
       }

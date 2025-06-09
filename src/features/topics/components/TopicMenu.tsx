@@ -54,7 +54,7 @@ export default function TopicMenu() {
                         <Menubar className="border-0 p-0 bg-transparent">
                             <MenubarMenu>
                                 <MenubarTrigger
-                                    onClick={() => handleTopicClick("newPost")}
+                                    onClick={() => router.push("/post")}
                                     className="flex items-center gap-2 text-white text-base font-semibold hover:text-yellow-300 transition-all duration-300 hover:scale-105 px-4 py-2 rounded-full hover:bg-white/10 backdrop-blur-sm group cursor-pointer"
                                 >
                                     <Sparkles className="w-4 h-4 group-hover:animate-pulse" />
@@ -111,7 +111,7 @@ export default function TopicMenu() {
                             {/* Latest Posts Item */}
                             <div className="group">
                                 <button
-                                    onClick={() => handleTopicClick("newPost")}
+                                    onClick={() => router.push("/post")}
                                     className="w-full flex items-center justify-between p-4 text-gray-800 font-semibold rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-md"
                                 >
                                     <div className="flex items-center gap-3">

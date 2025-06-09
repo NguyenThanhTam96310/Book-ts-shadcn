@@ -8,8 +8,8 @@ export const fetchProductFlashSaleForm = async (): Promise<ProductItemProps[]> =
         params: {
             isSale: true,
             status: true,
-            pageNumber: 0,
-            pageSize: 5,
+            pageNumber: 1,
+            pageSize: 10,
             sortBy: "productId",
             sortOrder: "asc"
         }
@@ -22,7 +22,7 @@ export const fetchProductNewForm = async (): Promise<ProductItemProps[]> => {
         params: {
 
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             pageSize: 10,
             sortBy: "productId",
             sortOrder: "desc"
@@ -36,7 +36,7 @@ export const fetchProductByCategory = async (categoryId: number): Promise<Produc
         params: {
             categoryId: categoryId,
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             pageSize: 5,
             sortBy: "productId",
             sortOrder: "asc"
@@ -50,9 +50,9 @@ export const fetchProductByCategory = async (categoryId: number): Promise<Produc
 export const fetchProductByAuthor = async (authorId: number): Promise<ProductItemProps[]> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
         params: {
-            authorId: authorId,
+            authorIds: authorId,
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             pageSize: 5,
             sortBy: "productId",
             sortOrder: "asc"
@@ -71,7 +71,7 @@ export const fetchProductBySlug = async (slug: string): Promise<ProductItemProps
 
 
 export const fetchProductList = async (params: FetchProductListParams): Promise<ProductListResponse> => {
-    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products?status=true`, {
         params,
         paramsSerializer: (params) => {
             return qs.stringify(params, {

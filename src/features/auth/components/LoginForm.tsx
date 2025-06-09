@@ -37,7 +37,14 @@ const LoginForm = () => {
         localStorage.removeItem("googleSynced")
         signIn("google")
     }
+    const fetchAndStoreCartProductIds = async (userId: number) => {
+        const data: CartProps = await fetchCart(userId);
 
+        const productIds = data.cartItems?.map(item => item.product.productId) || [];
+
+        // ✅ Lưu vào localStorage
+        localStorage.setItem("CartProductIds", JSON.stringify(productIds));
+    };
     useEffect(() => {
         const handleSyncAfterGoogle = async () => {
             const isSynced = localStorage.getItem("googleSynced")
@@ -49,6 +56,7 @@ const LoginForm = () => {
                     localStorage.setItem("accountName", session.user.name)
                     const data = await fetchUserByToken(session.accessToken)
                     if (data?.userId && data?.email) {
+                        await fetchAndStoreCartProductIds(Number(data.userId))
                         localStorage.setItem("userId", data.userId)
                     }
 
@@ -85,6 +93,7 @@ const LoginForm = () => {
 
             const user = await fetchUserByToken(token)
             if (user?.userId && user?.email) {
+                fetchAndStoreCartProductIds(Number(user.userId))
                 localStorage.setItem("userId", user.userId)
                 localStorage.setItem("username", user.email)
 

@@ -253,7 +253,7 @@ export default function EditAddressForm() {
                                                 Email
                                             </FormLabel>
                                             <FormControl className="flex-1">
-                                                <Input placeholder="Nhập email" {...field} />
+                                                <Input placeholder="Nhập email" {...field} readOnly />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -267,7 +267,7 @@ export default function EditAddressForm() {
                                         <FormItem className="flex items-center gap-4 w-full">
                                             <FormLabel className="w-[150px] min-w-[50px] text-sm text-gray-700 font-semibold">Số điện thoại</FormLabel>
                                             <FormControl className="flex-1">
-                                                <Input placeholder="Ví dụ: 0979123xxx (10 ký tự số)" {...field} />
+                                                <Input placeholder="Ví dụ: 0979123xxx (10 ký tự số)" {...field} readOnly />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -417,9 +417,9 @@ export default function EditAddressForm() {
                                         name="address.country"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-sm text-gray-700 font-semibold">Đất nước</FormLabel>
+                                                <FormLabel className="text-sm text-gray-700 font-semibold">Quốc gia</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Nhập quốc gia" {...field} />
+                                                    <Input placeholder="Nhập quốc gia" {...field} readOnly />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

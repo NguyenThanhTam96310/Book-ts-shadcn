@@ -40,8 +40,8 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           {/* Flash Sale Header */}
           <Card className="bg-white/95 backdrop-blur-xl border-0 shadow-2xl mb-8 overflow-hidden">
-            <div className="relative p-8 text-center">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500"></div>
+            <div className="relative px-8 text-center">
+              {/* <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500"></div> */}
 
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center animate-pulse">
@@ -69,7 +69,7 @@ export default function Home() {
           </Card>
 
           {/* Flash Sale Products */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-xl">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl px-8 shadow-xl">
             <ProductFlashSaleForm />
           </div>
         </div>

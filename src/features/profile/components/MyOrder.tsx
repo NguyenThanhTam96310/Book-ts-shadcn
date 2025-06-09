@@ -17,13 +17,15 @@ const MyOrder = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [allOrders, setAllOrders] = useState<OrderRes[]>([]);
-
     // Map tabs to order statuses
     const statusMap: { [key: string]: string[] } = {
-        "Tất cả": ["PAID", "PENDING", "FALSED"],
+        "Tất cả": ["PAID", "PENDING", "FALSED", "COMPLETED", "SHIPPED", "CANCELLED"],
         "Chờ giao hàng": ["PENDING"],
-        "Hoàn thành": ["PAID"],
-        "Đã hủy": ["FALSED"],
+        "Đã hoàn thành": ["COMPLETED"],
+        "Đã hủy": ["CANCELLED"],
+        "Đã thanh toán": ["PAID"],
+        "Đã giao hàng": ["SHIPPED"],
+        "Thất bại": ["FALSED"]
     };
 
     // Fetch userId from localStorage
@@ -116,7 +118,7 @@ const MyOrder = () => {
     return (
         <div className="w-full">
             {/* MenuOrder */}
-            <div className="py-2 sm:py-3">
+            <div className="pb-2 sm:pb-3">
                 <MenuOrder activeTab={activeTab} setActiveTab={setActiveTab} />
             </div>
 

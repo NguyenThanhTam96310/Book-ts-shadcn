@@ -16,7 +16,8 @@ const PostsList: React.FC<PostByTopicFormProps> = ({ topicId }) => {
         const loadPosts = async () => {
             try {
                 const data = await fetchPostByTopicId(topicId)
-                setPosts(data)
+                const filterPost = data.filter((post: PostItemRes) => post.type === "POST");
+                setPosts(filterPost)
             } catch (error) {
                 console.error("Lỗi khi load post:", error)
             }

@@ -31,7 +31,6 @@ import { useRouter } from "next/navigation";
 import { USER_ID } from "@/constants/cartConstants";
 import { orderSchema } from "@/features/order/services/order.Schema";
 import { fetchUserByToken } from "@/features/auth/services/auth.service";
-import { UserProps } from "@/features/auth/services/type";
 import { calculateShippingFee, getDistricts, getProvinces, getWards } from "@/features/order/services/ghn.service";
 import { OtpForm } from "@/features/order/components/otpForm";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -39,7 +38,6 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import PromotionForm from "@/features/promotion/components/PromotionForm";
 import { UserRes } from "@/features/profile/services/type";
-
 const cartSchema = z.object({
     cartItems: z.array(
         z.object({
@@ -51,17 +49,6 @@ const cartSchema = z.object({
     ),
     totalPrice: z.number().min(0),
 });
-
-const addressFieldLabels: Record<keyof z.infer<typeof orderSchema>["order"]["address"], string> = {
-    ward: "Phường/Xã",
-    buildingName: "Tên tòa nhà/Số nhà",
-    city: "Thành phố",
-    district: "Quận/Huyện",
-    country: "Quốc gia",
-    cityCode: "",
-    districtCode: "",
-    wardCode: "",
-};
 
 export default function PaymentForm() {
     const form = useForm<z.infer<typeof orderSchema>>({
@@ -377,32 +364,111 @@ export default function PaymentForm() {
             console.log("Final order data to send:", finalOrderData);
             if (userId) {
                 if (values.order.payment.paymentMethod === "VNPAY") {
-                    const result: { status: string; message: string; url: string } = await paymentUser(values);
-                    router.push(result.url);
+                    try {
+                        const result = await paymentUser(values) as { url: string };
+                        router.push(result.url);
+                    } catch (error: any) {
+                        // Xử lý lỗi từ Zod hoặc API
+                        if (typeof error === "object" && error !== null) {
+                            // Hiển thị từng lỗi cụ thể
+                            Object.entries(error).forEach(([key, message]) => {
+                                toast.error(`${message}`, {
+                                    position: "top-right",
+                                    autoClose: 3000,
+                                });
+                            });
+                        } else {
+                            // Lỗi chung nếu không có chi tiết
+                            toast.error("Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.", {
+                                position: "bottom-right",
+                                autoClose: 3000,
+                            });
+                        }
+                    }
+
                 } else {
-                    const result: { orderCode: string } = await paymentUser(values);
-                    // console.log(result.orderCode, "=========")
-                    toast.success("Đặt hàng thành công!");
-                    localStorage.removeItem(PAYMENT_ITEM_KEY);
-                    router.push(`/payment/checkout?vnp_TxnRef=${result.orderCode}`);
+                    try {
+                        const result = await paymentUser(values) as { orderCode: string };
+                        toast.success("Đặt hàng thành công!", {
+                            position: "bottom-right",
+                            autoClose: 2000,
+                        });
+                        localStorage.removeItem(PAYMENT_ITEM_KEY);
+                        router.push(`/payment/checkout?vnp_TxnRef=${result.orderCode}`);
+                    } catch (error: any) {
+                        // Xử lý lỗi từ Zod hoặc API
+                        if (typeof error === "object" && error !== null) {
+                            // Hiển thị từng lỗi cụ thể
+                            Object.entries(error).forEach(([key, message]) => {
+                                toast.error(`${message}`, {
+                                    position: "top-right",
+                                    autoClose: 3000,
+                                });
+                            });
+                        } else {
+                            // Lỗi chung nếu không có chi tiết
+                            toast.error("Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.", {
+                                position: "bottom-right",
+                                autoClose: 3000,
+                            });
+                        }
+                    }
                 }
             } else {
-                console.log("Form data:", values);
                 if (values.order.payment.paymentMethod === "VNPAY") {
-                    const result: { status: string; message: string; url: string } = await paymentCustomer(values);
-                    localStorage.removeItem(PAYMENT_ITEM_KEY);
-                    router.push(result.url);
+                    try {
+                        const result: { status: string; message: string; url: string } = await paymentCustomer(values);
+                        localStorage.removeItem(PAYMENT_ITEM_KEY);
+                        router.push(result.url);
+                    } catch (error: any) {
+                        // Xử lý lỗi từ Zod hoặc API
+                        if (typeof error === "object" && error !== null) {
+                            // Hiển thị từng lỗi cụ thể
+                            Object.entries(error).forEach(([key, message]) => {
+                                toast.error(`${message}`, {
+                                    position: "top-right",
+                                    autoClose: 3000,
+                                });
+                            });
+                        } else {
+                            // Lỗi chung nếu không có chi tiết
+                            toast.error("Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.", {
+                                position: "bottom-right",
+                                autoClose: 3000,
+                            });
+                        }
+                    }
                 } else {
-                    const result: { orderId: number; email: string; deliveryPhone: string, orderCode: string } = await paymentCustomer(values);
-                    console.log(result)
-                    toast.success('Đặt hàng thành công! Vui lòng nhập OTP để xác nhận.');
-                    setOtpInfo({
-                        orderId: result.orderId,
-                        email: result.email,
-                        deliveryPhone: result.deliveryPhone,
-                        orderCode: result.orderCode
-                    })
-                    setOtpOpen(true)
+                    try {
+                        const result: { orderId: number; email: string; deliveryPhone: string, orderCode: string } = await paymentCustomer(values);
+                        console.log(result)
+                        toast.success('Đặt hàng thành công! Vui lòng nhập OTP để xác nhận.');
+                        setOtpInfo({
+                            orderId: result.orderId,
+                            email: result.email,
+                            deliveryPhone: result.deliveryPhone,
+                            orderCode: result.orderCode
+                        })
+                        setOtpOpen(true)
+                    } catch (error: any) {
+                        // Xử lý lỗi từ Zod hoặc API
+                        if (typeof error === "object" && error !== null) {
+                            // Hiển thị từng lỗi cụ thể
+                            Object.entries(error).forEach(([key, message]) => {
+                                toast.error(`${message}`, {
+                                    position: "top-right",
+                                    autoClose: 3000,
+                                });
+                            });
+                        } else {
+                            // Lỗi chung nếu không có chi tiết
+                            toast.error("Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.", {
+                                position: "bottom-right",
+                                autoClose: 3000,
+                            });
+                        }
+                    }
+
                 }
             }
         } catch (error) {
@@ -506,7 +572,7 @@ export default function PaymentForm() {
                             name="order.address.city" // Tên trường trong form state
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{addressFieldLabels.city}</FormLabel>
+                                    <FormLabel>Thành phố</FormLabel>
                                     <FormControl>
                                         <Select
                                             value={field.value} // Giá trị hiện tại của trường trong form state
@@ -551,7 +617,7 @@ export default function PaymentForm() {
                             name="order.address.district" // Tên trường trong form state
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{addressFieldLabels.district}</FormLabel>
+                                    <FormLabel>Quận/huyện</FormLabel>
                                     <FormControl>
                                         <Select
                                             value={field.value} // Giá trị hiện tại của trường trong form state
@@ -593,7 +659,7 @@ export default function PaymentForm() {
                             name="order.address.ward" // Tên trường trong form state
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{addressFieldLabels.ward}</FormLabel>
+                                    <FormLabel>Phường/xã</FormLabel>
                                     <FormControl>
                                         <Select
                                             value={field.value} // Giá trị hiện tại của trường trong form state
@@ -631,7 +697,7 @@ export default function PaymentForm() {
                             name="order.address.buildingName"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{addressFieldLabels.buildingName}</FormLabel>
+                                    <FormLabel>Địa chỉ</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Nhập số nhà, tên đường" {...field} />
                                     </FormControl>
@@ -645,7 +711,7 @@ export default function PaymentForm() {
                             name="order.address.country"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{addressFieldLabels.country} </FormLabel>
+                                    <FormLabel>Quốc gia </FormLabel>
                                     <FormControl>
                                         <Input placeholder="Nhập quốc gia" {...field} readOnly />
                                     </FormControl>
@@ -770,13 +836,21 @@ export default function PaymentForm() {
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Phí vận chuyển</span>
-                                    <span>{formatCurrency(finalShippingFee)}</span>
+                                    <span>{formatCurrency(shippingFee)}</span>
                                 </div>
+                                {
+                                    finalShippingFee == 0 && (
+                                        <div className="flex justify-between">
+                                            <span>Giảm giá vận chuyển</span>
+                                            <span className="text-green-500">-{formatCurrency(shippingFee - finalShippingFee)}</span>
+                                        </div>
+                                    )
+                                }
                                 {
                                     finalCouponFee && (
                                         <div className="flex justify-between">
                                             <span>Giảm giá</span>
-                                            <span>-{formatCurrency(finalCouponFee)}</span>
+                                            <span className="text-green-500">-{formatCurrency(finalCouponFee)}</span>
                                         </div>
                                     )
                                 }
@@ -818,38 +892,3 @@ export default function PaymentForm() {
         </>
     );
 }
-
-//  if (!appliedCoupons.includes(coupon.promotionCode)) {
-//             setAppliedCoupons([...appliedCoupons, coupon.promotionCode]);
-//             setCouponInput("");
-
-//             // Thêm mã vào mảng tương ứng trong form với kiểu rõ ràng
-//             if (coupon.promotionType === "FREESHIP") {
-//                 const currentFreeship = form.getValues("order.freeship") || [];
-//                 if (!Array.isArray(currentFreeship) || !currentFreeship.some((f: { promotionCode: string }) => f.promotionCode === coupon.promotionCode)) {
-//                     form.setValue("order.freeship", [...(currentFreeship as { promotionCode: string }[]), { promotionCode: coupon.promotionCode }]);
-//                 }
-//             } else if (coupon.promotionType === "VOUCHER") {
-//                 const currentCoupon = form.getValues("order.coupon") || [];
-//                 if (!Array.isArray(currentCoupon) || !currentCoupon.some((c: { promotionCode: string }) => c.promotionCode === coupon.promotionCode)) {
-//                     form.setValue("order.coupon", [...(currentCoupon as { promotionCode: string }[]), { promotionCode: coupon.promotionCode }]);
-//                 }
-//             }
-//         }
-//           const handleRemoveCoupon = (coupon: string) => {
-//         setAppliedCoupons(appliedCoupons.filter((c) => c !== coupon));
-
-//         // Xóa mã khỏi mảng freeship trong form
-//         const currentFreeship = form.getValues("order.freeship") || [];
-//         const updatedFreeship = Array.isArray(currentFreeship)
-//             ? currentFreeship.filter((f: { promotionCode: string }) => f.promotionCode !== coupon)
-//             : [];
-//         form.setValue("order.freeship", updatedFreeship.length > 0 ? updatedFreeship : undefined);
-
-//         // Xóa mã khỏi mảng coupon trong form
-//         const currentCoupon = form.getValues("order.coupon") || [];
-//         const updatedCoupon = Array.isArray(currentCoupon)
-//             ? currentCoupon.filter((c: { promotionCode: string }) => c.promotionCode !== coupon)
-//             : [];
-//         form.setValue("order.coupon", updatedCoupon.length > 0 ? updatedCoupon : undefined);
-//     };

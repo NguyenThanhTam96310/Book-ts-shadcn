@@ -5,7 +5,7 @@ export const fetchPublishersForm = async (): Promise<PublisherShowcaseProps[]> =
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/publishers`, {
         params: {
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             sortBy: "publisherId",
             sortOrder: "asc"
         }
@@ -17,7 +17,7 @@ export const fetchAllPublishers = async (): Promise<Publisher[]> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/publishers`, {
         params: {
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             sortBy: "publisherId",
             sortOrder: "asc"
         }

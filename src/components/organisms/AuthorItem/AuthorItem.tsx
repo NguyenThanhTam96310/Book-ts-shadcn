@@ -23,7 +23,7 @@ const AuthorItem: FC<AuthorProps> = ({ author }) => {
                         src={
                             author.image && process.env.NEXT_PUBLIC_FILE
                                 ? `${process.env.NEXT_PUBLIC_FILE}${author.image}`
-                                : "/placeholder.svg"
+                                : "/placeholder.png"
                         }
                         alt={author?.authorName || "Author image"}
                         fill

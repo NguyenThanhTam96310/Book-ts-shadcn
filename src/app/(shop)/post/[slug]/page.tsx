@@ -14,11 +14,12 @@ interface Props {
 export default async function PostDetailPage({ params }: Props) {
     const { slug } = await params
     const post: PostItemRes = await fetchPostDetail(slug)
+
     return (
         <>
             <Postdetail post={post} />
             <section className="py-10 relative">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="container mx-auto ">
                     <Card className="bg-gradient-to-br from-white to-orange-50/50 border-0 shadow-xl rounded-3xl overflow-hidden">
                         <div className="p-8">
                             {/* Section Header */}
@@ -52,7 +53,6 @@ export default async function PostDetailPage({ params }: Props) {
                                     <div className="bg-gradient-to-r from-orange-500 to-red-600 w-16 h-1 rounded-full"></div>
                                 </div>
                             </div>
-
                             <PostByTopicForm topicId={Number(post.topic?.topicId)} currentPostId={Number(post.postId)} />
                         </div>
                     </Card>

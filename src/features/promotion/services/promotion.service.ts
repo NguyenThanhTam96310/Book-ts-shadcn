@@ -11,7 +11,7 @@ export async function fetchPromotions(): Promise<PromotionItemRes[]> {
     }>(`${envConfig.NEXT_PUBLIC_API}/public/promotions`, {
         params: {
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             pageSize: 5,
             sortBy: "promotionId",
             sortOrder: "desc",

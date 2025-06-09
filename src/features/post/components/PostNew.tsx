@@ -12,7 +12,8 @@ const PostNew = () => {
         const loadPosts = async () => {
             try {
                 const data = await fetchPosts()
-                setPosts(data)
+                const filterPost = data.filter((post: PostItemRes) => post.type === "POST");
+                setPosts(filterPost)
             } catch (error) {
                 console.error("Lỗi khi load post:", error)
             }

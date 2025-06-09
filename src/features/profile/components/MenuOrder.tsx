@@ -3,8 +3,11 @@ import React from "react";
 const tabs = [
     "Tất cả",
     "Chờ giao hàng",
-    "Hoàn thành",
+    "Đã hoàn thành",
+    "Đã giao hàng",
+    "Đã thanh toán",
     "Đã hủy",
+    "Thất bại",
 ];
 
 interface MenuOrderProps {

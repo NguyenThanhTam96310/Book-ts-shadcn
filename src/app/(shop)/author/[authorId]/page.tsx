@@ -16,19 +16,6 @@ export default async function AuthorDetailPage({ params }: Props) {
     return (
         <>
             <AuthorDetail author={author} />
-            {/* <div className="py-author10 bg-gray-100">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 bg-white rounded-xl shadow-lg pb-6">
-                    <div className="flex items-center gap-4 py-6">
-                        <h1 className="text-2xl sm:text-2xl lg:text-2xl font-semibold whitespace-nowrap">
-                            BÀI VIẾT LIÊN QUAN
-                        </h1>
-                        <div className=" flex-1 h-1 bg-gray-300"></div>
-                    </div>
-                    <div>
-                        <PostByTopicForm topicId={Number(post.topic?.topicId)} currentPostId={Number(post.postId)} />
-                    </div>
-                </div>
-            </div> */}
         </>
     )
 }

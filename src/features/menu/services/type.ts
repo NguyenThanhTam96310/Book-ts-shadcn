@@ -7,3 +7,11 @@ export interface MenuItem {
     position?: string
     childrens?: MenuItem[]
 }
+export interface MenuRes {
+    content: MenuItem[];
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    lastPage: boolean;
+}

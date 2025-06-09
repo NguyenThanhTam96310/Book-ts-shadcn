@@ -25,15 +25,12 @@ const CategoryDrawer = () => {
         const fetchData = async () => {
             setLoading(true)
             try {
-                const [categoriesData, menusData] = await Promise.all([fetchAllCategories(), fetchMenus()])
-
-                if (Array.isArray(categoriesData)) {
-                    setCategories(categoriesData)
-                }
-
-                if (Array.isArray(menusData)) {
-                    setMenus(menusData)
-                }
+                const categoriesData = await fetchAllCategories();
+                const menusData = await fetchMenus();
+                // console.log(categoriesData)
+                const mainMenus = menusData.filter((menu: MenuItem) => menu.position === "MAINMENU");
+                setCategories(categoriesData)
+                setMenus(mainMenus)
             } catch (error) {
                 console.error("Error fetching data:", error)
             } finally {
@@ -71,7 +68,7 @@ const CategoryDrawer = () => {
                 <Button
                     variant="outline"
                     size="icon"
-                    className="relative bg-white hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 border-gray-200 hover:border-orange-200 transition-all duration-300 shadow-sm hover:shadow-md group"
+                    className="relative bg-white hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 border-gray-200 hover:border-orange-200 transition-all duration-300 shadow-sm hover:shadow-md group cursor-pointer"
                 >
                     <LayoutGrid className="w-5 h-5 text-gray-600 group-hover:text-orange-600 transition-colors" />
                     <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
@@ -190,25 +187,41 @@ const CategoryDrawer = () => {
                                                     {category.childrens && category.childrens.length > 0 && (
                                                         <div className="space-y-2 pl-2 border-l-2 border-gray-100 ml-5">
                                                             {category.childrens.map((child) => (
-                                                                <Link
-                                                                    key={child.categoryId}
-                                                                    href={`/products?categoryId=${child.categoryId}`}
-                                                                    onClick={() => setOpen(false)}
-                                                                    className="group/child flex items-center justify-between p-2 rounded-lg hover:bg-orange-50 transition-all duration-200"
-                                                                >
-                                                                    <span className="text-sm font-medium text-gray-700 group-hover/child:text-orange-600 transition-colors">
-                                                                        {child.categoryName}
-                                                                    </span>
-                                                                    <div className="flex items-center space-x-2">
-                                                                        {/* {child.productCount && (
-                                                                            <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
-                                                                                {child.productCount}
-                                                                            </Badge>
-                                                                        )} */}
-                                                                        <ChevronRight className="w-3 h-3 text-gray-400 group-hover/child:text-orange-500 transition-colors" />
-                                                                    </div>
-                                                                </Link>
+                                                                <div key={child.categoryId}>
+                                                                    <Link
+                                                                        href={`/products?categoryId=${child.categoryId}`}
+                                                                        onClick={() => setOpen(false)}
+                                                                        className="group/child flex items-center justify-between p-2 rounded-lg hover:bg-orange-50 transition-all duration-200"
+                                                                    >
+                                                                        <span className="text-sm font-medium text-gray-700 group-hover/child:text-orange-600 transition-colors">
+                                                                            {child.categoryName}
+                                                                        </span>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            {(child.childrens && child.childrens.length > 0) && (
+                                                                                <ChevronRight className="w-3 h-3 text-gray-400 group-hover/child:text-orange-500 transition-colors" />
+                                                                            )}
+                                                                        </div>
+                                                                    </Link>
+
+                                                                    {/* Danh sách con cấp 2 */}
+                                                                    {(child.childrens && child.childrens.length > 0) && (
+                                                                        <ul className="ml-2 pl-2 border-l border-gray-200">
+                                                                            {child.childrens.map((child2) => (
+                                                                                <li key={child2.categoryId} className="py-1">
+                                                                                    <Link
+                                                                                        href={`/products?categoryId=${child2.categoryId}`}
+                                                                                        onClick={() => setOpen(false)}
+                                                                                        className="text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                                                                    >
+                                                                                        {child2.categoryName}
+                                                                                    </Link>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    )}
+                                                                </div>
                                                             ))}
+
                                                         </div>
                                                     )}
                                                 </div>

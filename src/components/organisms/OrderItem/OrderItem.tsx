@@ -9,6 +9,7 @@ import { MessageCircle, RotateCcw, CheckCircle } from "lucide-react"
 import { OrderRes } from "@/features/order/services/type"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 function formatCurrency(amount: number): string {
     return new Intl.NumberFormat("vi-VN", {
@@ -18,29 +19,84 @@ function formatCurrency(amount: number): string {
     }).format(amount).replace("₫", "₫")
 }
 
-function getStatusBadge(status: string) {
-
+function getStatusBadge(status: string | undefined, paymentMethod: string | undefined) {
+    const [isPayment, setIsPayment] = useState(true);
+    useEffect(() => {
+        if (paymentMethod === "COD") {
+            setIsPayment(false);
+        }
+    }, [paymentMethod]);
     switch (status) {
         case "PAID":
             return (
                 <div className="flex items-center gap-2 flex-wrap">
                     <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs flex items-center">
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        Giao hàng thành công
+                        Đặt hàng thành công
                     </Badge>
-                    <Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>
+                    {
+                        isPayment ? (<Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>) :
+                            (<Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>)
+                    }
+
                 </div>
             )
         case "PENDING":
             return (
-                <Badge className="text-orange-600 border border-orange-200 text-xs" variant="outline">
-                    Đang xử lý
-                </Badge>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="text-orange-600 border border-orange-200 text-xs" variant="outline">
+                        Đang xử lý
+                    </Badge>
+                    {
+                        isPayment ? (<Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>) :
+                            (<Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>)
+                    }
+
+                </div>
+
+            )
+        case "CANCELLED":
+            return (
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="bg-red-100 text-red-800 border border-red-200 text-xs flex items-center">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Đã hủy
+                    </Badge>
+                    {
+                        isPayment ? (<Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>) :
+                            (<Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>)
+                    }
+
+                </div>
+            )
+        case "COMPLETED":
+            return (
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs flex items-center">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Đã hoàn thành
+                    </Badge>
+                    <Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>
+                </div>
+            )
+        case "SHIPPED":
+            return (
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs flex items-center">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Đã giao hàng
+                    </Badge>
+                    {
+                        isPayment ? (<Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>) :
+                            (<Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>)
+                    }
+
+                </div>
             )
         case "FALSED":
             return (
                 <Badge className="text-red-600 border border-red-200 text-xs" variant="outline">
-                    Đã hủy
+                    Thất bại
                 </Badge>
             )
         default:
@@ -50,6 +106,7 @@ function getStatusBadge(status: string) {
 
 export default function OrderItem({ order }: { order: OrderRes }) {
     const router = useRouter();
+
     const handleClick = () => {
         router.push(`/profile/order/${order.orderCode}`);
     };
@@ -68,7 +125,7 @@ export default function OrderItem({ order }: { order: OrderRes }) {
                             </Button>
                             <Button variant="outline" size="sm" className="h-8 px-3 text-sm">Xem Shop</Button> */}
                     </div>
-                    {getStatusBadge(order?.orderStatus ?? "")}
+                    {getStatusBadge(order?.orderStatus ?? "", order?.payment?.paymentMethod ?? "")}
                 </div>
 
                 {/* Order Items */}
@@ -85,9 +142,9 @@ export default function OrderItem({ order }: { order: OrderRes }) {
                                 <div className="relative">
                                     <Image
                                         src={
-                                            product.images && product.images.length > 0 && process.env.NEXT_PUBLIC_FILE
+                                            product.images && product.images[0]?.fileName
                                                 ? `${process.env.NEXT_PUBLIC_FILE}${product.images[0].fileName}`
-                                                : "/placeholder.svg"
+                                                : "/placeholder.png"
                                         }
                                         alt={product?.productName ?? "Product"}
                                         width={80}

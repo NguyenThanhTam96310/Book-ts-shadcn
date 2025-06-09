@@ -11,6 +11,7 @@ import { ShoppingCart } from "lucide-react"
 import { CART_ITEM_KEY, USER_ID } from "@/constants/cartConstants"
 import { POST_ADD } from "@/lib/api/Service"
 import { toast } from "react-toastify"
+import { addProductIdToLocalStorage } from "@/lib/utils/localStorege"
 
 interface ProductDetailProps {
     product: ProductItemProps
@@ -58,8 +59,7 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
                         position: "bottom-right",
                         autoClose: 2000,
                     })
-                    const currentLength = Number.parseInt(localStorage.getItem("CartLength") || "0")
-                    localStorage.setItem("CartLength", (currentLength + 1).toString())
+                    addProductIdToLocalStorage(product.productId)
                 })
                 .catch((error) => {
                     console.error("Add to cart error:", error)
@@ -77,6 +77,7 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
             if (existingIndex !== -1) {
                 cart.cartItems[existingIndex].quantity += quantity
             } else {
+                addProductIdToLocalStorage(product.productId)
                 cart.cartItems.push({
                     product: {
                         productId: product.productId,
@@ -109,7 +110,7 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
                         src={
                             product.images && product.images.length > 0 && process.env.NEXT_PUBLIC_FILE
                                 ? `${process.env.NEXT_PUBLIC_FILE}${product.images[0].fileName}`
-                                : "/placeholder.svg"
+                                : "/placeholder.png"
                         }
                         alt={product.productName}
                         fill

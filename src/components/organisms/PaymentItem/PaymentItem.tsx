@@ -19,7 +19,7 @@ const PaymentItem = ({ item }: CartItemProps) => {
                     src={
                         product.images && product.images.length > 0 && process.env.NEXT_PUBLIC_FILE
                             ? `${process.env.NEXT_PUBLIC_FILE}${product.images[0].fileName}`
-                            : "/placeholder.svg"
+                            : "/placeholder.png"
                     }
                     alt={product?.productName}
                     className="w-20 h-20 object-cover border rounded-md flex-shrink-0"

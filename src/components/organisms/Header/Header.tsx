@@ -12,7 +12,7 @@ import CategoryMenu from "@/features/category/components/CategoryMenu"
 import { Search, Bell, Heart, User, ShoppingBag, LogOut, Package, Settings } from "lucide-react"
 import { slugify } from "@/lib/utils"
 import { useRouter, usePathname } from "next/navigation"
-import { ACCOUNTNAME } from "@/constants/userConstants"
+import { ACCOUNTNAME, CARTLENGTH } from "@/constants/userConstants"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -24,6 +24,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { CartProps, fetchCart } from "@/features/cart"
+import useCartProductLength from "@/lib/utils/render"
 
 export default function Header() {
     const router = useRouter()
@@ -31,8 +33,50 @@ export default function Header() {
     const [keyword, setKeyword] = useState("")
     const [loading, setLoading] = useState(false)
     const [userId, setUserId] = useState<number | null>(null)
+    // const [cartLength, setCartLength] = useState<string>("0");
     const [nameUser, setNameUser] = useState<string | null>(null)
-    const [cartCount, setCartCount] = useState(3) // Mock cart count
+    const cartLength = useCartProductLength();
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         try {
+    //             // Lấy CartProductIds từ localStorage
+    //             const storedRaw = localStorage.getItem("CartProductIds");
+    //             if (!storedRaw) {
+    //                 console.log("CartProductIds not found in localStorage, setting cartLength to 0");
+    //                 setCartLength("0");
+    //                 return;
+    //             }
+
+    //             // Parse JSON an toàn
+    //             let stored: number[];
+    //             try {
+    //                 stored = JSON.parse(storedRaw);
+    //                 if (!Array.isArray(stored)) {
+    //                     console.error("CartProductIds is not an array:", stored);
+    //                     setCartLength("0");
+    //                     return;
+    //                 }
+    //             } catch (error) {
+    //                 console.error("Failed to parse CartProductIds:", error);
+    //                 setCartLength("0");
+    //                 return;
+    //             }
+
+    //             // Cập nhật cartLength
+    //             const length = stored.length.toString();
+    //             console.log("Set cartLength to: ", length);
+    //             setCartLength(length);
+    //         } catch (error) {
+    //             console.error("Unexpected error in useEffect:", error);
+    //             setCartLength("0");
+    //         }
+    //     }, 3000);
+    //     return () => {
+    //         console.log("Clearing timer for CartProductIds");
+    //         clearTimeout(timer);
+    //     };
+    // }, [])
+
 
     useEffect(() => {
         const loadUserId = () => {
@@ -57,7 +101,6 @@ export default function Header() {
         window.addEventListener("storage", handleStorageChange)
         return () => window.removeEventListener("storage", handleStorageChange)
     }, [])
-
     const clearNextAuthCookies = () => {
         const cookiesToDelete = [
             "next-auth.callback-url",
@@ -72,7 +115,6 @@ export default function Header() {
             document.cookie = `${cookieName}=; expires=${new Date(0).toUTCString()}; path=/`
         })
     }
-
     const handleSearch = async () => {
         if (!keyword.trim()) return
         setLoading(true)
@@ -113,7 +155,7 @@ export default function Header() {
                     <div className="flex items-center space-x-4">
                         <span>Hotline: 1900-1234</span>
                         <div className="flex items-center space-x-2">
-                            <Image src="/Vietnam.png" alt="Việt Nam" width={20} height={15} className="rounded-sm" />
+                            <Image src="/Vietnam.png" alt="Việt Nam" width={20} height={20} className="rounded-sm" />
                             <span>Việt Nam</span>
                         </div>
                     </div>
@@ -184,29 +226,36 @@ export default function Header() {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="hidden lg:flex relative hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
+                            className="hidden lg:flex flex-col items-center justify-center gap-1 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer w-16 h-16"
                         >
-                            <Heart className="w-6 h-6" />
-                            <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5">
-                                2
-                            </Badge>
+                            <Package className="w-6 h-6" />
+                            <span className="text-xs font-medium">Đơn hàng</span>
                         </Button>
+
 
                         {/* Cart */}
                         <Link href="/cart">
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="relative hover:bg-orange-50 hover:text-orange-600 transition-colors group cursor-pointer"
+                                className="lg:flex flex-col items-center justify-center gap-1 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer w-16 h-16 relative"
                             >
-                                <ShoppingBag className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                {cartCount > 0 && (
-                                    <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 animate-pulse">
-                                        {cartCount}
-                                    </Badge>
-                                )}
+                                {/* Icon + Badge trong một khối để badge nằm đúng chỗ */}
+                                <div className="relative">
+                                    <ShoppingBag className="w-10 h-10 group-hover:scale-110 transition-transform" />
+                                    {Number(cartLength) > 0 && (
+                                        <Badge className="absolute -top-2 -right-5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-1.5 py-0.5 min-w-[10px] h-4 animate-pulse">
+                                            {cartLength}
+                                        </Badge>
+                                    )}
+                                </div>
+
+                                {/* Text phía dưới */}
+                                <span className="hidden lg:block text-xs font-medium">Giỏ hàng</span>
                             </Button>
                         </Link>
+
+
 
                         {/* User Account */}
                         {userId ? (
@@ -232,21 +281,6 @@ export default function Header() {
                                     align="end"
                                     className="w-56 bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl"
                                 >
-                                    <DropdownMenuLabel className="font-semibold">
-                                        <div className="flex items-center space-x-2">
-                                            <Avatar className="w-8 h-8">
-                                                <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                                                <AvatarFallback className="bg-gradient-to-br from-orange-400 to-red-500 text-white text-sm">
-                                                    {nameUser?.charAt(0) || "U"}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="text-sm">{nameUser}</p>
-                                                {/* <p className="text-xs text-gray-500 font-normal">Thành viên VIP</p> */}
-                                            </div>
-                                        </div>
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer">
                                         <User className="w-4 h-4 mr-2" />
                                         Tài khoản của tôi

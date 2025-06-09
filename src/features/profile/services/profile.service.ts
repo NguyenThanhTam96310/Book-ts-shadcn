@@ -18,8 +18,8 @@ export async function fetchEditPassword(body: EditPasswordType): Promise<void> {
 //     const endpoint = `${envConfig.NEXT_PUBLIC_API}/public/orders/user/${userId}?pageNumber=${page}&pageSize=3`;
 //     return await callApi<PaginatedOrderResponse>(endpoint, "GET");
 // };
-export async function fetchOrdersbyId(userId: number, page: number = 0, status?: string): Promise<PaginatedOrderResponse> {
-    const res = await axiosInstance.get<PaginatedOrderResponse>(`${envConfig.NEXT_PUBLIC_API}/public/orders/user/${userId}?pageNumber=${page}&pageSize=3${status ? `&status=${status}` : ""}`);
+export async function fetchOrdersbyId(userId: number, page: number = 0): Promise<PaginatedOrderResponse> {
+    const res = await axiosInstance.get<PaginatedOrderResponse>(`${envConfig.NEXT_PUBLIC_API}/public/orders/user/${userId}?pageNumber=${page}&pageSize=3&sortOrder=desc&sortBy=totalAmount`);
     return res.data;
 };
 export async function fetchEditAddress(body: EditAddressBodyType): Promise<void> {

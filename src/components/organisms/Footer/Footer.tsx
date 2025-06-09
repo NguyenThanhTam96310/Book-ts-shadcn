@@ -170,7 +170,7 @@ export default function Footer() {
             </div>
 
             {/* Newsletter Section */}
-            <RegisterPromotionForm />
+            {/* <RegisterPromotionForm /> */}
 
             {/* Bottom Footer */}
             <div className="relative border-t border-white/10 bg-black/20">

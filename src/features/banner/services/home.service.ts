@@ -11,7 +11,7 @@ export async function fetchBanners(): Promise<BannerItem[]> {
     }>(`${envConfig.NEXT_PUBLIC_API}/public/banners`, {
         params: {
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             pageSize: 5,
             sortBy: "bannerId",
             sortOrder: "asc",

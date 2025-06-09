@@ -12,6 +12,7 @@ const ProductFlashSaleForm = () => {
         const loadProducts = async () => {
             try {
                 const data = await fetchProductFlashSaleForm()
+                console.log(data)
                 setProduct(data)
             } catch (error) {
                 console.error("Lỗi khi load product:", error)

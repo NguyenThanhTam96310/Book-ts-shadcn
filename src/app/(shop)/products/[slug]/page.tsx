@@ -31,14 +31,14 @@ export default async function ProductDetailPage({ params }: Props) {
                     </div>
                 </div>
 
-                <div className="p-4 bg-gradient-to-b from-orange-400 to-white rounded-lg">
+                {/* <div className="p-4 bg-gradient-to-b from-orange-400 to-white rounded-lg">
                     <div className="container mx-auto pt-5">
                         <h1 className="text-white text-3xl md:text-4xl font-bold tracking-widest uppercase drop-shadow-lg text-center">
                             Gợi ý cho bạn
                         </h1>
                         <ProductNewForm />
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
 

@@ -8,7 +8,7 @@ export const fetchTopics = async (): Promise<TopicRes[]> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/topics`, {
         params: {
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             sortBy: "topicId",
             sortOrder: "asc"
         }

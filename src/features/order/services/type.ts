@@ -25,6 +25,8 @@ export interface OrderRes {
     orderDateTime: string
     payment: {
         paymentMethod: string
+        paymentCode?: string
+        bankCpde?: string
     }
     coupon: PromotionItemRes | null
     freeship: PromotionItemRes | null
@@ -41,7 +43,7 @@ export interface OrderVnPayRes {
 }
 export interface PaginatedOrderResponse {
     content: OrderRes[];
-    pageNumber: 0;
+    pageNumber: 1;
     pageSize: 5;
     totalElements: number;
     totalPages: 1;

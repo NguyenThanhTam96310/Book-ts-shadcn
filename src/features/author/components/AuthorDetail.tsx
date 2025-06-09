@@ -5,69 +5,54 @@ import Image from 'next/image'
 import styles from './authorDetail.module.css'
 import { useRouter } from 'next/navigation'
 import { AuthorRes } from '@/features/author/services/type'
+import ProductByAuthorId from '@/features/product/components/ProductByAuthorId'
+import { Card, CardContent } from '@/components/ui/card'
+import { BookOpen, Quote } from 'lucide-react'
+import { Separator } from '@radix-ui/react-separator'
 
 interface AuthorDetailProps {
     author: AuthorRes
 }
 
 const AuthorDetail: FC<AuthorDetailProps> = ({ author }) => {
-    const router = useRouter()
-
-    // Theo dõi vị trí cuộn
-    useEffect(() => {
-        const handleScroll = () => {
-            const infoColumn = document.querySelector(`.${styles.infoColumn}`);
-            if (infoColumn) {
-                const infoColumnHeight = infoColumn.scrollHeight; // Chiều cao thực của infoColumn
-                const windowHeight = window.innerHeight; // Chiều cao viewport
-                const scrollTop = window.scrollY; // Vị trí cuộn hiện tại
-
-                // Khi cuộn gần hết infoColumn, cho phép cuộn toàn trang
-                if (scrollTop + windowHeight >= infoColumnHeight) {
-                    document.body.style.overflowY = 'auto'; // Cuộn toàn trang
-                } else {
-                    // Giới hạn cuộn trong vùng infoColumn (nếu muốn)
-                    // Lưu ý: CSS hiện tại không hỗ trợ hoàn toàn điều này, cần thêm container cha
-                }
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
     return (
-        <div>
-            <div className={styles.container}>
-                <div className={styles.flexRow}>
-                    {/* Ảnh */}
-                    <div className={styles.imageBox}>
-                        <div className={styles.imageWrapper}>
-                            <Image
-                                src={`${process.env.NEXT_PUBLIC_FILE}${author.image}` || '/placeholder.png'}
-                                alt={""}
-                                width={400}
-                                height={500}
-                                className={styles.imageStyle}
-                            />
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+            <div className="container mx-auto px-4 py-8">
+                <Card className="mb-8 shadow-lg border-0">
+                    <CardContent className="p-8">
+                        <div className="flex items-center gap-3 mb-6">
+
+                            <h2 className="text-2xl font-bold text-gray-900">{author.authorName}</h2>
                         </div>
-                    </div>
-                    {/* Thông tin */}
-                    <div className={styles.infoColumn}>
-                        <div className={styles.infoBox}>
-                            <div className="flex items-center gap-3">
-                                <h1 className="text-3xl font-bold">{author.authorName}</h1>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="text-base text-gray-700 leading-relaxed whitespace-pre-line">
-                                    {author.description}
-                                </div>
+
+                        <Separator className="mb-6" />
+
+                        <div className="prose prose-lg max-w-none">
+                            <div className="text-gray-700 leading-relaxed whitespace-pre-line text-base lg:text-lg">
+                                {author.description || "Thông tin về tác giả đang được cập nhật..."}
                             </div>
                         </div>
-                    </div>
-                </div>
+
+                    </CardContent>
+                </Card>
+
+                {/* Products Section */}
+                <Card className="shadow-lg border-0">
+                    <CardContent className="p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-indigo-100 rounded-lg">
+                                <BookOpen className="w-6 h-6 text-indigo-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-900">Tác phẩm của {author.authorName}</h2>
+                        </div>
+
+                        <Separator className="mb-6" />
+                        <ProductByAuthorId authorId={author.authorId} />
+                    </CardContent>
+                </Card>
             </div>
         </div>
+
     );
 };
 

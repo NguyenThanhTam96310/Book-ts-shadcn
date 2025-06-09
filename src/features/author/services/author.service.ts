@@ -5,7 +5,7 @@ export const fetchAllAuthors = async (): Promise<AuthorRes[]> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/authors`, {
         params: {
             status: true,
-            pageNumber: 0,
+            pageNumber: 1,
             pageSize: 10,
             sortBy: "authorId",
             sortOrder: "asc"

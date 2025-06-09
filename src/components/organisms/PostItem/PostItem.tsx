@@ -13,7 +13,6 @@ const PostItem: React.FC<PostItemRes> = ({ postId, title, content, slug, image }
         txt.innerHTML = html
         return txt.value
     }
-
     return (
         <div className={styles.postItem}>
             <div className={styles.content}>

@@ -29,7 +29,7 @@ export default function RootLayout({
           <PageTransition>{children}</PageTransition>
         </main>
         <Footer />
-        <ToastContainer autoClose={3000} hideProgressBar limit={1} />
+        <ToastContainer autoClose={3000} hideProgressBar />
       </body>
     </html>
   );

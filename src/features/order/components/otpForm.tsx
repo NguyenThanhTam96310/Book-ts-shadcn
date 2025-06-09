@@ -62,11 +62,29 @@ export function OtpForm({
 
     const onSubmit = async (values: z.infer<typeof OrderOTPResSchema>) => {
         try {
-            await otpCustomer(values)
-            toast.success("Xác thực thành công!")
-            onClose()
-            localStorage.removeItem(PAYMENT_ITEM_KEY);
-            router.push(`/payment/checkout?vnp_TxnRef=${orderCode}`);
+            try {
+                await otpCustomer(values)
+                toast.success("Xác thực thành công!")
+                onClose()
+                localStorage.removeItem(PAYMENT_ITEM_KEY);
+                router.push(`/payment/checkout?vnp_TxnRef=${orderCode}`);
+            } catch (error: any) {
+                // Xử lý lỗi từ Zod hoặc API
+                if (typeof error === "object" && error !== null) {
+                    // Hiển thị từng lỗi cụ thể
+                    toast.error(error.message, {
+                        position: "top-right",
+                        autoClose: 3000,
+                    });
+                } else {
+                    // Lỗi chung nếu không có chi tiết
+                    toast.error("Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.", {
+                        position: "bottom-right",
+                        autoClose: 3000,
+                    });
+                }
+            }
+
         } catch {
             toast.error("Xác thực thất bại.")
         }
