@@ -7,11 +7,13 @@ import { MapPin, Package, Settings, Star, User, Menu, X, ChevronRight } from "lu
 import * as Dialog from "@radix-ui/react-dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { UserRes } from "@/features/profile/services/type"
 import { USER_NAME } from "@/constants/userConstants"
 import { fetchUserByEmail } from "@/features/profile/services/profile.service"
+import { toast } from "react-toastify"
 
 // Mock types - replace with your actual types
 
@@ -20,25 +22,45 @@ const MenuProfile = () => {
     const [open, setOpen] = useState(false)
     const [profile, setProfile] = useState<UserRes>()
     const [email, setEmail] = useState<string>()
-
+    const router = useRouter();
     useEffect(() => {
-        const storedEmail = localStorage.getItem(USER_NAME);
+        const storedEmail = localStorage.getItem(USER_NAME)
+        console.log("storedEmail:", storedEmail)
         if (storedEmail) {
-            setEmail(storedEmail);
+            setEmail(storedEmail)
+        } else {
+            toast.error(
+                `Truy cập thất bại. Vui lòng thử lại sau`,
+                {
+                    position: "top-right",
+                    autoClose: 2000,
+                }
+            )
+            router.push("/")
         }
-    }, []);
+    }, [])
     useEffect(() => {
+        if (!email) return;
+
         const loadProfile = async () => {
             try {
-                if (!email) return;
                 const data = await fetchUserByEmail(email);
                 setProfile(data);
-            } catch (error) {
-                console.error("Lỗi khi load profile:", error);
+            } catch (error: any) {
+                toast.error(
+                    `Truy cập thất bại. ${error?.data?.message || ""}`,
+                    {
+                        position: "top-right",
+                        autoClose: 2000,
+                    }
+                );
+                router.push("/");
             }
         };
+
         loadProfile();
-    }, [email])
+    }, [email, router]);
+
 
     const menuItems = [
         {

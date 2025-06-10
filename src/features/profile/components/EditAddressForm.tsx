@@ -184,7 +184,7 @@ export default function EditAddressForm() {
                 });
                 router.push("/profile")
             } catch (error) {
-                toast.error("Lưu thông tin thất bại 1.", {
+                toast.error("Lưu thông tin thất bại.", {
                     position: "top-right",
                     autoClose: 2000,
                 });

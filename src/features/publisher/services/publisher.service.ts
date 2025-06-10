@@ -6,6 +6,7 @@ export const fetchPublishersForm = async (): Promise<PublisherShowcaseProps[]> =
         params: {
             status: true,
             pageNumber: 1,
+            pageSize: 20,
             sortBy: "publisherId",
             sortOrder: "asc"
         }

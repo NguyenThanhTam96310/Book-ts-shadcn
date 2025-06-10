@@ -182,11 +182,11 @@ export default function OrderItem({ order }: { order: OrderRes }) {
                                 {/* Price */}
                                 <div className="text-right">
                                     <div className="flex items-center gap-2 mb-1">
-                                        {product?.discount && (
+                                        {product?.discount ? (
                                             <span className="text-xs text-gray-400 line-through">
-                                                {formatCurrency(product.price + product.discount)}
+                                                {formatCurrency(product.price)}
                                             </span>
-                                        )}
+                                        ) : ""}
                                         <span className="text-sm font-medium text-red-600">
                                             {formatCurrency(discountedPrice ?? 0)}
                                         </span>

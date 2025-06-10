@@ -39,19 +39,40 @@ export default function VoucherForm({ open, onClose, onSelectPromotion, appliedC
                     <DialogTitle>Chọn mã khuyến mãi</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    {promotions.length > 0 ? (
-                        promotions.map((voucher) => (
-                            <VoucherItem
-
-                                key={voucher.promotionId}
-                                voucher={voucher}
-                                totalPrice={totalPrice}
-                                onSelect={handleSelectVoucher}
-                                appliedCoupons={appliedCoupons}
-                            />
-                        ))
+                    {/* Phần mã miễn phí vận chuyển (FREESHIP) */}
+                    <h3 className="text-lg font-semibold mb-2">Mã miễn phí vận chuyển</h3>
+                    {promotions.length > 0 && promotions.some((voucher) => voucher.promotionType === "FREESHIP") ? (
+                        promotions
+                            .filter((voucher) => voucher.promotionType === "FREESHIP")
+                            .map((voucher) => (
+                                <VoucherItem
+                                    key={voucher.promotionId}
+                                    voucher={voucher}
+                                    totalPrice={totalPrice}
+                                    onSelect={handleSelectVoucher}
+                                    appliedCoupons={appliedCoupons}
+                                />
+                            ))
                     ) : (
-                        <p className="text-center text-gray-500">Không có mã khuyến mãi nào.</p>
+                        <p className="text-center text-gray-500">Không có mã miễn phí vận chuyển nào.</p>
+                    )}
+
+                    {/* Phần mã giảm giá (VOUCHER) */}
+                    <h3 className="text-lg font-semibold mb-2 mt-6">Mã giảm giá</h3>
+                    {promotions.length > 0 && promotions.some((voucher) => voucher.promotionType === "VOUCHER") ? (
+                        promotions
+                            .filter((voucher) => voucher.promotionType === "VOUCHER")
+                            .map((voucher) => (
+                                <VoucherItem
+                                    key={voucher.promotionId}
+                                    voucher={voucher}
+                                    totalPrice={totalPrice}
+                                    onSelect={handleSelectVoucher}
+                                    appliedCoupons={appliedCoupons}
+                                />
+                            ))
+                    ) : (
+                        <p className="text-center text-gray-500">Không có mã giảm giá nào.</p>
                     )}
                 </div>
             </DialogContent>

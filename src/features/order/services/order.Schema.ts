@@ -5,7 +5,7 @@ export const orderSchema = z.object({
         userId: z.number().optional(),
         email: z.string().email("Email không hợp lệ"),
         deliveryName: z.string().min(3, "Vui lòng nhập họ tên ít nhất 3 kí tự"),
-        deliveryPhone: z.string().min(10, "Số điện thoại phải có ít nhất 10 chữ số")
+        deliveryPhone: z.string().min(10, "Số điện thoại phải có ít nhất 10 chữ số").max(11, "Số điện thoại không vượt quá 10 chữ số")
             .regex(/^\d+$/, { message: "Số điện thoại giao hàng chỉ được chứa chữ số" }),
         address: z.object({
             ward: z.string(),
@@ -59,3 +59,6 @@ export const VnPayResSchema = z.object({
     url: z.string()
 });
 export type VnPayRes = z.infer<typeof VnPayResSchema>;
+export const resentOTPSchema = z.object({
+    orderCode: z.string()
+});

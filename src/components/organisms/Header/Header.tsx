@@ -77,7 +77,13 @@ export default function Header() {
     //     };
     // }, [])
 
+    const [showTooltip, setShowTooltip] = useState(false)
 
+    const handleClick = () => {
+        if (userId) {
+            router.push("/profile/order")
+        }
+    }
     useEffect(() => {
         const loadUserId = () => {
             const storedUserId = localStorage.getItem(USER_ID)
@@ -223,14 +229,48 @@ export default function Header() {
                     {/* Right Actions */}
                     <div className="flex items-center space-x-2 lg:space-x-4">
                         {/* Wishlist - Desktop Only */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="hidden lg:flex flex-col items-center justify-center gap-1 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer w-16 h-16"
+                        <div
+                            className="relative"
+                            onMouseEnter={() => !userId && setShowTooltip(true)}
+                            onMouseLeave={() => setShowTooltip(false)}
                         >
-                            <Package className="w-6 h-6" />
-                            <span className="text-xs font-medium">Đơn hàng</span>
-                        </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`
+                                 hidden lg:flex flex-col items-center justify-center gap-1.5 
+                                w-16 h-16 rounded-lg transition-all duration-200 ease-in-out
+                                        ${userId
+                                        ? "hover:bg-orange-50 hover:text-orange-600 hover:shadow-sm cursor-pointer"
+                                        : "text-gray-400 cursor-not-allowed opacity-60"
+                                    }
+                                    `}
+                                onClick={handleClick}
+                                disabled={!userId}
+                            >
+                                <Package className={`w-5 h-5 transition-transform duration-200 ${userId ? "group-hover:scale-110" : ""}`} />
+                                <span className="text-xs font-medium leading-tight">Đơn hàng</span>
+                            </Button>
+
+                            {/* Tooltip */}
+                            {!userId && (
+                                <div
+                                    className={`
+                                absolute top-full left-1/2 -translate-x-1/2 mt-3 px-3 py-2
+                                bg-gray-800 text-white text-xs font-medium rounded-md shadow-lg
+                                whitespace-nowrap z-50 pointer-events-none
+                                before:content-[''] before:absolute before:bottom-full before:left-1/2 
+                                before:-translate-x-1/2 before:border-4 before:border-transparent 
+                                before:border-b-gray-800
+                                transition-all duration-200 ease-in-out
+                                ${showTooltip ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"}
+                            `}
+                                >
+                                    Yêu cầu đăng nhập
+                                </div>
+                            )}
+                        </div>
+
 
 
                         {/* Cart */}

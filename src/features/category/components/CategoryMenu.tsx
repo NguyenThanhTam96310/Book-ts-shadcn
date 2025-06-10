@@ -6,29 +6,27 @@ import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTr
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronRight, LayoutGrid, X, Package, Sparkles, ArrowRight, Grid3X3, Menu } from "lucide-react"
+import { ChevronRight, LayoutGrid, X, Package, Sparkles, ArrowRight, Grid3X3, Menu, ChevronDown } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { fetchAllCategories } from "@/features/category/services/category.service"
 import { fetchMenus, MenuItem } from "@/features/menu"
 import { CategoryItemProps } from "@/features/category/services/type"
-
-
 
 const CategoryDrawer = () => {
     const [categories, setCategories] = useState<CategoryItemProps[]>([])
     const [menus, setMenus] = useState<MenuItem[]>([])
     const [loading, setLoading] = useState(true)
     const [open, setOpen] = useState(false)
+    // Thêm trạng thái để theo dõi danh mục cha nào đang mở
+    const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({})
 
-    // Mock data - replace with your actual API calls
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true)
             try {
-                const categoriesData = await fetchAllCategories();
-                const menusData = await fetchMenus();
-                // console.log(categoriesData)
-                const mainMenus = menusData.filter((menu: MenuItem) => menu.position === "MAINMENU");
+                const categoriesData = await fetchAllCategories()
+                const menusData = await fetchMenus()
+                const mainMenus = menusData.filter((menu: MenuItem) => menu.position === "MAINMENU")
                 setCategories(categoriesData)
                 setMenus(mainMenus)
             } catch (error) {
@@ -40,6 +38,14 @@ const CategoryDrawer = () => {
 
         fetchData()
     }, [])
+
+    // Hàm toggle trạng thái đóng/mở của danh mục cha
+    const toggleCategory = (categoryId: string) => {
+        setExpandedCategories((prev) => ({
+            ...prev,
+            [categoryId]: !prev[categoryId],
+        }))
+    }
 
     const LoadingSkeleton = () => (
         <div className="space-y-6">
@@ -147,9 +153,6 @@ const CategoryDrawer = () => {
                                             </div>
                                             <h2 className="text-lg font-bold text-white">Danh mục sản phẩm</h2>
                                         </div>
-                                        {/* <Badge variant="outline" className="text-xs">
-                                            {categories.length} danh mục
-                                        </Badge> */}
                                     </div>
 
                                     <div className="space-y-4">
@@ -160,70 +163,77 @@ const CategoryDrawer = () => {
                                             >
                                                 <div className="p-5">
                                                     {/* Parent Category */}
-                                                    <Link
-                                                        href={`/products?categoryId=${category.categoryId}`}
-                                                        onClick={() => setOpen(false)}
-                                                        className="block"
+                                                    <div
+                                                        className="flex items-center justify-between mb-4 group-hover:translate-x-1 transition-transform cursor-pointer"
+                                                        onClick={() => toggleCategory(String(category.categoryId))}
                                                     >
-                                                        <div className="flex items-center justify-between mb-4 group-hover:translate-x-1 transition-transform">
-                                                            <div className="flex items-center space-x-3">
-                                                                <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
-                                                                    <Package className="w-5 h-5 text-white" />
-                                                                </div>
-                                                                <div>
-                                                                    <h3 className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
-                                                                        {category.categoryName}
-                                                                    </h3>
-                                                                    {/* {category.productCount && (
-                                                                        <p className="text-sm text-gray-500">{category.productCount} sản phẩm</p>
-                                                                    )} */}
-                                                                </div>
+                                                        <div className="flex items-center space-x-3">
+                                                            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
+                                                                <Package className="w-5 h-5 text-white" />
                                                             </div>
-                                                            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
+                                                            <div>
+                                                                <h3 className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                                                                    {category.categoryName}
+                                                                </h3>
+                                                            </div>
                                                         </div>
-                                                    </Link>
+                                                        <div className="flex items-center space-x-2">
+                                                            <ChevronDown
+                                                                className={`w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-transform duration-300 ${expandedCategories[category.categoryId]
+                                                                    ? "rotate-180"
+                                                                    : ""
+                                                                    }`}
+                                                            />
+                                                        </div>
+                                                    </div>
 
                                                     {/* Subcategories */}
-                                                    {category.childrens && category.childrens.length > 0 && (
-                                                        <div className="space-y-2 pl-2 border-l-2 border-gray-100 ml-5">
-                                                            {category.childrens.map((child) => (
-                                                                <div key={child.categoryId}>
-                                                                    <Link
-                                                                        href={`/products?categoryId=${child.categoryId}`}
-                                                                        onClick={() => setOpen(false)}
-                                                                        className="group/child flex items-center justify-between p-2 rounded-lg hover:bg-orange-50 transition-all duration-200"
-                                                                    >
-                                                                        <span className="text-sm font-medium text-gray-700 group-hover/child:text-orange-600 transition-colors">
-                                                                            {child.categoryName}
-                                                                        </span>
-                                                                        <div className="flex items-center space-x-2">
-                                                                            {(child.childrens && child.childrens.length > 0) && (
-                                                                                <ChevronRight className="w-3 h-3 text-gray-400 group-hover/child:text-orange-500 transition-colors" />
+                                                    {category.childrens &&
+                                                        category.childrens.length > 0 &&
+                                                        expandedCategories[category.categoryId] && (
+                                                            <div className="space-y-2 pl-2 border-l-2 border-gray-100 ml-5">
+                                                                {category.childrens.map((child) => (
+                                                                    <div key={child.categoryId}>
+                                                                        <Link
+                                                                            href={`/products?categoryId=${child.categoryId}`}
+                                                                            onClick={() => setOpen(false)}
+                                                                            className="group/child flex items-center justify-between p-2 rounded-lg hover:bg-orange-50 transition-all duration-200"
+                                                                        >
+                                                                            <span className="text-sm font-medium text-gray-700 group-hover/child:text-orange-600 transition-colors">
+                                                                                {child.categoryName}
+                                                                            </span>
+                                                                            <div className="flex items-center space-x-2">
+                                                                                {child.childrens &&
+                                                                                    child.childrens.length > 0 && (
+                                                                                        <ChevronRight className="w-3 h-3 text-gray-400 group-hover/child:text-orange-500 transition-colors" />
+                                                                                    )}
+                                                                            </div>
+                                                                        </Link>
+
+                                                                        {/* Danh sách con cấp 2 */}
+                                                                        {child.childrens &&
+                                                                            child.childrens.length > 0 && (
+                                                                                <ul className="ml-2 pl-2 border-l border-gray-200">
+                                                                                    {child.childrens.map((child2) => (
+                                                                                        <li
+                                                                                            key={child2.categoryId}
+                                                                                            className="py-1"
+                                                                                        >
+                                                                                            <Link
+                                                                                                href={`/products?categoryId=${child2.categoryId}`}
+                                                                                                onClick={() => setOpen(false)}
+                                                                                                className="text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                                                                            >
+                                                                                                {child2.categoryName}
+                                                                                            </Link>
+                                                                                        </li>
+                                                                                    ))}
+                                                                                </ul>
                                                                             )}
-                                                                        </div>
-                                                                    </Link>
-
-                                                                    {/* Danh sách con cấp 2 */}
-                                                                    {(child.childrens && child.childrens.length > 0) && (
-                                                                        <ul className="ml-2 pl-2 border-l border-gray-200">
-                                                                            {child.childrens.map((child2) => (
-                                                                                <li key={child2.categoryId} className="py-1">
-                                                                                    <Link
-                                                                                        href={`/products?categoryId=${child2.categoryId}`}
-                                                                                        onClick={() => setOpen(false)}
-                                                                                        className="text-sm text-gray-600 hover:text-orange-600 transition-colors"
-                                                                                    >
-                                                                                        {child2.categoryName}
-                                                                                    </Link>
-                                                                                </li>
-                                                                            ))}
-                                                                        </ul>
-                                                                    )}
-                                                                </div>
-                                                            ))}
-
-                                                        </div>
-                                                    )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                 </div>
                                             </Card>
                                         ))}
@@ -236,9 +246,7 @@ const CategoryDrawer = () => {
                     {/* Footer */}
                     <div className="sticky bottom-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4">
                         <div className="text-center">
-                            <p className="text-xs text-gray-500">
-                                {/* Tổng cộng {categories.reduce((acc, cat) => acc + (cat.productCount || 0), 0)} sản phẩm */}
-                            </p>
+                            <p className="text-xs text-gray-500"></p>
                         </div>
                     </div>
                 </div>

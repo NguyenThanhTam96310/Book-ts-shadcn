@@ -186,6 +186,16 @@ export default function PaymentForm() {
         const fetchData = async () => {
             try {
                 const raw = localStorage.getItem(PAYMENT_ITEM_KEY);
+                if (!raw) {
+                    toast.error(
+                        `Truy cập thất bại. Vui lòng thử lại sau`,
+                        {
+                            position: "top-right",
+                            autoClose: 2000,
+                        }
+                    )
+                    router.push("/")
+                }
                 const dataPromo = await fetchPromotions();
                 setPromotions(dataPromo);
                 if (raw) {
@@ -213,6 +223,7 @@ export default function PaymentForm() {
                         });
                     } else {
                         console.error("Invalid cart data:", validated.error);
+
                         localStorage.removeItem(PAYMENT_ITEM_KEY);
                     }
                 }
@@ -241,21 +252,10 @@ export default function PaymentForm() {
             setWards([]);
         }
     }, [selectedProvince, form]);
-
-    // // Fetch wards based on selected district
-    // useEffect(() => {
-    //     const districtId = parseInt(selectedDistrict);
-    //     if (districtId) {
-    //         getWards(districtId).then(setWards);
-    //         form.setValue("order.address.ward", ""); // Reset ward
-    //     }
-    // }, [selectedDistrict, form]);
     const ChecktoWardCode = form.getValues("order.address.ward");
-
-    // Calculate shipping fee when ward is selected
     const calculateFee = async () => {
         const toDistrict = parseInt(selectedDistrict);
-        const toWardCode = form.getValues("order.address.ward"); // This line gets the ward code directly from the form values
+        const toWardCode = form.getValues("order.address.ward");
         if (toDistrict && toWardCode) {
             try {
                 const fee = await calculateShippingFee({
@@ -293,7 +293,6 @@ export default function PaymentForm() {
             });
         }
     }, [selectedDistrict, form]);
-
     const handleApplyCoupon = (promotion_code?: string) => {
         const coupon = promotions.find(
             (c) => c.promotionCode === (promotion_code || couponInput.toUpperCase())
@@ -313,6 +312,16 @@ export default function PaymentForm() {
             return;
         }
 
+        // Kiểm tra nếu đã có mã cùng loại
+        if (coupon.promotionType === "FREESHIP" && form.getValues("order.freeship")) {
+            toast.error("Chỉ được áp dụng một mã miễn phí vận chuyển!");
+            return;
+        }
+        if (coupon.promotionType === "VOUCHER" && form.getValues("order.coupon")) {
+            toast.error("Chỉ được áp dụng một mã giảm giá!");
+            return;
+        }
+
         if (!appliedCoupons.includes(coupon.promotionCode)) {
             setAppliedCoupons([...appliedCoupons, coupon.promotionCode]);
             setCouponInput("");
@@ -325,7 +334,37 @@ export default function PaymentForm() {
             form.setValue("order.coupon", { promotionCode: coupon.promotionCode });
         }
     };
+    const appliedFreeship = appliedCoupons
+        .map((code) => promotions.find((p) => p.promotionCode === code))
+        .find((p) => p?.promotionType === "FREESHIP");
+    const appliedCoupon = appliedCoupons
+        .map((code) => promotions.find((p) => p.promotionCode === code))
+        .find((p) => p?.promotionType === "VOUCHER");
+    // Tính phí vận chuyển cuối cùng
+    const finalShippingFee = (() => {
+        if (!appliedFreeship) return shippingFee;
+        const { value, valueType } = appliedFreeship;
+        const numericValue = Number(value);
 
+        if (valueType == 1) {
+            // Giảm theo % phí vận chuyển
+            const discount = (numericValue / 100) * shippingFee;
+            return Math.max(0, shippingFee - discount);
+        } else if (valueType == 0) {
+            // Giảm số tiền cố định
+            return Math.max(0, shippingFee - numericValue);
+        }
+        return shippingFee;
+    })();
+    const finalCouponFee =
+        appliedCoupon && Number(appliedCoupon.valueType) === 1
+            ? Number(cart.totalPrice) * (appliedCoupon.value / 100)
+            : appliedCoupon?.value;
+    const totalWithShipping = Number(cart.totalPrice) + finalShippingFee - (finalCouponFee ?? 0);
+    const totalWeight = (cart.cartItems ?? []).reduce(
+        (sum, item) => sum + item.product.weight * item.quantity,
+        0
+    );
     const handleRemoveCoupon = (coupon: string) => {
         setAppliedCoupons(appliedCoupons.filter((c) => c !== coupon));
         if (form.getValues("order.freeship")?.promotionCode === coupon) {
@@ -487,25 +526,7 @@ export default function PaymentForm() {
             currency: "VND",
         }).format(value);
 
-    const appliedFreeship = appliedCoupons
-        .map((code) => promotions.find((p) => p.promotionCode === code))
-        .find((p) => p?.promotionType === "FREESHIP");
-    const appliedCoupon = appliedCoupons
-        .map((code) => promotions.find((p) => p.promotionCode === code))
-        .find((p) => p?.promotionType === "VOUCHER");
-    const finalShippingFee =
-        appliedFreeship && Number(appliedFreeship.value) === 100 && Number(appliedFreeship.valueType) === 1
-            ? 0
-            : shippingFee;
-    const finalCouponFee =
-        appliedCoupon && Number(appliedCoupon.valueType) === 1
-            ? Number(cart.totalPrice) * (appliedCoupon.value / 100)
-            : appliedCoupon?.value;
-    const totalWithShipping = Number(cart.totalPrice) + finalShippingFee - (finalCouponFee ?? 0);
-    const totalWeight = (cart.cartItems ?? []).reduce(
-        (sum, item) => sum + item.product.weight * item.quantity,
-        0
-    );
+
     return (
         <>
             <Form {...form}>
@@ -838,14 +859,12 @@ export default function PaymentForm() {
                                     <span>Phí vận chuyển</span>
                                     <span>{formatCurrency(shippingFee)}</span>
                                 </div>
-                                {
-                                    finalShippingFee == 0 && (
-                                        <div className="flex justify-between">
-                                            <span>Giảm giá vận chuyển</span>
-                                            <span className="text-green-500">-{formatCurrency(shippingFee - finalShippingFee)}</span>
-                                        </div>
-                                    )
-                                }
+                                {finalShippingFee !== shippingFee && (
+                                    <div className="flex justify-between">
+                                        <span>Giảm giá vận chuyển</span>
+                                        <span className="text-green-500">-{formatCurrency(shippingFee - finalShippingFee)}</span>
+                                    </div>
+                                )}
                                 {
                                     finalCouponFee && (
                                         <div className="flex justify-between">

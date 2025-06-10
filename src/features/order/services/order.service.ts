@@ -93,3 +93,29 @@ export const fetchOrderbyCode = async (orderCode: string): Promise<OrderRes> => 
     return response.data as OrderRes
 
 }
+export async function resendOtpCustomer(orderCode: string) {
+    try {
+        const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/orders/code/${orderCode}/otp`, {
+            headers: {
+                accept: "*/*",
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => response.data)
+            .catch((error) => {
+                console.log(error)
+                throw error
+            });
+
+        return response; // validate với Zod
+    } catch (error: any) {
+        // Xử lý lỗi từ API
+        if (error.response) {
+            throw error.response.data; // Ném lỗi từ server
+        }
+        console.error("Lỗi khi gọi API thanh toán:", error.response.data.message);
+        throw { general: "Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại." };
+    }
+
+
+}

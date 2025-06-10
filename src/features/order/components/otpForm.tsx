@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/form"
 
 import { OrderOTPResSchema } from "@/features/order/services/order.Schema"
-import { otpCustomer } from "@/features/order/services/order.service"
+import { otpCustomer, resendOtpCustomer } from "@/features/order/services/order.service"
 import { PAYMENT_ITEM_KEY } from "@/constants/orderConstants"
 
 type OtpFormProps = {
@@ -89,6 +89,32 @@ export function OtpForm({
             toast.error("Xác thực thất bại.")
         }
     }
+    const onResend = async () => {
+        try {
+            try {
+                await resendOtpCustomer(orderCode)
+                toast.success("Gửi lại Otp thành công.")
+            } catch (error: any) {
+                // Xử lý lỗi từ Zod hoặc API
+                if (typeof error === "object" && error !== null) {
+                    // Hiển thị từng lỗi cụ thể
+                    toast.error(error.message, {
+                        position: "top-right",
+                        autoClose: 3000,
+                    });
+                } else {
+                    // Lỗi chung nếu không có chi tiết
+                    toast.error("Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.", {
+                        position: "bottom-right",
+                        autoClose: 3000,
+                    });
+                }
+            }
+
+        } catch {
+            toast.error("Xác thực thất bại.")
+        }
+    }
 
     React.useEffect(() => {
         setDialogOpen(open)
@@ -118,7 +144,11 @@ export function OtpForm({
                         <Button type="submit" className="w-full bg-orange-500 text-white hover:bg-orange-600">
                             Xác nhận
                         </Button>
+
                     </form>
+                    <Button onClick={onResend} className="w-full bg-orange-500 text-white hover:bg-orange-600">
+                        Gửi lại mã xác nhận
+                    </Button>
                 </Form>
             </DialogContent>
         </Dialog>

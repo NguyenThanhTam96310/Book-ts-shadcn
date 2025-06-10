@@ -95,8 +95,11 @@ interface OrderDetailProps {
 const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
     const router = useRouter()
     const displayOrder = order
-
-    // Guard clause nếu không có dữ liệu
+    const finalCouponFee =
+        displayOrder.coupon && Number(displayOrder.coupon.valueType) === 1
+            ? Number(displayOrder.totalAmount) * (displayOrder.coupon.value / 100)
+            : displayOrder.coupon?.value;
+    // Guard clause nếu không có dữ liệucart
     if (!displayOrder || !displayOrder.orderItems || displayOrder.orderItems.length === 0) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
@@ -269,12 +272,18 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
                             </div>
 
                             {displayOrder.freeship ? (
-                                <div className="flex justify-between items-center py-2 bg-green-50 px-4 rounded-lg">
-                                    <span className="text-green-700 font-medium">
-                                        Miễn phí vận chuyển (Mã: {displayOrder.freeship.promotionCode})
-                                    </span>
-                                    <span className="text-green-600 font-semibold">-{formatCurrency(displayOrder.priceShip)}</span>
-                                </div>
+                                <>
+                                    <div className="flex justify-between items-center py-2">
+                                        <span className="text-gray-600">Phí vận chuyển:</span>
+                                        <span className="font-semibold">{formatCurrency(displayOrder.priceShip)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 bg-green-50 px-4 rounded-lg">
+                                        <span className="text-green-700 font-medium">
+                                            Miễn phí vận chuyển (Mã: {displayOrder.freeship.promotionCode})
+                                        </span>
+                                        <span className="text-green-600 font-semibold">-{formatCurrency(displayOrder.freeship.value)}</span>
+                                    </div>
+                                </>
                             ) : (
                                 <div className="flex justify-between items-center py-2">
                                     <span className="text-gray-600">Phí vận chuyển:</span>
@@ -286,7 +295,7 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
                                 <div className="flex justify-between items-center py-2 bg-orange-50 px-4 rounded-lg">
                                     <span className="text-orange-700 font-medium">Giảm giá (Mã: {displayOrder.coupon.promotionCode})</span>
                                     <span className="text-orange-600 font-semibold">
-                                        -{formatCurrency((displayOrder.subTotal * displayOrder.coupon.value) / 100)}
+                                        -{formatCurrency(finalCouponFee)}
                                     </span>
                                 </div>
                             )}

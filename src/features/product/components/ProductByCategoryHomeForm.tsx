@@ -133,7 +133,7 @@ const ProductByCategoryHomeForm = ({ categoryId }: ProductByCategoryHomeFormProp
                                                 <div className="absolute-bottom-1 left-0 right-0 h-0.5 bg-white/50 rounded-full"></div>
                                             )}
                                         </span>
-                                        {products.length > 0 && (
+                                        {/* {products.length > 0 && (
                                             <Badge
                                                 variant="secondary"
                                                 className={`text-xs transition-all duration-300 ${isActive
@@ -143,7 +143,7 @@ const ProductByCategoryHomeForm = ({ categoryId }: ProductByCategoryHomeFormProp
                                             >
                                                 {products.length}
                                             </Badge>
-                                        )}
+                                        )} */}
                                     </div>
                                     {isActive && (
                                         <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-sm"></div>
