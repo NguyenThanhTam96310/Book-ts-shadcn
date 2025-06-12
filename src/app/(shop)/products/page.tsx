@@ -139,16 +139,28 @@ const ProductPage = () => {
                 newSortBy = "price";
                 newSortOrder = "desc";
                 break;
-            case "name_asc":
-                newSortBy = "name";
+            case "productName_asc":
+                newSortBy = "productName";
                 newSortOrder = "asc";
                 break;
-            case "name_desc":
-                newSortBy = "name";
+            case "productName_desc":
+                newSortBy = "productName";
+                newSortOrder = "desc";
+                break;
+            case "discount_asc":
+                newIsSale = true;
+                newSortBy = "discount";
+                newSortOrder = "asc";
+                break;
+            case "discount_desc":
+                newIsSale = true;
+                newSortBy = "discount";
                 newSortOrder = "desc";
                 break;
             case "sale":
                 newIsSale = true;
+                break;
+            default:
                 break;
         }
 
@@ -158,6 +170,7 @@ const ProductPage = () => {
             isSale: newIsSale,
         });
     };
+
 
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) {
@@ -203,21 +216,25 @@ const ProductPage = () => {
                                         Giảm giá
                                     </label>
                                 </div>
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 cursor-pointer">
-                                    <span className="text-gray-700 text-sm sm:text-base">Sắp xếp theo:</span>
-                                    <select
-                                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer"
-                                        onChange={handleSortChange}
-                                        value={
-                                            filterParams.isSale
-                                                ? "sale"
-                                                : `${filterParams.sortBy}_${filterParams.sortOrder}`
-                                        }
-                                    >
-                                        <option className="cursor-pointer" value="price_asc">Giá tăng dần</option>
-                                        <option className="cursor-pointer" value="price_desc">Giá giảm dần</option>
-                                    </select>
-                                </div>
+                                <select
+                                    className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm sm:text-base bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all cursor-pointer"
+                                    onChange={handleSortChange}
+                                    value={
+                                        filterParams.isSale && (!filterParams.sortBy || filterParams.sortBy === "productId" || filterParams.sortBy === "productName")
+                                            ? "sale" // Khi isSale=true và không sắp xếp theo discount → chọn option "Sản phẩm giảm giá"
+                                            : `${filterParams.sortBy}_${filterParams.sortOrder}`
+                                    }
+                                >
+                                    <option value="">-- Chọn sắp xếp --</option>
+                                    <option value="productName_asc">Sắp xếp từ A-Z</option>
+                                    <option value="productName_desc">Sắp xếp từ Z-A</option>
+                                    <option value="price_asc">Giá tăng dần</option>
+                                    <option value="price_desc">Giá giảm dần</option>
+                                    <option value="discount_asc">Giảm giá tăng dần</option>
+                                    <option value="discount_desc">Giảm giá giảm dần</option>
+                                    <option value="sale">Sản phẩm giảm giá</option>
+                                </select>
+
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                                     <div className="flex items-center gap-2">
                                         <span className="text-gray-700 text-sm sm:text-base">Hiển thị:</span>

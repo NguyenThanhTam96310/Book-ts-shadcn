@@ -266,7 +266,7 @@ export default function Header() {
                                 ${showTooltip ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"}
                             `}
                                 >
-                                    Yêu cầu đăng nhập
+                                    Vui lòng đăng nhập
                                 </div>
                             )}
                         </div>

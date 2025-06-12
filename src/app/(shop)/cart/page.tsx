@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 
 const CartPage = () => {
     return (
-        <>
+        <div className="min-h-[400px] bg-gray-100">
             <Cart />
-        </>
+        </div>
     )
 }
 

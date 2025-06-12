@@ -19,3 +19,6 @@ export interface MenuProfileProps {
     fullname?: string
     avatar?: string
 }
+export interface AvatarProps {
+    file: string
+}

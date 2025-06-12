@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="vi" className="mdl-js">
       <head>
       </head>
-      <body className={`${roboto.className} flex flex-col min-h-[830px]`}>
+      <body className={`${roboto.className} flex flex-col min-h-screen`}>
         <Header />
         <main className="flex-grow">
           <PageTransition>{children}</PageTransition>

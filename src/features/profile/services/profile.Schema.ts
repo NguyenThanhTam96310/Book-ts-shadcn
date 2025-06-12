@@ -16,8 +16,8 @@ export const EditPassWordBody = z.object({
 export type EditPasswordType = z.TypeOf<typeof EditPassWordBody>
 export const EditAddressBody = z.object({
     userId: z.number().min(1),
-    fullName: z.string().min(3, "Vui lòng nhập họ tên ít nhất có 3 ký tự"),
-    mobileNumber: z.string().min(10, "Số điện thoại phải 10 ký tự").max(10, "Số điện thoại phải 10 ký tự"),
+    fullName: z.string().min(5, "Vui lòng nhập họ tên ít nhất có 5 ký tự").max(50, "Vui lòng nhập họ tên không quá 50 ký tự"),
+    mobileNumber: z.string().min(10, "Số điện thoại phải 10 ký tự").max(11, "Số điện thoại phải 10 ký tự").regex(/^\d+$/, { message: "Số điện thoại giao hàng chỉ được chứa chữ số" }),
     email: z.string().email("Email không hợp lệ"),
     address: z.object({
         ward: z.string().min(3, "Vui lòng nhập thông tin phường/xã"),

@@ -13,6 +13,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { X, Truck, Gift, Tag } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -38,6 +39,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import PromotionForm from "@/features/promotion/components/PromotionForm";
 import { UserRes } from "@/features/profile/services/type";
+import AppliedCoupons from "@/features/promotion/components/AppliedCoupons";
 const cartSchema = z.object({
     cartItems: z.array(
         z.object({
@@ -79,6 +81,8 @@ export default function PaymentForm() {
             productQuantities: [],
         },
     });
+
+
 
     const [userId, setUserId] = useState<number | null>(null);
     const [user, setUser] = useState<UserRes | null>(null);
@@ -803,38 +807,13 @@ export default function PaymentForm() {
                             type="button"
                             variant="link"
                             onClick={() => {
-                                console.log(promotions)
                                 setVoucherOpen(true);
                             }}
                         >
                             Chọn mã
                         </Button>
                     </div>
-
-                    {appliedCoupons.length > 0 && (
-                        <div className="mt-4">
-                            <h4 className="font-semibold">Đã áp dụng</h4>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {appliedCoupons.map((coupon) => (
-                                    <div
-                                        key={coupon}
-                                        className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 rounded-xl text-sm"
-                                    >
-                                        <span>{coupon}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveCoupon(coupon)}
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-
+                    <AppliedCoupons appliedCoupons={appliedCoupons} promotions={promotions} onRemoveCoupon={handleRemoveCoupon} />
                     {/* DANH SÁCH SẢN PHẨM */}
                     <h2 className="text-xl font-semibold border-b-2 pb-1">ĐƠN HÀNG</h2>
                     <div className="space-y-4">
@@ -851,29 +830,29 @@ export default function PaymentForm() {
                     <div className="sticky bottom-0 bg-white p-4 border-t mt-4">
                         {ChecktoWardCode && (
                             <div className="space-y-2 mb-4">
-                                <div className="flex justify-between">
+                                <div className="flex justify-between text-sm">
                                     <span>Thành tiền</span>
                                     <span>{formatCurrency(Number(cart.totalPrice))}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between text-sm">
                                     <span>Phí vận chuyển</span>
                                     <span>{formatCurrency(shippingFee)}</span>
                                 </div>
                                 {finalShippingFee !== shippingFee && (
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between text-sm">
                                         <span>Giảm giá vận chuyển</span>
                                         <span className="text-green-500">-{formatCurrency(shippingFee - finalShippingFee)}</span>
                                     </div>
                                 )}
                                 {
                                     finalCouponFee && (
-                                        <div className="flex justify-between">
+                                        <div className="flex justify-between text-sm">
                                             <span>Giảm giá</span>
                                             <span className="text-green-500">-{formatCurrency(finalCouponFee)}</span>
                                         </div>
                                     )
                                 }
-                                <div className="flex justify-between font-semibold border-t pt-2">
+                                <div className="flex justify-between font-semibold border-t pt-2 text-sm">
                                     <span>Tổng cộng</span>
                                     <span className="text-yellow-500">{formatCurrency(totalWithShipping)}</span>
                                 </div>
@@ -882,7 +861,7 @@ export default function PaymentForm() {
 
                         <Button
                             type="submit"
-                            className="w-full bg-red-500 hover:bg-red-600 text-white text-base font-semibold p-5"
+                            className="w-full bg-red-500 hover:bg-red-600 text-white text-base font-semibold p-5 cursor-pointer"
                             disabled={(cart.cartItems ?? []).length === 0}
                         >
                             Xác nhận thanh toán

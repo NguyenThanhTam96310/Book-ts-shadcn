@@ -1,51 +1,88 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ChevronRight, LayoutGrid, X, Package, Sparkles, ArrowRight, Grid3X3, Menu, ChevronDown } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
-import { fetchAllCategories } from "@/features/category/services/category.service"
-import { fetchMenus, MenuItem } from "@/features/menu"
-import { CategoryItemProps } from "@/features/category/services/type"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+    ChevronRight,
+    LayoutGrid,
+    X,
+    Package,
+    Sparkles,
+    ArrowRight,
+    Grid3X3,
+    Menu,
+    ChevronDown,
+} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { fetchAllCategories } from "@/features/category/services/category.service";
+import { fetchMenus, MenuItem } from "@/features/menu";
+import { CategoryItemProps } from "@/features/category/services/type";
 
 const CategoryDrawer = () => {
-    const [categories, setCategories] = useState<CategoryItemProps[]>([])
-    const [menus, setMenus] = useState<MenuItem[]>([])
-    const [loading, setLoading] = useState(true)
-    const [open, setOpen] = useState(false)
-    // Thêm trạng thái để theo dõi danh mục cha nào đang mở
-    const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({})
+    const [categories, setCategories] = useState<CategoryItemProps[]>([]);
+    const [menus, setMenus] = useState<MenuItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [open, setOpen] = useState(false);
+    // Trạng thái cho danh mục cha
+    const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
+    // Trạng thái cho danh mục con cấp 1
+    const [openCategoryChild, setOpenCategoryChild] = useState<{ [key: string]: boolean }>({});
+    // Trạng thái cho danh mục con cấp 2 (nếu có)
+    const [openCategoryChild2, setOpenCategoryChild2] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true)
+            setLoading(true);
             try {
-                const categoriesData = await fetchAllCategories()
-                const menusData = await fetchMenus()
-                const mainMenus = menusData.filter((menu: MenuItem) => menu.position === "MAINMENU")
-                setCategories(categoriesData)
-                setMenus(mainMenus)
+                const categoriesData = await fetchAllCategories();
+                const menusData = await fetchMenus();
+                const mainMenus = menusData.filter((menu: MenuItem) => menu.position === "MAINMENU");
+                setCategories(categoriesData);
+                setMenus(mainMenus);
             } catch (error) {
-                console.error("Error fetching data:", error)
+                console.error("Error fetching data:", error);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
-        fetchData()
-    }, [])
+        fetchData();
+    }, []);
 
     // Hàm toggle trạng thái đóng/mở của danh mục cha
     const toggleCategory = (categoryId: string) => {
         setExpandedCategories((prev) => ({
             ...prev,
             [categoryId]: !prev[categoryId],
-        }))
-    }
+        }));
+    };
+
+    // Hàm toggle trạng thái đóng/mở của danh mục con cấp 1
+    const toggleCategoryChild = (categoryId: string) => {
+        setOpenCategoryChild((prev) => ({
+            ...prev,
+            [categoryId]: !prev[categoryId],
+        }));
+    };
+
+    // Hàm toggle trạng thái đóng/mở của danh mục con cấp 2
+    const toggleCategoryChild2 = (categoryId: string) => {
+        setOpenCategoryChild2((prev) => ({
+            ...prev,
+            [categoryId]: !prev[categoryId],
+        }));
+    };
 
     const LoadingSkeleton = () => (
         <div className="space-y-6">
@@ -66,7 +103,7 @@ const CategoryDrawer = () => {
                 </Card>
             ))}
         </div>
-    )
+    );
 
     return (
         <Drawer direction="left" open={open} onOpenChange={setOpen}>
@@ -165,23 +202,23 @@ const CategoryDrawer = () => {
                                                     {/* Parent Category */}
                                                     <div
                                                         className="flex items-center justify-between mb-4 group-hover:translate-x-1 transition-transform cursor-pointer"
-                                                        onClick={() => toggleCategory(String(category.categoryId))}
+                                                        onClick={() => {
+                                                            toggleCategory(String(category.categoryId));
+                                                        }}
                                                     >
                                                         <div className="flex items-center space-x-3">
                                                             <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
                                                                 <Package className="w-5 h-5 text-white" />
                                                             </div>
-                                                            <div>
-                                                                <h3 className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                                                            <Link href={`/products?categoryId=${category.categoryId}`}>
+                                                                <h3 onClick={() => setOpen(false)} className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
                                                                     {category.categoryName}
                                                                 </h3>
-                                                            </div>
+                                                            </Link>
                                                         </div>
                                                         <div className="flex items-center space-x-2">
                                                             <ChevronDown
-                                                                className={`w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-transform duration-300 ${expandedCategories[category.categoryId]
-                                                                    ? "rotate-180"
-                                                                    : ""
+                                                                className={`w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-transform duration-300 ${expandedCategories[category.categoryId] ? "rotate-180" : ""
                                                                     }`}
                                                             />
                                                         </div>
@@ -194,31 +231,35 @@ const CategoryDrawer = () => {
                                                             <div className="space-y-2 pl-2 border-l-2 border-gray-100 ml-5">
                                                                 {category.childrens.map((child) => (
                                                                     <div key={child.categoryId}>
-                                                                        <Link
-                                                                            href={`/products?categoryId=${child.categoryId}`}
-                                                                            onClick={() => setOpen(false)}
-                                                                            className="group/child flex items-center justify-between p-2 rounded-lg hover:bg-orange-50 transition-all duration-200"
+                                                                        <div
+                                                                            className="flex items-center justify-between p-2 rounded-lg hover:bg-orange-50 transition-all duration-200 cursor-pointer"
+                                                                            onClick={() => {
+                                                                                toggleCategoryChild(String(child.categoryId))
+                                                                            }}
                                                                         >
-                                                                            <span className="text-sm font-medium text-gray-700 group-hover/child:text-orange-600 transition-colors">
-                                                                                {child.categoryName}
-                                                                            </span>
+
+                                                                            <Link href={`/products?categoryId=${child.categoryId}`}>
+                                                                                <span onClick={() => setOpen(false)} className="text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors">
+                                                                                    {child.categoryName}
+                                                                                </span>
+                                                                            </Link>
                                                                             <div className="flex items-center space-x-2">
-                                                                                {child.childrens &&
-                                                                                    child.childrens.length > 0 && (
-                                                                                        <ChevronRight className="w-3 h-3 text-gray-400 group-hover/child:text-orange-500 transition-colors" />
-                                                                                    )}
+                                                                                {child.childrens && child.childrens.length > 0 && (
+                                                                                    <ChevronDown
+                                                                                        className={`w-5 h-5 text-gray-400 hover:text-orange-500 transition-transform duration-300 ${openCategoryChild[child.categoryId] ? "rotate-180" : ""
+                                                                                            }`}
+                                                                                    />
+                                                                                )}
                                                                             </div>
-                                                                        </Link>
+                                                                        </div>
 
                                                                         {/* Danh sách con cấp 2 */}
                                                                         {child.childrens &&
-                                                                            child.childrens.length > 0 && (
+                                                                            child.childrens.length > 0 &&
+                                                                            openCategoryChild[child.categoryId] && (
                                                                                 <ul className="ml-2 pl-2 border-l border-gray-200">
                                                                                     {child.childrens.map((child2) => (
-                                                                                        <li
-                                                                                            key={child2.categoryId}
-                                                                                            className="py-1"
-                                                                                        >
+                                                                                        <li key={child2.categoryId} className="py-1">
                                                                                             <Link
                                                                                                 href={`/products?categoryId=${child2.categoryId}`}
                                                                                                 onClick={() => setOpen(false)}
@@ -252,7 +293,7 @@ const CategoryDrawer = () => {
                 </div>
             </DrawerContent>
         </Drawer>
-    )
-}
+    );
+};
 
-export default CategoryDrawer
+export default CategoryDrawer;

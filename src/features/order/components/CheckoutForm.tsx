@@ -143,7 +143,7 @@ const CheckoutForm = () => {
                                     {isSuccess ? "✅" : "❌"}
                                 </span>
                                 <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900">
-                                    Kết quả thanh toán
+                                    Kết quả đơn hàng
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-4 sm:p-6 space-y-4">

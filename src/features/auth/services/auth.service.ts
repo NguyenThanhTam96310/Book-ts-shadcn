@@ -36,20 +36,27 @@ export const fetchUserByToken = async (accessToken: any): Promise<UserRes> => {
     return response;
 };
 
-export function registerUser(body: RegisterBodyType) {
-    const response = axiosInstance.post(`${envConfig.NEXT_PUBLIC_API}/register`, body, {
-        headers: {
-            accept: "*/*",
-            "Content-Type": "application/json",
-        },
-    })
-        .then((response) => response.data)
-        .catch((error) => {
-            console.log(error)
-            throw error
-        });
-
-    return response; // validate với Zod
+export async function registerUser(body: RegisterBodyType) {
+    try {
+        const response = await axiosInstance.post(
+            `${envConfig.NEXT_PUBLIC_API}/register`,
+            body,
+            {
+                headers: {
+                    Accept: "*/*",
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.data;
+    } catch (error: any) {
+        // Xử lý lỗi từ API
+        if (error.response) {
+            throw error.response.data; // Ném lỗi từ server
+        }
+        console.error("Lỗi khi gọi API đăng ký:", error.response.data.message);
+        throw { general: "Đã có lỗi xảy ra khi đăng ký. Vui lòng thử lại." };
+    }
 }
 export async function fetchEmailVerify(token: string) {
     try {

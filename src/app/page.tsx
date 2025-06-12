@@ -106,7 +106,7 @@ export default function Home() {
                     <Sparkles className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">SẢN PHẨM MỚI NHẤT</h2>
+                    <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">SÁCH MỚI NHẤT</h2>
                     <p className="text-gray-600 mt-1">Cập nhật những đầu sách mới nhất</p>
                   </div>
                 </div>

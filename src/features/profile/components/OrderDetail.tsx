@@ -99,6 +99,10 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
         displayOrder.coupon && Number(displayOrder.coupon.valueType) === 1
             ? Number(displayOrder.totalAmount) * (displayOrder.coupon.value / 100)
             : displayOrder.coupon?.value;
+    const finalFreeShipFee =
+        displayOrder.freeship && Number(displayOrder.freeship.valueType) === 1
+            ? Number(displayOrder.priceShip) * (displayOrder.freeship.value / 100)
+            : displayOrder.freeship?.value;
     // Guard clause nếu không có dữ liệucart
     if (!displayOrder || !displayOrder.orderItems || displayOrder.orderItems.length === 0) {
         return (
@@ -281,7 +285,7 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
                                         <span className="text-green-700 font-medium">
                                             Miễn phí vận chuyển (Mã: {displayOrder.freeship.promotionCode})
                                         </span>
-                                        <span className="text-green-600 font-semibold">-{formatCurrency(displayOrder.freeship.value)}</span>
+                                        <span className="text-green-600 font-semibold">-{formatCurrency(finalFreeShipFee)}</span>
                                     </div>
                                 </>
                             ) : (

@@ -47,61 +47,32 @@ const RegisterForm = () => {
             confirmPassword: "",
         }
     });
-    // const selectedProvince = form.watch("address.city");
-    // const selectedDistrict = form.watch("address.district");
-    // // Fetch provinces
-    // useEffect(() => {
-    //     getProvinces().then(setProvinces);
-    // }, []);
 
-    // // Fetch districts based on selected province
-    // useEffect(() => {
-    //     const provinceId = parseInt(selectedProvince);
-    //     if (provinceId) {
-    //         getDistricts(provinceId).then(setDistricts);
-    //         form.setValue("address.district", ""); // Reset district
-    //         form.setValue("address.ward", ""); // Reset ward
-    //         setDistricts([]);
-    //         setWards([]);
-    //     }
-    // }, [selectedProvince, form]);
-
-    // // Fetch wards based on selected district
-    // useEffect(() => {
-    //     const districtId = parseInt(selectedDistrict);
-    //     if (districtId) {
-    //         getWards(districtId).then(setWards);
-    //         form.setValue("address.ward", ""); // Reset ward
-    //     }
-    // }, [selectedDistrict, form]);
     const onSubmit = async (values: z.infer<typeof RegisterBody>) => {
         try {
-            // let orderData = { ...values };
 
-            // // Lấy tên Tỉnh/Thành phố
-            // const selectedProvinceObject = provinces.find((p) => String(p.ProvinceID) === values.address.city);
-            // orderData.address.city = selectedProvinceObject?.ProvinceName || "";
-
-            // // Lấy tên Quận/Huyện
-            // const selectedDistrictObject = districts.find((d) => String(d.DistrictID) === values.address.district);
-            // orderData.address.district = selectedDistrictObject?.DistrictName || "";
-
-            // // Lấy tên Phường/Xã
-            // const selectedWardObject = wards.find((w) => w.WardCode === values.address.ward);
-            // orderData.address.ward = selectedWardObject?.WardName || "";
             const result = await registerUser(values) as RegisterResType;
-            // console.log(result.message);
             toast.success(result.message || "Đăng ký thành công!");
             if (result) {
                 router.push(`/register/verifyEmail`); //
             }
-        } catch (error) {
-            if (error instanceof Error) {
-                toast.error(error.message);
+        } catch (error: any) {
+            // Xử lý lỗi từ Zod hoặc API
+            if (typeof error === "object" && error !== null) {
+                // Hiển thị từng lỗi cụ thể
+                Object.entries(error).forEach(([key, message]) => {
+                    toast.error(`${message}`, {
+                        position: "top-right",
+                        autoClose: 3000,
+                    });
+                });
             } else {
-                toast.error("An unknown error occurred.");
+                // Lỗi chung nếu không có chi tiết
+                toast.error("Đã có lỗi xảy ra khi đăng ký. Vui lòng thử lại.", {
+                    position: "bottom-right",
+                    autoClose: 3000,
+                });
             }
-            console.error(error);
         }
     };
 

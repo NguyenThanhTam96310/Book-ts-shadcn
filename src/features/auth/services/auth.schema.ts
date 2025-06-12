@@ -1,27 +1,8 @@
 import z from 'zod'
 
-// export const RegisterBody = z
-//     .object({
-//         name: z.string().trim().min(2).max(256),
-//         email: z.string().email(),
-//         password: z.string().min(6).max(100),
-//         confirmPassword: z.string().min(6).max(100)
-//     })
-//     .strict()
-//     .superRefine(({ confirmPassword, password }, ctx) => {
-//         if (confirmPassword !== password) {
-//             ctx.addIssue({
-//                 code: 'custom',
-//                 message: 'Mật khẩu không khớp',
-//                 path: ['confirmPassword']
-//             })
-//         }
-//     })
-
-// export type RegisterBodyType = z.TypeOf<typeof RegisterBody>
 export const RegisterBody = z.object({
     fullName: z.string().min(3, "Họ tên phải từ 3 ký tự"),
-    mobileNumber: z.string().min(10, "Số điện thoại phải 10 ký tự").max(10, "Số điện thoại phải 10 ký tự"),
+    mobileNumber: z.string().min(10, "Số điện thoại phải 10 ký tự").max(10, "Số điện thoại phải 10 ký tự").regex(/^\d+$/, { message: "Số điện thoại giao hàng chỉ được chứa chữ số" }),
     email: z.string().email("Email không hợp lệ"),
     username: z.string().min(3, "Tên đăng nhập phải từ 3 ký tự"),
     password: z.string().min(1, "Mật khẩu phải từ 1 ký tự"),

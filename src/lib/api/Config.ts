@@ -48,6 +48,7 @@ axiosInstance.interceptors.response.use(
                     localStorage.removeItem("authTokenExpiry");
                     localStorage.removeItem("userId");
                     localStorage.removeItem("username");
+                    localStorage.clear;
                     localStorage.removeItem("accountName");
                     await signOut({ redirect: false }); // Không tự động redirect
                     window.location.href = "/login";
