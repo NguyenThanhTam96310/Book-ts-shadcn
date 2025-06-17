@@ -267,7 +267,7 @@ export default function EditAddressForm() {
                                         <FormItem className="flex items-center gap-4 w-full">
                                             <FormLabel className="w-[150px] min-w-[50px] text-sm text-gray-700 font-semibold">Số điện thoại</FormLabel>
                                             <FormControl className="flex-1">
-                                                <Input placeholder="Ví dụ: 0979123xxx (10 ký tự số)" {...field} readOnly />
+                                                <Input placeholder="Ví dụ: 0979123xxx (10 ký tự số)" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

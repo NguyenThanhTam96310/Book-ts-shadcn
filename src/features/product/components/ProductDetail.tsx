@@ -1,5 +1,6 @@
 'use client'
 
+import * as Dialog from "@radix-ui/react-dialog";
 import { FC, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import styles from './ProductDetail.module.css'
@@ -12,23 +13,30 @@ import { useRouter } from 'next/navigation'
 import { CART_ITEM_KEY } from '@/constants/cartConstants'
 import { PAYMENT_ITEM_KEY } from '@/constants/orderConstants'
 import { CartProps } from '@/features/cart'
-import { Truck, Undo2, Users } from 'lucide-react';
+import { Truck, Undo2, Users, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { addProductIdToLocalStorage } from '@/lib/utils/localStorege'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import { DialogTitle } from "@/components/ui/dialog";
+import { fetchAverageStarByProductId } from "@/features/review/services/review.service";
+import { StarRes } from "@/features/review/services/type";
+
 interface ProductDetailProps {
     product: ProductItemProps
 }
 
 const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
     const router = useRouter()
-    const [selectedImage, setSelectedImage] = useState<string | null>(null) // State để quản lý hình ảnh chính
+    const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0) // Thêm state cho chỉ số hình ảnh
     const [quantity, setQuantity] = useState(1);
     const [userId, setUserId] = useState<number | null>(null)
-    const [isExpanded, setIsExpanded] = useState(false) // Trạng thái mở rộng nội dung
-    const [showReadMore, setShowReadMore] = useState(false) // Hiển thị nút "Xem thêm"
-    const descriptionRef = useRef<HTMLDivElement>(null) // Ref để kiểm tra chiều cao nội dung
+    const [star, setStar] = useState<StarRes>()
+    const [isExpanded, setIsExpanded] = useState(false)
+    const [showReadMore, setShowReadMore] = useState(false)
+    const descriptionRef = useRef<HTMLDivElement>(null)
+    const [imageZoomOpen, setImageZoomOpen] = useState(false);
     const [cart, setCart] = useState<CartProps>({
         userId: undefined,
         cartItems: [],
@@ -41,23 +49,20 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
             setIsCheck(true);
         }
     }, [product.quantity, product.status]);
+
     const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
-    // Theo dõi vị trí cuộn
+
     useEffect(() => {
         const handleScroll = () => {
             const infoColumn = document.querySelector(`.${styles.infoColumn}`);
             if (infoColumn) {
-                const infoColumnHeight = infoColumn.scrollHeight; // Chiều cao thực của infoColumn
-                const windowHeight = window.innerHeight; // Chiều cao viewport
-                const scrollTop = window.scrollY; // Vị trí cuộn hiện tại
+                const infoColumnHeight = infoColumn.scrollHeight;
+                const windowHeight = window.innerHeight;
+                const scrollTop = window.scrollY;
 
-                // Khi cuộn gần hết infoColumn, cho phép cuộn toàn trang
                 if (scrollTop + windowHeight >= infoColumnHeight) {
-                    document.body.style.overflowY = 'auto'; // Cuộn toàn trang
-                } else {
-                    // Giới hạn cuộn trong vùng infoColumn (nếu muốn)
-                    // Lưu ý: CSS hiện tại không hỗ trợ hoàn toàn điều này, cần thêm container cha
+                    document.body.style.overflowY = 'auto';
                 }
             }
         };
@@ -65,22 +70,34 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
-    // Kiểm tra chiều cao nội dung để hiển thị nút "Xem thêm"
+    useEffect(() => {
+        const loadStar = async () => {
+            try {
+                const data = await fetchAverageStarByProductId(Number(product.productId))
+                console.log(data, "start")
+                setStar(data)
+            } catch (error) {
+                console.error("Lỗi khi load product:", error)
+            }
+        }
+        loadStar()
+    }, [])
     useEffect(() => {
         if (descriptionRef.current) {
             const contentHeight = descriptionRef.current.scrollHeight
-            const maxHeight = 200 // Giới hạn chiều cao ban đầu (px)
-            setShowReadMore(contentHeight > maxHeight) // Hiển thị nút nếu nội dung vượt quá chiều cao
+            const maxHeight = 200
+            setShowReadMore(contentHeight > maxHeight)
         }
     }, [product.description])
+
     useEffect(() => {
         const storedUserId = localStorage.getItem('userId')
         if (storedUserId) {
             setUserId(parseInt(storedUserId, 10))
         }
-        // Đặt hình ảnh đầu tiên làm mặc định khi component tải
         if (product.images && product.images.length > 0) {
             setSelectedImage(`${process.env.NEXT_PUBLIC_FILE}${product.images[0].fileName}`)
+            setSelectedImageIndex(0) // Khởi tạo chỉ số hình ảnh
         }
     }, [product.images])
 
@@ -92,7 +109,6 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
     const handleAddToCart = () => {
         const quantityInput = document.getElementById('quantityInput') as HTMLInputElement
         const quantity = Number(quantityInput?.value || 1)
-
 
         if (userId) {
             const url = `/public/carts`
@@ -154,7 +170,6 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                 });
             }
 
-            // Cập nhật tổng tiền
             cart.totalPrice = cart.cartItems.reduce((sum: number, item: any) => {
                 const discountedPrice = item.product.price * (1 - (item.product.discount || 0) / 100);
                 return sum + discountedPrice * item.quantity;
@@ -162,6 +177,7 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
             localStorage.setItem(CART_ITEM_KEY, JSON.stringify(cart));
         }
     }
+
     const handleAddCheckout = () => {
         const storedPayment = localStorage.getItem(PAYMENT_ITEM_KEY)
         const cart = storedPayment ? JSON.parse(storedPayment) : { cartItems: [], totalPrice: 0 }
@@ -184,12 +200,11 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
             return sum + discountedPrice * item.quantity
         }, 0)
 
-        // Lưu giỏ hàng đã cập nhật vào localStorage
         localStorage.setItem(PAYMENT_ITEM_KEY, JSON.stringify(cart));
         router.push("/payment");
     }
+
     const handleCheckout = () => {
-        // Lưu giỏ hàng đã chọn vào localStorage
         localStorage.removeItem(PAYMENT_ITEM_KEY);
         const quantityInput = document.getElementById('quantityInput') as HTMLInputElement
         const quantity = Number(quantityInput?.value || 1)
@@ -208,14 +223,32 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                     })
                 })
             handleAddCheckout();
-
         } else {
             handleAddCheckout();
         }
     };
 
-    const handleImageClick = (imageUrl: string) => {
-        setSelectedImage(imageUrl) // Cập nhật hình ảnh chính khi nhấp vào hình ảnh phụ
+    const handleImageClick = (imageUrl: string, index: number) => {
+        setSelectedImage(imageUrl)
+        setSelectedImageIndex(index) // Cập nhật chỉ số hình ảnh
+    }
+
+    // Hàm chuyển hình ảnh tiếp theo
+    const nextImage = () => {
+        if (product.images && product.images.length > 1) {
+            const nextIndex = (selectedImageIndex + 1) % product.images.length;
+            setSelectedImageIndex(nextIndex);
+            setSelectedImage(`${process.env.NEXT_PUBLIC_FILE}${product.images[nextIndex].fileName}`);
+        }
+    }
+
+    // Hàm chuyển hình ảnh trước đó
+    const prevImage = () => {
+        if (product.images && product.images.length > 1) {
+            const prevIndex = selectedImageIndex === 0 ? product.images.length - 1 : selectedImageIndex - 1;
+            setSelectedImageIndex(prevIndex);
+            setSelectedImage(`${process.env.NEXT_PUBLIC_FILE}${product.images[prevIndex].fileName}`);
+        }
     }
 
     return (
@@ -233,32 +266,83 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                     height={500}
                                     className={styles.imageStyle}
                                     priority={true}
+                                    onClick={() => setImageZoomOpen(true)}
                                 />
                             </div>
                             {product.images && product.images.length > 1 && (
-                                <div className={styles.thumbnailListVertical}>
-                                    {product.images.map((image: any, index: number) => (
-                                        <div
-                                            key={index}
-                                            className={`${styles.thumbnail} ${selectedImage === `${process.env.NEXT_PUBLIC_FILE}${image.fileName}`
-                                                ? styles.thumbnailActive
-                                                : ''
-                                                }`}
-                                            onClick={() => handleImageClick(`${process.env.NEXT_PUBLIC_FILE}${image.fileName}`)}
-                                        >
-                                            <Image
-                                                src={`${process.env.NEXT_PUBLIC_FILE}${image.fileName}`}
-                                                alt={`${product.productName} thumbnail ${index}`}
-                                                width={60}
-                                                height={80}
-                                                className={styles.thumbnailImage}
-                                            // priority={true}
-                                            />
-                                        </div>
-                                    ))}
+                                <div>
+                                    <div className={styles.thumbnailListVertical}>
+                                        {product.images.map((img: any, index: number) => (
+                                            <div
+                                                key={index}
+                                                className={`${styles.thumbnail} ${selectedImage === `${process.env.NEXT_PUBLIC_FILE}${img.fileName}` ? styles.thumbnailActive : ''}`}
+                                                onClick={() => handleImageClick(`${process.env.NEXT_PUBLIC_FILE}${img.fileName}`, index)}
+                                            >
+                                                <Image
+                                                    src={`${process.env.NEXT_PUBLIC_FILE}${img.fileName}`}
+                                                    alt={`${product.productName} thumbnail ${index}`}
+                                                    width={60}
+                                                    height={80}
+                                                    className={styles.thumbnailImage}
+                                                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {imageZoomOpen && (
+                                        <Card className="mb-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100 shadow-sm">
+                                            <div className="flex flex-col items-center text-center">
+                                                <div className="relative mb-4">
+                                                    <Dialog.Root open={imageZoomOpen} onOpenChange={setImageZoomOpen}>
+                                                        <Dialog.Portal>
+                                                            <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+                                                            <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white z-50 w-[550px] h-[650px] max-w-[90%] max-h-[90%] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
+                                                                <DialogTitle>
+                                                                    <span className="sr-only">Ảnh đại diện phóng to</span>
+                                                                </DialogTitle>
+                                                                <button
+                                                                    onClick={() => setImageZoomOpen(false)}
+                                                                    className="absolute top-3 right-4 text-gray-500 hover:text-gray-700 text-3xl"
+                                                                    aria-label="Đóng"
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                                {/* Nút chuyển hình trước */}
+                                                                {product.images && product.images.length > 1 && (
+                                                                    <button
+                                                                        onClick={prevImage}
+                                                                        className="absolute left-1 top-1/2 transform -translate-y-1/2 text-black bg-opacity-50 hover:bg-opacity-70 rounded-full p-2 z-10"
+                                                                        aria-label="Hình ảnh trước"
+                                                                    >
+                                                                        <ChevronLeft className="w-15 h-15" />
+                                                                    </button>
+                                                                )}
+                                                                {/* Hình ảnh chính */}
+                                                                <img
+                                                                    src={selectedImage || '/placeholder.png'}
+                                                                    alt="Zoomed Avatar"
+                                                                    className="w-full h-full object-contain"
+                                                                />
+                                                                {/* Nút chuyển hình sau */}
+                                                                {product.images && product.images.length > 1 && (
+                                                                    <button
+                                                                        onClick={nextImage}
+                                                                        className="absolute right-4 top-1/2 transform -translate-y-1/2 v bg-opacity-50 hover:bg-opacity-70 rounded-full p-2 z-10"
+                                                                        aria-label="Hình ảnh tiếp theo"
+                                                                    >
+                                                                        <ChevronRight className="w-15 h-15" />
+                                                                    </button>
+                                                                )}
+                                                            </Dialog.Content>
+                                                        </Dialog.Portal>
+                                                    </Dialog.Root>
+                                                </div>
+                                            </div>
+                                        </Card>)}
                                 </div>
                             )}
                         </div>
+
                         <div className={`${styles.actionSection} ${styles.desktopOnly}`}>
                             {
                                 isCheck && (<div className={styles.buttonGroup}>
@@ -300,12 +384,11 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                         {/* Tiêu đề + giá */}
                         <div className={styles.infoBox}>
                             <div className="flex items-center gap-3">
-                                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">{product.productName}</h1>
-                                {!isCheck && (<h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">(Tạm hết hàng)</h1>)}
+                                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">{product.productName}{!isCheck && ("(Tạm hết hàng)")}</h1>
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-                                <div className="w-full sm:w-2/3 text-base  truncate max-w-[400px]">
+                                <div className="w-full sm:w-2/3 text-base truncate max-w-[400px]">
                                     Nhà xuất bản: {product.publisher?.publisherName || 'Đang cập nhật'}
                                 </div>
                                 <div className="w-full sm:w-1/3 text-base sm:text-right">
@@ -315,7 +398,6 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                 </div>
                             </div>
 
-
                             <div className="flex items-center gap-3 my-3">
                                 <div className="w-2/3 text-base truncate max-w-[300px]">
                                     Ngôn ngữ:{' '}
@@ -324,7 +406,26 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                         : product.languages?.[0]?.name || 'Đang cập nhật'}
                                 </div>
                             </div>
+                            <div className="flex items-center gap-1 text-sm">
+                                {[1, 2, 3, 4, 5].map((i) => {
+                                    const averageStar = star?.averageStar ?? 0;
+                                    const isFullStar = averageStar >= i;
+                                    const isHalfStar = averageStar >= i - 0.5 && averageStar < i;
 
+                                    return (
+                                        <Star
+                                            key={i}
+                                            className={`w-4 h-4 ${isFullStar
+                                                ? "text-orange-400 fill-orange-400"
+                                                : isHalfStar
+                                                    ? "text-orange-400 fill-orange-400/50"
+                                                    : "text-gray-300"
+                                                }`}
+                                        />
+                                    );
+                                })}
+                                <span className="text-orange-500 ml-1">({star?.totalReviews} đánh giá)</span>
+                            </div>
                             <div className={`${styles.priceRow} mt-2`}>
                                 <span className="text-3xl text-red-600 font-bold">{formatPrice(discountedPrice)}</span>
                                 {product.discount && product.discount > 0 ? (
@@ -336,7 +437,7 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                             </div>
 
                             {product.discount && product.discount > 0 ? (
-                                <div className="inline-flex items-center justify-center  mt-2 gap-2 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold w-full">
+                                <div className="inline-flex items-center justify-center mt-2 gap-2 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold w-full">
                                     ⚡ FLASH SALE
                                 </div>
                             ) : null}
@@ -345,14 +446,6 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                         {/* Ưu đãi + Số lượng */}
                         <div className={styles.infoBox}>
                             <ul className="text-base space-y-4">
-                                {/* <li className="pt-2">
-                                    <strong>Ưu đãi:</strong>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                        <VoucherCard label="Mã giảm 50k - toàn bộ sản phẩm" />
-                                        <VoucherCard label="Mã giảm 100k - đơn từ 1 triệu" />
-                                        <VoucherCard label="Home Credit: Giảm 200k" />
-                                    </div>
-                                </li> */}
                                 <li>
                                     <strong>Trạng thái:</strong>  <Badge variant={product.quantity > 0 ? "default" : "destructive"}>
                                         {isCheck ? "Còn hàng" : "Hết hàng"}
@@ -429,14 +522,12 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                     </button>
                                 </div>
                             </div>) : ("")}
-
                         </div>
                         {/* Thông số */}
                         <div className={styles.infoBox}>
                             <div>
                                 <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
                                     <div className="flex items-center gap-3">
-
                                         <h1 className="text-xl font-bold">Thông tin chi tiết</h1>
                                     </div>
                                     {[
@@ -485,9 +576,9 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                             </div>
                                         </div>
                                     ))}
-                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                        <p className="text-sm text-blue-800">
-                                            💡 Giá sản phẩm trên BookStore đã bao gồm thuế theo luật hiện hành. Tùy vào loại sản phẩm, hình thức
+                                    <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                                        <p className="text-sm text-orange-700">
+                                            Giá sản phẩm trên BookStore đã bao gồm thuế theo luật hiện hành. Tùy vào loại sản phẩm, hình thức
                                             và địa chỉ giao hàng mà có thể phát sinh thêm chi phí khác.
                                         </p>
                                     </div>
@@ -500,10 +591,11 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                                 <h3 className="text-xl font-bold mb-4 text-gray-900">Mô tả sách</h3>
                                 <div
                                     ref={descriptionRef}
-                                    className={`prose prose-gray max-w-none text-gray-700 leading-relaxed transition-all duration-300 ${!isExpanded ? "max-h-48 overflow-hidden" : ""
-                                        }`}
+                                    className={`prose prose-gray max-w-none text-gray-700 leading-relaxed transition-all duration-300 ${!isExpanded ? "max-h-48 overflow-hidden" : ""}`}
                                 >
+
                                     {product.description || "Đang cập nhật..."}
+
                                 </div>
                                 {showReadMore && (
                                     <Button
@@ -518,36 +610,6 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                         </Card>
                     </div>
                 </div>
-
-                {/* Tabs Section */}
-                {/* <div className="mt-4 rounded-xl bg-white">
-                    <div className="flex flex-wrap border-b border-gray-200">
-                        <div
-                            className={`text-xl font-bold  px-4 py-2 transition `}
-                        >
-                            Mô tả sách
-                        </div>
-                    </div>
-
-                    <div className="p-4">
-                        <div
-                            ref={descriptionRef}
-                            className={`${styles.descriptionContent} p-4 rounded-lg text-base leading-relaxed whitespace-pre-line ${!isExpanded ? styles.collapsed : ''
-                                }`}
-                        >
-                            {product.description || 'Đang cập nhật...'}
-                        </div>
-                        {showReadMore && (
-                            <button
-                                onClick={() => setIsExpanded(!isExpanded)}
-                                className={styles.readMoreButton}
-                            >
-                                {isExpanded ? 'Thu gọn' : 'Xem thêm'}
-                            </button>
-                        )}
-
-                    </div>
-                </div> */}
             </div>
         </div>
     )

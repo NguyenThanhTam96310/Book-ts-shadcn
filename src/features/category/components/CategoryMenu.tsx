@@ -25,30 +25,41 @@ import {
     ChevronDown,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { fetchAllCategories } from "@/features/category/services/category.service";
 import { fetchMenus, MenuItem } from "@/features/menu";
 import { CategoryItemProps } from "@/features/category/services/type";
+import { fetchAllCategoriesByName } from "@/features/category/services/category.service";
 
 const CategoryDrawer = () => {
-    const [categories, setCategories] = useState<CategoryItemProps[]>([]);
+    const [openMenus, setOpenMenus] = useState<{ [key: string]: CategoryItemProps[] }>({});
     const [menus, setMenus] = useState<MenuItem[]>([]);
+    const [menuCategory, setMenuCategory] = useState<MenuItem[]>([]);
+    const [menuAuthor, setMenuAuthor] = useState<MenuItem[]>([]);
+    const [menuTopic, setMenuTopic] = useState<MenuItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
-    // Trạng thái cho danh mục cha
-    const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
-    // Trạng thái cho danh mục con cấp 1
-    const [openCategoryChild, setOpenCategoryChild] = useState<{ [key: string]: boolean }>({});
-    // Trạng thái cho danh mục con cấp 2 (nếu có)
-    const [openCategoryChild2, setOpenCategoryChild2] = useState<{ [key: string]: boolean }>({});
+
+    // États pour le hover
+    const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+    const [hoveredChild, setHoveredChild] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const categoriesData = await fetchAllCategories();
                 const menusData = await fetchMenus();
-                const mainMenus = menusData.filter((menu: MenuItem) => menu.position === "MAINMENU");
-                setCategories(categoriesData);
+                const mainMenus = menusData.filter((menu: MenuItem) => menu.position === "MAINMENU" && menu.type === "CUSTOMER");
+                const mainMenuCategory = menusData.filter((menu: MenuItem) =>
+                    menu.position === "MAINMENU" && menu.type === "CATEGORY"
+                );
+                const mainMenuAuthor = menusData.filter((menu: MenuItem) =>
+                    menu.position === "MAINMENU" && menu.type === "AUTHOR"
+                );
+                const mainMenuTopic = menusData.filter((menu: MenuItem) =>
+                    menu.position === "MAINMENU" && menu.type === "TOPIC"
+                );
+                setMenuTopic(mainMenuTopic);
+                setMenuAuthor(mainMenuAuthor);
+                setMenuCategory(mainMenuCategory);
                 setMenus(mainMenus);
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -60,28 +71,9 @@ const CategoryDrawer = () => {
         fetchData();
     }, []);
 
-    // Hàm toggle trạng thái đóng/mở của danh mục cha
-    const toggleCategory = (categoryId: string) => {
-        setExpandedCategories((prev) => ({
-            ...prev,
-            [categoryId]: !prev[categoryId],
-        }));
-    };
-
-    // Hàm toggle trạng thái đóng/mở của danh mục con cấp 1
-    const toggleCategoryChild = (categoryId: string) => {
-        setOpenCategoryChild((prev) => ({
-            ...prev,
-            [categoryId]: !prev[categoryId],
-        }));
-    };
-
-    // Hàm toggle trạng thái đóng/mở của danh mục con cấp 2
-    const toggleCategoryChild2 = (categoryId: string) => {
-        setOpenCategoryChild2((prev) => ({
-            ...prev,
-            [categoryId]: !prev[categoryId],
-        }));
+    // Gestion du hover sur les catégories principales
+    const handleCategoryHover = async (menuId: string) => {
+        setHoveredCategory(menuId);
     };
 
     const LoadingSkeleton = () => (
@@ -165,7 +157,7 @@ const CategoryDrawer = () => {
                                                 >
                                                     <Card className="p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-gray-100 hover:border-orange-200 bg-white/80 backdrop-blur-sm">
                                                         <div className="flex items-center justify-between">
-                                                            <span className="font-medium text-gray-800 group-hover:text-orange-600 transition-colors text-sm">
+                                                            <span className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors text-sm">
                                                                 {menu.name}
                                                             </span>
                                                             <div className="flex items-center space-x-1">
@@ -193,88 +185,83 @@ const CategoryDrawer = () => {
                                     </div>
 
                                     <div className="space-y-4">
-                                        {categories.map((category) => (
+                                        {menuCategory.map((menu) => (
                                             <Card
-                                                key={category.categoryId}
+                                                key={menu.menuId}
                                                 className="group hover:shadow-xl transition-all duration-300 border-gray-100 hover:border-orange-200 bg-white/90 backdrop-blur-sm overflow-hidden"
+                                                onMouseEnter={() => handleCategoryHover(String(menu.menuId))}
+                                                onMouseLeave={() => setHoveredCategory(null)}
                                             >
-                                                <div className="p-5">
+                                                <div className="px-5 py-4">
                                                     {/* Parent Category */}
-                                                    <div
-                                                        className="flex items-center justify-between mb-4 group-hover:translate-x-1 transition-transform cursor-pointer"
-                                                        onClick={() => {
-                                                            toggleCategory(String(category.categoryId));
-                                                        }}
-                                                    >
+                                                    <div className="flex items-center justify-between group-hover:translate-x-1 transition-transform">
                                                         <div className="flex items-center space-x-3">
-                                                            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
+                                                            <div className="w-7 h-7 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
                                                                 <Package className="w-5 h-5 text-white" />
                                                             </div>
-                                                            <Link href={`/products?categoryId=${category.categoryId}`}>
-                                                                <h3 onClick={() => setOpen(false)} className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
-                                                                    {category.categoryName}
+                                                            <Link href={`/products?slug=${menu.link}`}>
+                                                                <h3
+                                                                    onClick={() => setOpen(false)}
+                                                                    className="font-bold text-gray-900 text-sm group-hover:text-orange-600 transition-colors"
+                                                                >
+                                                                    {menu.name}
                                                                 </h3>
                                                             </Link>
                                                         </div>
-                                                        <div className="flex items-center space-x-2">
-                                                            <ChevronDown
-                                                                className={`w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-transform duration-300 ${expandedCategories[category.categoryId] ? "rotate-180" : ""
-                                                                    }`}
-                                                            />
-                                                        </div>
+                                                        <ChevronDown
+                                                            className={`w-5 h-5 text-gray-500 transition-transform ${hoveredCategory === String(menu.menuId) ? "rotate-180" : ""
+                                                                }`}
+                                                        />
                                                     </div>
 
-                                                    {/* Subcategories */}
-                                                    {category.childrens &&
-                                                        category.childrens.length > 0 &&
-                                                        expandedCategories[category.categoryId] && (
-                                                            <div className="space-y-2 pl-2 border-l-2 border-gray-100 ml-5">
-                                                                {category.childrens.map((child) => (
-                                                                    <div key={child.categoryId}>
-                                                                        <div
-                                                                            className="flex items-center justify-between p-2 rounded-lg hover:bg-orange-50 transition-all duration-200 cursor-pointer"
-                                                                            onClick={() => {
-                                                                                toggleCategoryChild(String(child.categoryId))
-                                                                            }}
-                                                                        >
-
-                                                                            <Link href={`/products?categoryId=${child.categoryId}`}>
-                                                                                <span onClick={() => setOpen(false)} className="text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors">
-                                                                                    {child.categoryName}
+                                                    {/* Child Categories - Affichage au hover */}
+                                                    {hoveredCategory === String(menu.menuId) && (
+                                                        <div className="ml-10 mt-3 space-y-2 animate-in slide-in-from-top-2 duration-200">
+                                                            {menu.childrens && menu.childrens.length > 0 ? (
+                                                                menu.childrens.map((child) => (
+                                                                    <div
+                                                                        key={child.menuId}
+                                                                        onMouseEnter={() => setHoveredChild(String(child.menuId))}
+                                                                        onMouseLeave={() => setHoveredChild(null)}
+                                                                        className="relative"
+                                                                    >
+                                                                        <div className="flex items-center justify-between py-1 hover:text-orange-600 transition-colors">
+                                                                            <Link
+                                                                                href={`/products?slug=${child.link}`}
+                                                                                onClick={() => setOpen(false)}
+                                                                                className="flex-1"
+                                                                            >
+                                                                                <span className="text-sm text-gray-700 hover:text-orange-600">
+                                                                                    {child.name}
                                                                                 </span>
                                                                             </Link>
-                                                                            <div className="flex items-center space-x-2">
-                                                                                {child.childrens && child.childrens.length > 0 && (
-                                                                                    <ChevronDown
-                                                                                        className={`w-5 h-5 text-gray-400 hover:text-orange-500 transition-transform duration-300 ${openCategoryChild[child.categoryId] ? "rotate-180" : ""
-                                                                                            }`}
-                                                                                    />
-                                                                                )}
-                                                                            </div>
+                                                                            {child.childrens && child.childrens.length > 0 && (
+                                                                                <ChevronRight className="w-4 h-4 text-gray-400" />
+                                                                            )}
                                                                         </div>
 
-                                                                        {/* Danh sách con cấp 2 */}
-                                                                        {child.childrens &&
-                                                                            child.childrens.length > 0 &&
-                                                                            openCategoryChild[child.categoryId] && (
-                                                                                <ul className="ml-2 pl-2 border-l border-gray-200">
-                                                                                    {child.childrens.map((child2) => (
-                                                                                        <li key={child2.categoryId} className="py-1">
-                                                                                            <Link
-                                                                                                href={`/products?categoryId=${child2.categoryId}`}
-                                                                                                onClick={() => setOpen(false)}
-                                                                                                className="text-sm text-gray-600 hover:text-orange-600 transition-colors"
-                                                                                            >
-                                                                                                {child2.categoryName}
-                                                                                            </Link>
-                                                                                        </li>
-                                                                                    ))}
-                                                                                </ul>
-                                                                            )}
+                                                                        {/* Grandchild Categories - Affichage au hover */}
+                                                                        {hoveredChild === String(child.menuId) && child.childrens && (
+                                                                            <div className="ml-4 space-y-1 animate-in slide-in-from-left-2 duration-200">
+                                                                                {child.childrens.map((grandchild) => (
+                                                                                    <Link
+                                                                                        key={grandchild.menuId}
+                                                                                        href={`/products?slug=${grandchild.link}`}
+                                                                                        onClick={() => setOpen(false)}
+                                                                                        className="block text-sm text-gray-600 hover:text-orange-600 transition-colors py-1 pl-2 border-l border-gray-200 hover:border-orange-300"
+                                                                                    >
+                                                                                        {grandchild.name}
+                                                                                    </Link>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
                                                                     </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                                ))
+                                                            ) : (
+                                                                <p className="text-sm text-gray-500">Không có danh mục con</p>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </Card>
                                         ))}

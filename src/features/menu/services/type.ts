@@ -3,6 +3,7 @@ export interface MenuItem {
     parent?: MenuItem
     name: string
     link: string
+    type?: string
     sortOrder: number
     position?: string
     childrens?: MenuItem[]

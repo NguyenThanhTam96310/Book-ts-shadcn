@@ -85,3 +85,64 @@ export const fetchAllCategories = async (): Promise<CategoryItemProps[]> => {
         throw error;
     }
 };
+export const getCategoryIdFromSlug = async (slug: string): Promise<number | undefined> => {
+    try {
+        const response = await axiosInstance.get<{ categoryId?: number }>(
+            `${envConfig.NEXT_PUBLIC_API}/public/categories/slug/${slug}`
+        );
+        return response.data?.categoryId;
+    } catch (error) {
+        console.error(`Lỗi khi fecth categoryId sang slug ${slug}:`, error);
+        return undefined;
+    }
+};
+
+// Hàm lấy slug từ categoryId qua API
+export const getSlugFromCategoryId = async (categoryId: number): Promise<string | undefined> => {
+    try {
+        const response = await axiosInstance.get<{ slug?: string }>(
+            `${envConfig.NEXT_PUBLIC_API}/public/categories/${categoryId}`
+        );
+        return response.data?.slug;
+    } catch (error) {
+        console.error(`Lỗi khi fecth slug sang id ${categoryId}:`, error);
+        return undefined;
+    }
+};
+export const fetchAllCategoriesByName = async (categoryName: string): Promise<CategoryItemProps[]> => {
+    let allChildren: CategoryItemProps[] = [];
+    let pageNumber = 1;
+    const pageSize = 5; // Giữ nguyên pageSize như API hiện tại
+    let lastPage = false;
+
+    try {
+        while (!lastPage) {
+            const response = await axiosInstance.get<CategoriesRes>(
+                `${envConfig.NEXT_PUBLIC_API}/public/categories`,
+                {
+                    params: {
+                        keyword: categoryName,
+                        status: true,
+                        type: 'parent',
+                        pageNumber,
+                        pageSize,
+                        sortBy: 'categoryId',
+                        sortOrder: 'asc',
+                    },
+                }
+            );
+
+            const data = response.data;
+            // Lấy childrens từ tất cả danh mục cha trong trang hiện tại
+            const children = data.content.flatMap((category) => category.childrens || []);
+            allChildren = [...allChildren, ...children];
+            lastPage = data.lastPage; // Kiểm tra nếu là trang cuối
+            pageNumber++; // Tăng số trang
+        }
+
+        return allChildren;
+    } catch (error) {
+        console.error('Error fetching all menus:', error);
+        throw error;
+    }
+};

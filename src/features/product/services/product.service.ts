@@ -1,4 +1,4 @@
-import { FetchProductListParams, ProductItemProps, ProductListResponse } from "@/features/product/services/type"
+import { FetchProductListParams, ProductItemProps, ProductListResponse, ProductSearchRes } from "@/features/product/services/type"
 import axiosInstance from "@/lib/api/Config"
 import envConfig from "@/lib/api/envConfig"
 import qs from 'qs';
@@ -11,7 +11,7 @@ export const fetchProductFlashSaleForm = async (): Promise<ProductItemProps[]> =
             pageNumber: 1,
             pageSize: 10,
             sortBy: "productId",
-            sortOrder: "asc"
+            sortOrder: "desc"
         }
     })
     const data = response.data as { content: ProductItemProps[] }
@@ -47,20 +47,20 @@ export const fetchProductByCategory = async (categoryId: number): Promise<Produc
 }
 
 
-export const fetchProductByAuthor = async (authorId: number): Promise<ProductItemProps[]> => {
-    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
-        params: {
-            authorIds: authorId,
-            status: true,
-            pageNumber: 1,
-            pageSize: 5,
-            sortBy: "productId",
-            sortOrder: "asc"
-        }
-    })
-    const data = response.data as { content: ProductItemProps[] }
-    return data.content
-}
+// export const fetchProductByAuthor = async (authorId: number): Promise<ProductItemProps[]> => {
+//     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
+//         params: {
+//             authorIds: authorId,
+//             status: true,
+//             pageNumber: 1,
+//             pageSize: 10,
+//             sortBy: "productId",
+//             sortOrder: "asc"
+//         }
+//     })
+//     const data = response.data as { content: ProductItemProps[] }
+//     return data.content
+// }
 // src/features/product/services/product.service.ts
 export const fetchProductBySlug = async (slug: string): Promise<ProductItemProps> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products/slug/${slug}`)
@@ -106,4 +106,52 @@ export const fetchProductsByIds = async (productIds: number[]): Promise<ProductI
     const data = response.data as ProductItemProps[] // hoặc kiểm tra nếu backend trả thêm `content`
 
     return data
+}
+export const fetchProductByAuthorIds = async (authorIds: number[]): Promise<ProductItemProps[]> => {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
+        params: {
+            authorIds,
+            status: true,
+            pageNumber: 1,
+            pageSize: 10,
+            sortBy: "productId",
+            sortOrder: "asc"
+        },
+        paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
+    });
+    const data = response.data as { content: ProductItemProps[] };
+    return data.content;
+};
+export const fetchProductByPublisherId = async (publisherId: number): Promise<ProductItemProps[]> => {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
+        params: {
+            publisherId: publisherId,
+            status: true,
+            pageNumber: 1,
+            pageSize: 10,
+            sortBy: "productId",
+            sortOrder: "asc"
+        }
+    });
+    const data = response.data as { content: ProductItemProps[] };
+    return data.content;
+};
+export const fetchSearchProductName = async (keyword: string): Promise<any> => {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products?status=true`, {
+        params: {
+            keyword: keyword,
+            pageNumber: 1,
+            pageSize: 10,
+            sortBy: "productId",
+            sortOrder: "asc"
+        },
+        paramsSerializer: (params) => {
+            return qs.stringify(params, {
+                arrayFormat: 'repeat' // authorIds=1&authorIds=2
+            });
+        }
+    });
+
+    const data = response.data as { content: ProductSearchRes[] };
+    return data.content;
 }

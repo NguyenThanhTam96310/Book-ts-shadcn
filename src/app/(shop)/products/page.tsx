@@ -6,6 +6,7 @@ import { FetchProductListParams } from "@/features/product/services/type";
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { getCategoryIdFromSlug, getSlugFromCategoryId } from "@/features/category";
 
 const ProductPage = () => {
     const searchParams = useSearchParams();
@@ -17,12 +18,11 @@ const ProductPage = () => {
         }
     };
 
-    // Lấy các tham số từ query string, nếu không có thì sử dụng giá trị mặc định
+    // Lấy các tham số từ query string
     const initialSortBy = searchParams?.get("sortBy") || "productId";
     const initialSortOrder = searchParams?.get("sortOrder") || "asc";
     const initialPageSize = searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 12;
     const initialPageNumber = searchParams?.get("pageNumber") ? Number(searchParams?.get("pageNumber")) : 1;
-    const initialCategoryId = searchParams?.get("categoryId") ? Number(searchParams?.get("categoryId")) : undefined;
     const initialAuthorIds = searchParams?.getAll("authorIds").length
         ? searchParams.getAll("authorIds").map(Number) : undefined;
     const initialMinPrice = searchParams?.get("minPrice") ? Number(searchParams?.get("minPrice")) : undefined;
@@ -33,7 +33,21 @@ const ProductPage = () => {
     const initialIsSale = searchParams?.get("isSale") ? Boolean(searchParams?.get("isSale")) : undefined;
     const initialKeyWord = searchParams?.get("keyword") ? String(searchParams?.get("keyword")) : undefined;
 
-    // State để quản lý params
+    // Lấy initialCategoryId từ slug trong URL
+    const [initialCategoryId, setInitialCategoryId] = useState<number | undefined>(undefined);
+    const [totalPages, setTotalPages] = useState<number>(0);
+    useEffect(() => {
+        const slug = searchParams?.get("slug");
+        if (slug) {
+            getCategoryIdFromSlug(slug).then((categoryId) => {
+                setInitialCategoryId(categoryId);
+            });
+        } else {
+            setInitialCategoryId(undefined);
+        }
+    }, [searchParams]);
+
+    // State để quản lý params, loại bỏ slug khỏi filterParams
     const [filterParams, setFilterParams] = useState<FetchProductListParams>({
         status: true,
         pageNumber: initialPageNumber,
@@ -50,71 +64,88 @@ const ProductPage = () => {
         keyword: initialKeyWord,
     });
 
-    const [totalPages, setTotalPages] = useState<number>(0);
+
 
     // Đồng bộ params với searchParams khi URL thay đổi
     useEffect(() => {
-        const newParams: Partial<FetchProductListParams> = {
-            sortBy: searchParams?.get("sortBy") || "productId",
-            sortOrder: (searchParams?.get("sortOrder") as "asc" | "desc") || "asc",
-            pageSize: searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 12,
-            pageNumber: searchParams?.get("pageNumber") ? Number(searchParams?.get("pageNumber")) : 1,
-            categoryId: searchParams?.get("categoryId") ? Number(searchParams?.get("categoryId")) : undefined,
-            authorIds: searchParams?.getAll("authorIds").length
-                ? searchParams.getAll("authorIds").map(Number)
-                : undefined,
-            minPrice: searchParams?.get("minPrice") ? Number(searchParams?.get("minPrice")) : undefined,
-            maxPrice: searchParams?.get("maxPrice") ? Number(searchParams?.get("maxPrice")) : undefined,
-            languageIds: searchParams?.getAll("languageIds").length
-                ? searchParams.getAll("languageIds").map(Number)
-                : undefined,
-            publisherId: searchParams?.get("publisherId") ? Number(searchParams?.get("publisherId")) : undefined,
-            isSale: searchParams?.get("isSale") ? Boolean(searchParams?.get("isSale")) : undefined,
-            keyword: searchParams?.get("keyword") ? String(searchParams?.get("keyword")) : undefined,
+        const slug = searchParams?.get("slug");
+        const fetchParams = async () => {
+            const categoryId = slug ? await getCategoryIdFromSlug(slug) : undefined;
+            const newParams: Partial<FetchProductListParams> = {
+                sortBy: searchParams?.get("sortBy") || "productId",
+                sortOrder: (searchParams?.get("sortOrder") as "asc" | "desc") || "asc",
+                pageSize: searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 12,
+                pageNumber: searchParams?.get("pageNumber") ? Number(searchParams?.get("pageNumber")) : 1,
+                categoryId,
+                authorIds: searchParams?.getAll("authorIds").length
+                    ? searchParams.getAll("authorIds").map(Number)
+                    : undefined,
+                minPrice: searchParams?.get("minPrice") ? Number(searchParams?.get("minPrice")) : undefined,
+                maxPrice: searchParams?.get("maxPrice") ? Number(searchParams?.get("maxPrice")) : undefined,
+                languageIds: searchParams?.getAll("languageIds").length
+                    ? searchParams.getAll("languageIds").map(Number)
+                    : undefined,
+                publisherId: searchParams?.get("publisherId") ? Number(searchParams?.get("publisherId")) : undefined,
+                isSale: searchParams?.get("isSale") ? Boolean(searchParams?.get("isSale")) : undefined,
+                keyword: searchParams?.get("keyword") ? String(searchParams?.get("keyword")) : undefined,
+            };
+            setFilterParams((prev) => ({
+                ...prev,
+                ...newParams,
+            }));
         };
-        setFilterParams((prev) => ({
-            ...prev,
-            ...newParams,
-        }));
+        fetchParams();
     }, [searchParams]);
 
-    // Đồng bộ URL với filterParams sau khi filterParams thay đổi
+    // Đồng bộ URL với filterParams, sử dụng slug thay vì categoryId
     useEffect(() => {
-        const query = new URLSearchParams();
-        const currentQuery = new URLSearchParams(window.location.search);
+        const syncUrl = async () => {
+            const query = new URLSearchParams();
+            const currentQuery = new URLSearchParams(window.location.search);
 
-        if (filterParams.sortBy && filterParams.sortBy !== "productId") query.set("sortBy", filterParams.sortBy);
-        if (filterParams.sortOrder && filterParams.sortOrder !== "asc") query.set("sortOrder", filterParams.sortOrder);
-        if (filterParams.pageSize && filterParams.pageSize !== 12) query.set("pageSize", filterParams.pageSize.toString());
-        if (filterParams.pageNumber && filterParams.pageNumber !== 1) query.set("pageNumber", filterParams.pageNumber.toString());
-        if (filterParams.categoryId !== undefined) query.set("categoryId", filterParams.categoryId.toString());
-        if (filterParams.authorIds !== undefined && filterParams.authorIds.length > 0) {
-            query.delete("authorIds"); // Xóa các authorIds cũ để tránh trùng lặp
-            filterParams.authorIds.forEach((id) => query.append("authorIds", id.toString()));
-        }
-        if (filterParams.languageIds !== undefined && filterParams.languageIds.length > 0) {
-            query.delete("languageIds"); // Xóa các authorIds cũ để tránh trùng lặp
-            filterParams.languageIds.forEach((id) => query.append("languageIds", id.toString()));
-        }
-        if (filterParams.minPrice !== undefined) query.set("minPrice", filterParams.minPrice.toString());
-        if (filterParams.maxPrice !== undefined) query.set("maxPrice", filterParams.maxPrice.toString());
-        if (filterParams.publisherId !== undefined) query.set("publisherId", filterParams.publisherId.toString());
-        if (filterParams.isSale !== undefined) query.set("isSale", filterParams.isSale.toString());
-        if (filterParams.keyword !== undefined) query.set("keyword", filterParams.keyword.toString());
+            if (filterParams.sortBy && filterParams.sortBy !== "productId") query.set("sortBy", filterParams.sortBy);
+            if (filterParams.sortOrder && filterParams.sortOrder !== "asc") query.set("sortOrder", filterParams.sortOrder);
+            if (filterParams.pageSize && filterParams.pageSize !== 12) query.set("pageSize", filterParams.pageSize.toString());
+            if (filterParams.pageNumber && filterParams.pageNumber !== 1) query.set("pageNumber", filterParams.pageNumber.toString());
+            if (filterParams.categoryId !== undefined) {
+                const slug = await getSlugFromCategoryId(filterParams.categoryId);
+                if (slug) query.set("slug", slug);
+            }
+            if (filterParams.authorIds !== undefined && filterParams.authorIds.length > 0) {
+                query.delete("authorIds");
+                filterParams.authorIds.forEach((id) => query.append("authorIds", id.toString()));
+            }
+            if (filterParams.languageIds !== undefined && filterParams.languageIds.length > 0) {
+                query.delete("languageIds");
+                filterParams.languageIds.forEach((id) => query.append("languageIds", id.toString()));
+            }
+            if (filterParams.minPrice !== undefined) query.set("minPrice", filterParams.minPrice.toString());
+            if (filterParams.maxPrice !== undefined) query.set("maxPrice", filterParams.maxPrice.toString());
+            if (filterParams.publisherId !== undefined) query.set("publisherId", filterParams.publisherId.toString());
+            if (filterParams.isSale !== undefined) query.set("isSale", filterParams.isSale.toString());
+            if (filterParams.keyword !== undefined) query.set("keyword", filterParams.keyword.toString());
 
-        const queryString = query.toString();
-        const currentQueryString = currentQuery.toString();
+            const queryString = query.toString();
+            const currentQueryString = currentQuery.toString();
 
-        if (queryString !== currentQueryString) {
-            router.push(`/products?${queryString}`, { scroll: false });
-        }
+            if (queryString !== currentQueryString) {
+                router.push(`/products?${queryString}`, { scroll: false });
+            }
+        };
+        syncUrl();
     }, [filterParams, router]);
 
-    // Cập nhật params khi bộ lọc thay đổi
-    const updateParams = (newParams: Partial<FetchProductListParams>) => {
+    // Cập nhật params khi bộ lọc thay đổi, xử lý slug từ Sidebar
+    const updateParams = async (newParams: Partial<FetchProductListParams>) => {
+        let categoryId = newParams.categoryId;
+        if (newParams.slug) {
+            categoryId = await getCategoryIdFromSlug(newParams.slug);
+        }
         setFilterParams((prev) => ({
             ...prev,
             ...newParams,
+            categoryId: categoryId ?? newParams.categoryId, // Ưu tiên categoryId từ slug
+            slug: undefined, // Xóa slug khỏi filterParams
             pageNumber: newParams.pageNumber ?? 1, // Reset về trang 1 khi thay đổi bộ lọc
         }));
     };
@@ -171,7 +202,6 @@ const ProductPage = () => {
         });
     };
 
-
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) {
             updateParams({ pageNumber: page });
@@ -195,7 +225,7 @@ const ProductPage = () => {
     };
 
     return (
-        <div className=" bg-gray-100">
+        <div className="bg-gray-100">
             <div className="container mx-auto py-8">
                 <div className="flex flex-col lg:flex-row gap-6">
                     <Sidebar onFilterChange={updateParams} />
@@ -221,7 +251,7 @@ const ProductPage = () => {
                                     onChange={handleSortChange}
                                     value={
                                         filterParams.isSale && (!filterParams.sortBy || filterParams.sortBy === "productId" || filterParams.sortBy === "productName")
-                                            ? "sale" // Khi isSale=true và không sắp xếp theo discount → chọn option "Sản phẩm giảm giá"
+                                            ? "sale"
                                             : `${filterParams.sortBy}_${filterParams.sortOrder}`
                                     }
                                 >

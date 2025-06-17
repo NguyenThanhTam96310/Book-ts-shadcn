@@ -1,7 +1,7 @@
 "use client"
 
 import ProductItem from "@/components/organisms/ProductItem"
-import { fetchProductByAuthor, fetchProductByCategory } from "@/features/product/services/product.service"
+import { fetchProductByAuthorIds } from "@/features/product/services/product.service"
 import { ProductItemProps } from "@/features/product/services/type"
 import { useEffect, useState } from "react"
 
@@ -15,7 +15,7 @@ const ProductByAuthorId = ({ authorId }: Props) => {
     useEffect(() => {
         const loadProducts = async () => {
             try {
-                const data = await fetchProductByAuthor(Number(authorId))
+                const data = await fetchProductByAuthorIds([Number(authorId)])
                 console.log(data)
                 setProducts(data)
             } catch (error) {

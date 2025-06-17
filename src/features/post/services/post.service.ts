@@ -11,6 +11,7 @@ export async function fetchPosts(): Promise<PostItemRes[]> {
         params: {
             status: true,
             pageNumber: 1,
+            type: "POST",
             pageSize: 9,
             sortBy: "postId",
             sortOrder: "desc",

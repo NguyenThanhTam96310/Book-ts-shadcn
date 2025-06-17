@@ -30,6 +30,7 @@ export interface FetchProductListParams {
     minPrice?: number
     maxPrice?: number
     categoryId?: number
+    slug?: string
     authorIds?: number[]
     languageIds?: number[]
     supplierId?: number
@@ -48,3 +49,10 @@ export interface ProductListResponse {
     pageNumber: number;
     pageSize: number;
 }
+export interface ProductSearchRes {
+    productId: number;
+    productName: string;
+    slug?: string;
+    images: Images[]
+}
+

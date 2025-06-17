@@ -1,13 +1,14 @@
-"use client"
+"use client";
 
-import { useEffect, useState, type FC } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { useEffect, useState, type FC } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
     MessageCircle,
     RotateCcw,
@@ -21,24 +22,39 @@ import {
     Calendar,
     Package,
     CreditCard,
-} from "lucide-react"
-import { OrderRes } from "@/features/order/services/type"
-
+    Pencil,
+    X,
+} from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogClose,
+} from "@/components/ui/dialog";
+import { OrderRes } from "@/features/order/services/type";
+import { submitReview } from "@/features/review/services/review.service";
+import { AddReviewForm } from "@/features/review/components/InputReviewForm";
+import { Images } from "@/types";
+import OrderDetailItem from "@/components/organisms/OrderItem/OrderDetailItem";
 
 // Hàm format tiền tệ
 const formatCurrency = (amount: number | undefined): string => {
     if (typeof amount !== "number" || isNaN(amount)) {
-        return "0 ₫"
+        return "0 ₫";
     }
     return new Intl.NumberFormat("vi-VN", {
         style: "currency",
         currency: "VND",
         minimumFractionDigits: 0,
-    }).format(amount)
-}
+    }).format(amount);
+};
 
 // Component hiển thị trạng thái đơn hàng
-const StatusBadge: FC<{ status: string | undefined, paymentMethod: string | undefined }> = ({ status, paymentMethod }) => {
+const StatusBadge: FC<{ status: string | undefined; paymentMethod: string | undefined }> = ({
+    status,
+    paymentMethod,
+}) => {
     const [isPayment, setIsPayment] = useState(false);
 
     useEffect(() => {
@@ -55,46 +71,91 @@ const StatusBadge: FC<{ status: string | undefined, paymentMethod: string | unde
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Đặt hàng thành công
                     </Badge>
-                    {
-                        isPayment ? (<Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
+                    {isPayment ? (
+                        <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
                             <CreditCard className="w-4 h-4 mr-2" />
                             ĐÃ THANH TOÁN
-                        </Badge>) : (<Badge className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
+                        </Badge>
+                    ) : (
+                        <Badge className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
                             <CreditCard className="w-4 h-4 mr-2" />
                             CHƯA THANH TOÁN
-                        </Badge>)
-                    }
+                        </Badge>
+                    )}
                 </div>
-            )
+            );
         case "PENDING":
             return (
-                <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
-                    <Truck className="w-4 h-4 mr-2" />
-                    Đang xử lý
-                </Badge>
-            )
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="text-orange-600 border border-orange-200 text-xs" variant="outline">
+                        Đang xử lý
+                    </Badge>
+                    {isPayment ? (
+                        <Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>
+                    ) : (
+                        <Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>
+                    )}
+                </div>
+            );
+        case "CANCELLED":
+            return (
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="bg-red-100 text-red-800 border border-red-200 text-xs flex items-center">
+                        <XCircle className="w-4 h-4 mr-1" />
+                        Đã hủy
+                    </Badge>
+                    {isPayment ? (
+                        <Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>
+                    ) : (
+                        <Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>
+                    )}
+                </div>
+            );
+        case "COMPLETED":
+            return (
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs flex items-center">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Đã hoàn thành
+                    </Badge>
+                    <Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>
+                </div>
+            );
+        case "SHIPPED":
+            return (
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs flex items-center">
+                        <Truck className="w-4 h-4 mr-1" />
+                        Đã giao hàng
+                    </Badge>
+                    {isPayment ? (
+                        <Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>
+                    ) : (
+                        <Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>
+                    )}
+                </div>
+            );
         case "FALSED":
             return (
-                <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Đã hủy
+                <Badge className="text-red-600 border border-red-200 text-xs" variant="outline">
+                    Thất bại
                 </Badge>
-            )
+            );
         default:
             return (
                 <Badge className="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
                     {status || "Không xác định"}
                 </Badge>
-            )
+            );
     }
-}
+};
 
 interface OrderDetailProps {
-    order: OrderRes
+    order: OrderRes;
 }
+
 const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
-    const router = useRouter()
-    const displayOrder = order
+    const displayOrder = order;
     const finalCouponFee =
         displayOrder.coupon && Number(displayOrder.coupon.valueType) === 1
             ? Number(displayOrder.totalAmount) * (displayOrder.coupon.value / 100)
@@ -103,7 +164,8 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
         displayOrder.freeship && Number(displayOrder.freeship.valueType) === 1
             ? Number(displayOrder.priceShip) * (displayOrder.freeship.value / 100)
             : displayOrder.freeship?.value;
-    // Guard clause nếu không có dữ liệucart
+
+    // Guard clause nếu không có dữ liệu cart
     if (!displayOrder || !displayOrder.orderItems || displayOrder.orderItems.length === 0) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
@@ -115,9 +177,18 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
                     </CardContent>
                 </Card>
             </div>
-        )
+        );
     }
 
+    const router = useRouter();
+    const [selectedItem, setSelectedItem] = useState<OrderRes['orderItems'][number] | null>(null);
+    const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+
+    // Mở dialog review
+    const handleReviewDialog = (item: OrderRes['orderItems'][number]) => {
+        setSelectedItem(item);
+        setIsReviewDialogOpen(true);
+    };
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 p-4">
             <div className="w-full max-w-5xl mx-auto space-y-6">
@@ -207,60 +278,25 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="divide-y divide-gray-100">
-                            {displayOrder.orderItems.map((item, index) => (
-                                <Link
-                                    key={item.orderItemId}
-                                    href={`/products/${item.product.productId}`}
-                                    className="block hover:bg-gray-50 transition-all duration-200"
-                                >
-                                    <div className="p-6 flex flex-col sm:flex-row gap-4">
-                                        <div className="relative flex-shrink-0">
-                                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shadow-md">
-                                                <Image
-                                                    src={
-                                                        item.product.images?.[0]?.fileName && process.env.NEXT_PUBLIC_FILE
-                                                            ? `${process.env.NEXT_PUBLIC_FILE}${item.product.images[0].fileName}`
-                                                            : ""
-                                                    }
-                                                    alt={item.product.productName || "Sản phẩm"}
-                                                    width={100}
-                                                    height={100}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                            {item.discount && (
-                                                <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                                                    -{item.discount}%
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <div className="flex-1 space-y-2">
-                                            <h4 className="text-lg font-semibold text-gray-900 line-clamp-2">
-                                                {item.product.productName || "Không xác định"}
-                                            </h4>
-                                            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                                                <span className="bg-gray-100 px-3 py-1 rounded-full">Size: {item.product.size || "N/A"}</span>
-                                                <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-medium">
-                                                    Số lượng: x{item.quantity || 1}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="text-right space-y-1">
-                                            {item.discount ? (
-                                                <div className="text-sm text-gray-400 line-through">{formatCurrency(item.price || 0)}</div>
-                                            ) : null}
-                                            <div className="text-lg font-bold text-red-600">
-                                                {formatCurrency(item.price - item.price * ((item.discount ?? 0) / 100))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
+                            {displayOrder.orderItems.map((item) => (
+                                <div key={item.orderItemId} className="relative group">
+                                    <OrderDetailItem order={item} />
+                                </div>
                             ))}
                         </div>
                     </CardContent>
                 </Card>
-
-                {/* Payment Summary Card */}
+                {selectedItem && (
+                    <AddReviewForm
+                        orderItemId={selectedItem.orderItemId}
+                        productName={selectedItem.product.productName}
+                        productImage={selectedItem.product.images?.[0]?.fileName ?? ""}
+                        open={isReviewDialogOpen}
+                        onClose={() => {
+                            setIsReviewDialogOpen(false);
+                            setSelectedItem(null);
+                        }}
+                    />)}
                 <Card className="shadow-lg border-0">
                     <CardHeader className="border-b">
                         <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -298,9 +334,7 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
                             {displayOrder.coupon && (
                                 <div className="flex justify-between items-center py-2 bg-orange-50 px-4 rounded-lg">
                                     <span className="text-orange-700 font-medium">Giảm giá (Mã: {displayOrder.coupon.promotionCode})</span>
-                                    <span className="text-orange-600 font-semibold">
-                                        -{formatCurrency(finalCouponFee)}
-                                    </span>
+                                    <span className="text-orange-600 font-semibold">-{formatCurrency(finalCouponFee)}</span>
                                 </div>
                             )}
 
@@ -340,7 +374,7 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
                 </Card>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default OrderDetail
+export default OrderDetail;

@@ -7,8 +7,9 @@ import { FetchProductListParams } from "@/features/product/services/type";
 import { Author, Category, Languages, Publisher, Supplier } from "@/types";
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { fetchAllAuthors } from "@/features/author/services/author.service";
+import { fetchAllAuthors, fetchAuthors } from "@/features/author/services/author.service";
 import { CategoryItemProps } from "@/features/category/services/type";
+import { AuthorLastPage, AuthorRes } from "@/features/author/services/type";
 
 interface SidebarProps {
     onFilterChange: (newParams: Partial<FetchProductListParams>) => void;
@@ -16,42 +17,122 @@ interface SidebarProps {
 
 const Sidebar = ({ onFilterChange }: SidebarProps) => {
     const [categories, setCategories] = useState<CategoryItemProps[]>([]);
-    const [authors, setAuthors] = useState<Author[]>([]);
+    const [authors, setAuthors] = useState<AuthorRes[]>([]);
     const [languages, setLanguages] = useState<Languages[]>([]);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [publishers, setPublishers] = useState<Publisher[]>([]);
     const [isSale, setIsSale] = useState<boolean>();
     const [status, setStatus] = useState<boolean>();
     const [keyword, setKeyword] = useState<string>("");
-    const [isbn, setIsbn] = useState<number>(); // Sửa Number thành number
-    const [maxPrice, setMaxPrice] = useState<number>(); // Sửa Number thành number
-    const [minPrice, setMinPrice] = useState<number>(); // Sửa Number thành number
+    const [isbn, setIsbn] = useState<number>();
+    const [maxPrice, setMaxPrice] = useState<number>();
+    const [minPrice, setMinPrice] = useState<number>();
     const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
     const [openCategories, setOpenCategories] = useState<{ [key: string]: boolean }>({});
-    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+    const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
     const [selectedPublisherId, setSelectedPublisherId] = useState<number | null>(null);
-    const [selectedAuthorIds, setSelectedAuthorIds] = useState<number[]>([]); // Thay đổi thành mảng
+    const [selectedAuthorIds, setSelectedAuthorIds] = useState<number[]>([]);
     const [selectedLanguageIds, setSelectedLanguageId] = useState<number[]>([]);
     const [selectedPriceRange, setSelectedPriceRange] = useState<string | null>(null);
 
+    // Thêm state cho load more authors
+    const [displayedAuthorsCount, setDisplayedAuthorsCount] = useState<number>(10);
+    const [isLoadingMoreAuthors, setIsLoadingMoreAuthors] = useState<boolean>(false);
+
+    // Các useEffect giữ nguyên như cũ
     useEffect(() => {
         const loadSidebar = async () => {
             try {
-                const dataCate = await fetchAllCategories();
                 const dataPub = await fetchAllPublishers();
-                const dataLua = await fetchAllLanguages();
-                const dataAut = await fetchAllAuthors();
-                setCategories(dataCate);
                 setPublishers(dataPub);
-                setLanguages(dataLua);
-                setAuthors(dataAut);
             } catch (error) {
-                console.error("Lỗi khi load data:", error);
+                console.error("Lỗi khi load dataPub:", error);
             }
         };
         loadSidebar();
     }, []);
 
+    useEffect(() => {
+        const loadSidebar = async () => {
+            try {
+                const dataCate = await fetchAllCategories();
+                setCategories(dataCate)
+            } catch (error) {
+                console.error("Lỗi khi load cate:", error);
+            }
+        };
+        loadSidebar();
+    }, []);
+
+    useEffect(() => {
+        const loadSidebar = async () => {
+            try {
+                const dataLua = await fetchAllLanguages();
+                setLanguages(dataLua);
+            } catch (error) {
+                console.error("Lỗi khi load dataLua:", error);
+            }
+        };
+        loadSidebar();
+    }, []);
+
+    useEffect(() => {
+        const loadSidebar = async () => {
+            try {
+                const dataAut = await fetchAuthors();
+                setAuthors(dataAut);
+            } catch (error) {
+                console.error("Lỗi khi load dataAut:", error);
+            }
+        };
+        loadSidebar();
+    }, []);
+
+    // Hàm load thêm tác giả
+    const handleLoadMoreAuthors = () => {
+        setIsLoadingMoreAuthors(true);
+
+        // Simulate loading delay
+        setTimeout(() => {
+            setDisplayedAuthorsCount(prev => prev + 10);
+            setIsLoadingMoreAuthors(false);
+        }, 300);
+    };
+
+    // Reset displayed authors count khi reset filters
+    const resetFilters = () => {
+        setSelectedCategorySlug(null);
+        setSelectedPublisherId(null);
+        setSelectedAuthorIds([]);
+        setSelectedLanguageId([]);
+        setSelectedPriceRange(null);
+        setMinPrice(undefined);
+        setMaxPrice(undefined);
+        setIsSale(undefined);
+        setStatus(undefined);
+        setKeyword("");
+        setIsbn(undefined);
+        setDisplayedAuthorsCount(10); // Reset về 5 tác giả ban đầu
+
+        onFilterChange({
+            slug: undefined,
+            publisherId: undefined,
+            authorIds: undefined,
+            languageIds: undefined,
+            minPrice: undefined,
+            maxPrice: undefined,
+            isSale: undefined,
+            status: undefined,
+            keyword: "",
+            isbn: undefined,
+            pageNumber: 1,
+            pageSize: undefined,
+            sortBy: "productId",
+            sortOrder: "asc",
+        });
+    };
+
+    // Các hàm handle khác giữ nguyên
     const handlePriceChange = (min: number, max: number | undefined, rangeKey: string) => {
         if (selectedPriceRange === rangeKey) {
             setSelectedPriceRange(null);
@@ -66,10 +147,10 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
         }
     };
 
-    const handleCategoryChange = (categoryId: number) => {
-        const newCategoryId = categoryId === selectedCategoryId ? null : categoryId;
-        setSelectedCategoryId(newCategoryId);
-        onFilterChange({ categoryId: newCategoryId ?? undefined });
+    const handleCategoryChange = (slug: string) => {
+        const newCategorySlug = slug === selectedCategorySlug ? null : slug;
+        setSelectedCategorySlug(newCategorySlug);
+        onFilterChange({ slug: newCategorySlug ?? undefined });
     };
 
     const handlePublisherChange = (publisherId: number) => {
@@ -81,26 +162,29 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
     const handleAuthorChange = (authorId: number) => {
         setSelectedAuthorIds((prevSelected) => {
             if (prevSelected.includes(authorId)) {
-                return prevSelected.filter((id) => id !== authorId); // Bỏ chọn
+                return prevSelected.filter((id) => id !== authorId);
             } else {
-                return [...prevSelected, authorId]; // Chọn
+                return [...prevSelected, authorId];
             }
         });
     };
+
     useEffect(() => {
         onFilterChange({
             authorIds: selectedAuthorIds.length > 0 ? selectedAuthorIds : undefined,
         });
     }, [selectedAuthorIds]);
+
     const handleLanguageChange = (languageId: number) => {
         setSelectedLanguageId((prevSelected) => {
             if (prevSelected.includes(languageId)) {
-                return prevSelected.filter((id) => id !== languageId); // Bỏ chọn
+                return prevSelected.filter((id) => id !== languageId);
             } else {
-                return [...prevSelected, languageId]; // Chọn
+                return [...prevSelected, languageId];
             }
         });
     };
+
     useEffect(() => {
         onFilterChange({
             languageIds: selectedLanguageIds.length > 0 ? selectedLanguageIds : undefined,
@@ -121,36 +205,9 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
         }));
     };
 
-    const resetFilters = () => {
-        setSelectedCategoryId(null);
-        setSelectedPublisherId(null);
-        setSelectedAuthorIds([]); // Đặt lại thành mảng rỗng
-        setSelectedLanguageId([]);
-        setSelectedPriceRange(null);
-        setMinPrice(undefined);
-        setMaxPrice(undefined);
-        setIsSale(undefined);
-        setStatus(undefined);
-        setKeyword("");
-        setIsbn(undefined);
-
-        onFilterChange({
-            categoryId: undefined,
-            publisherId: undefined,
-            authorIds: undefined, // Đặt lại authorIds
-            languageIds: undefined,
-            minPrice: undefined,
-            maxPrice: undefined,
-            isSale: undefined,
-            status: undefined,
-            keyword: "",
-            isbn: undefined,
-            pageNumber: 1,
-            pageSize: undefined,
-            sortBy: "productId",
-            sortOrder: "asc",
-        });
-    };
+    // Lấy danh sách tác giả hiển thị
+    const displayedAuthors = authors.slice(0, displayedAuthorsCount);
+    const hasMoreAuthors = displayedAuthorsCount < authors.length;
 
     return (
         <aside className="w-full lg:w-1/4 bg-white border-r border-gray-200 p-4 lg:p-6">
@@ -177,11 +234,11 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                 <li key={`${category.categoryId}-${category.categoryName}`}>
                                     <div className="flex items-center justify-between">
                                         <span
-                                            className={`cursor-pointer transition-colors ${selectedCategoryId === Number(category.categoryId)
+                                            className={`cursor-pointer transition-colors ${selectedCategorySlug === String(category.slug)
                                                 ? "text-orange-500 font-bold font-semibold"
                                                 : "text-gray-800 hover:text-orange-500"
                                                 }`}
-                                            onClick={() => handleCategoryChange(Number(category.categoryId))}
+                                            onClick={() => handleCategoryChange(String(category?.slug))}
                                         >
                                             {category.categoryName}
                                         </span>
@@ -205,11 +262,11 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                                     <li key={`${child.categoryId}-${child.categoryName}`}>
                                                         <div className="flex items-center justify-between">
                                                             <span
-                                                                className={`cursor-pointer transition-colors ${selectedCategoryId === Number(child.categoryId)
+                                                                className={`cursor-pointer transition-colors ${selectedCategorySlug === String(child.categoryId)
                                                                     ? "text-orange-500 font-semibold"
                                                                     : "text-gray-600 hover:text-orange-500"
                                                                     }`}
-                                                                onClick={() => handleCategoryChange(Number(child.categoryId))}
+                                                                onClick={() => handleCategoryChange(String(child.slug))}
                                                             >
                                                                 {child.categoryName}
                                                             </span>
@@ -232,11 +289,11 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                                                                     {child.childrens.map((child2) => (
                                                                         <li key={`${child2.categoryId}-${child2.categoryName}`}>
                                                                             <span
-                                                                                className={`cursor-pointer transition-colors ${selectedCategoryId === Number(child2.categoryId)
+                                                                                className={`cursor-pointer transition-colors ${selectedCategorySlug === String(child2.slug)
                                                                                     ? "text-orange-500 font-semibold"
                                                                                     : "text-gray-600 hover:text-orange-500"
                                                                                     }`}
-                                                                                onClick={() => handleCategoryChange(Number(child2.categoryId))}
+                                                                                onClick={() => handleCategoryChange(String(child2.slug))}
                                                                             >
                                                                                 {child2.categoryName}
                                                                             </span>
@@ -352,35 +409,73 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
                 </div>
 
                 {/* Tác giả */}
+                {/* Tác giả - với tính năng load more */}
                 <div>
                     <button
                         onClick={() => toggleSection("authors")}
                         className="w-full flex items-center justify-between py-2 text-orange-600 text-lg font-semibold hover:text-orange-700 transition-colors cursor-pointer"
                     >
-                        <span>Tác giả </span>
+                        <span>Tác giả ({selectedAuthorIds.length > 0 ? selectedAuthorIds.length : 0})</span>
                         {openSections["authors"] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </button>
                     <div
                         className={`overflow-hidden transition-all duration-300 ${openSections["authors"] ? "max-h-screen" : "max-h-0"
                             }`}
                     >
-                        <ul className="space-y-2 mt-2 text-gray-700">
-                            {authors.map((author) => (
-                                <li key={author.authorId}>
-                                    <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
-                                            checked={selectedAuthorIds.includes(Number(author.authorId))}
-                                            onChange={() => handleAuthorChange(Number(author.authorId))}
-                                        />
-                                        <span>{author.authorName}</span>
-                                    </label>
-                                </li>
-                            ))}
-                        </ul>
+                        <div className="mt-2 text-gray-700">
+                            {/* Hiển thị số tác giả đã chọn */}
+                            {selectedAuthorIds.length > 0 && (
+                                <div className="mb-3 p-2 bg-orange-50 rounded-md">
+                                    <p className="text-sm text-orange-700">
+                                        Đã chọn {selectedAuthorIds.length} tác giả
+                                    </p>
+                                </div>
+                            )}
+
+                            <ul className="space-y-2 max-h-128 overflow-y-auto pr-2">
+                                {displayedAuthors.map((author) => (
+                                    <li key={author.authorId}>
+                                        <label className="flex items-center gap-2 hover:text-orange-500 transition-colors cursor-pointer p-1 rounded hover:bg-orange-50">
+                                            <input
+                                                type="checkbox"
+                                                className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded cursor-pointer"
+                                                checked={selectedAuthorIds.includes(Number(author.authorId))}
+                                                onChange={() => handleAuthorChange(Number(author.authorId))}
+                                            />
+                                            <span className="text-sm">{author.authorName}</span>
+                                        </label>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            {/* Nút Load More */}
+                            {hasMoreAuthors && (
+                                <div className="mt-3 text-center">
+                                    <button
+                                        onClick={handleLoadMoreAuthors}
+                                        disabled={isLoadingMoreAuthors}
+                                        className="px-4 py-2 text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50 border border-orange-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isLoadingMoreAuthors ? (
+                                            <span className="flex items-center gap-2">
+                                                <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+                                                Đang tải...
+                                            </span>
+                                        ) : (
+                                            `Xem thêm ${Math.min(10, authors.length - displayedAuthorsCount)} tác giả`
+                                        )}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Hiển thị thông tin */}
+                            <div className="mt-2 text-xs text-gray-500 text-center">
+                                Hiển thị {displayedAuthors.length} / {authors.length} tác giả
+                            </div>
+                        </div>
                     </div>
                 </div>
+
 
                 {/* Ngôn ngữ */}
                 <div>

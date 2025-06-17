@@ -103,39 +103,6 @@ export default function Footer() {
                                     Chúng tôi cam kết mang đến những cuốn sách chất lượng cao với giá cả hợp lý.
                                 </p>
 
-                                {/* Contact Info */}
-                                <div className="space-y-3">
-                                    <div className="flex items-start gap-3 group">
-                                        <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
-                                            <MapPin className="w-4 h-4 text-orange-400" />
-                                        </div>
-                                        <div className="text-sm text-gray-300">
-                                            <p className="font-medium text-white mb-1">Địa chỉ chính:</p>
-                                            <p>Số 20 Tăng Nhơn Phú - Phường Phước Long B - Thành phố Thủ Đức - TP. Hồ Chí Minh</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-3 group">
-                                        <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/30 transition-colors">
-                                            <Phone className="w-4 h-4 text-blue-400" />
-                                        </div>
-                                        <div className="text-sm text-gray-300">
-                                            <p className="font-medium text-white mb-1">Hotline:</p>
-                                            <p>1111-1111 (24/7)</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-3 group">
-                                        <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/30 transition-colors">
-                                            <Mail className="w-4 h-4 text-green-400" />
-                                        </div>
-                                        <div className="text-sm text-gray-300">
-                                            <p className="font-medium text-white mb-1">Email:</p>
-                                            <p>support@bookstore.vn</p>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 {/* Social Media */}
                                 <div>
                                     <h3 className="font-semibold text-white mb-3">Kết nối với chúng tôi</h3>
@@ -164,6 +131,46 @@ export default function Footer() {
                         {/* Menu Footer */}
                         <div className="lg:col-span-8">
                             <MenuFooter />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Contact Section - Horizontal Layout */}
+            <div className="relative border-t border-white/10 bg-black/10">
+                <div className="container mx-auto px-4 py-8">
+                    <div className="flex items-center gap-2 mb-6">
+                        <h3 className="font-bold text-orange-600 text-xl">Liên hệ</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="flex items-start gap-3 group">
+                            <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
+                                <MapPin className="w-4 h-4 text-orange-400" />
+                            </div>
+                            <div className="text-sm text-gray-300">
+                                <p className="font-medium text-white mb-1">Địa chỉ chính:</p>
+                                <p>Số 20 Tăng Nhơn Phú - Phường Phước Long B - Thành phố Thủ Đức - TP. Hồ Chí Minh</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3 group">
+                            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/30 transition-colors">
+                                <Phone className="w-4 h-4 text-blue-400" />
+                            </div>
+                            <div className="text-sm text-gray-300">
+                                <p className="font-medium text-white mb-1">Hotline:</p>
+                                <p>1111-1111 (24/7)</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3 group">
+                            <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/30 transition-colors">
+                                <Mail className="w-4 h-4 text-green-400" />
+                            </div>
+                            <div className="text-sm text-gray-300">
+                                <p className="font-medium text-white mb-1">Email:</p>
+                                <p>support@bookstore.vn</p>
+                            </div>
                         </div>
                     </div>
                 </div>

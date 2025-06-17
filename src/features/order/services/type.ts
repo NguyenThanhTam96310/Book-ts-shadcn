@@ -7,6 +7,14 @@ export interface OrderOTPRes {
     email: string
     deliveryPhone: string
 }
+export interface OrderItemRes {
+    discount: number
+    orderItemId: number
+    price: number
+    product: ProductItemProps
+    quantity: number
+}
+
 export interface OrderRes {
     orderId: number
     orderCode: string

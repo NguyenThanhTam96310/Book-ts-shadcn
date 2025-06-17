@@ -16,7 +16,6 @@ interface Props {
 export default async function OrderDetailPage({ params }: Props) {
     const { orderCode } = await params
     const order: OrderRes = await fetchOrderbyCode(orderCode)
-    console.log(order)
     return (
         <>
             <OrderDetail order={order} />
