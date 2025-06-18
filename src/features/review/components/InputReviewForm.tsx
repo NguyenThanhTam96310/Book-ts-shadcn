@@ -54,6 +54,7 @@ export function AddReviewForm({
         resolver: zodResolver(InputReviewBody),
         defaultValues: {
             orderItemId,
+            reviewId: undefined,
             fullName: "",
             avatar: "string",
             images: [],
@@ -119,7 +120,7 @@ export function AddReviewForm({
 
     return (
         <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
-            <DialogContent className="sm:max-w-xl max-h-[100vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[80%] max-h-[100vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center justify-between">
                         <span>Viết đánh giá sản phẩm</span>

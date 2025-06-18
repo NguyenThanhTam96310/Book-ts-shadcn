@@ -74,7 +74,6 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
         const loadStar = async () => {
             try {
                 const data = await fetchAverageStarByProductId(Number(product.productId))
-                console.log(data, "start")
                 setStar(data)
             } catch (error) {
                 console.error("Lỗi khi load product:", error)

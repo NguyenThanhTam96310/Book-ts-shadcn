@@ -1,122 +1,66 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { MessageCircle, RotateCcw, CheckCircle, Pencil, Package } from "lucide-react"
-import { OrderItemRes, OrderRes } from "@/features/order/services/type"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
+import { OrderItemRes } from "@/features/order/services/type";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { AddReviewForm } from "@/features/review/components/InputReviewForm";
+import { EditReviewForm } from "@/features/review/components/EditReviewForm";
+import { fetchReviewByOrderItemId } from "@/features/review/services/review.service";
+import { ReviewProps } from "@/features/review/services/type";
+import React from "react";
 
-function formatCurrency(amount: number): string {
-    return new Intl.NumberFormat("vi-VN", {
-        style: "currency",
-        currency: "VND",
-        minimumFractionDigits: 0,
-    }).format(amount).replace("₫", "₫")
-}
+type ItemProps = {
+    order: OrderItemRes;
+};
 
-function getStatusBadge(status: string | undefined, paymentMethod: string | undefined) {
-    const [isPayment, setIsPayment] = useState(true);
-    useEffect(() => {
-        if (paymentMethod === "COD") {
-            setIsPayment(false);
-        }
-    }, [paymentMethod]);
-    switch (status) {
-        case "PAID":
-            return (
-                <div className="flex items-center gap-2 flex-wrap">
-                    <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Đặt hàng thành công
-                    </Badge>
-                    {
-                        isPayment ? (<Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>) :
-                            (<Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>)
-                    }
-
-                </div>
-            )
-        case "PENDING":
-            return (
-                <div className="flex items-center gap-2 flex-wrap">
-                    <Badge className="text-orange-600 border border-orange-200 text-xs" variant="outline">
-                        Đang xử lý
-                    </Badge>
-                    {
-                        isPayment ? (<Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>) :
-                            (<Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>)
-                    }
-
-                </div>
-
-            )
-        case "CANCELLED":
-            return (
-                <div className="flex items-center gap-2 flex-wrap">
-                    <Badge className="bg-red-100 text-red-800 border border-red-200 text-xs flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Đã hủy
-                    </Badge>
-                    {
-                        isPayment ? (<Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>) :
-                            (<Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>)
-                    }
-
-                </div>
-            )
-        case "COMPLETED":
-            return (
-                <div className="flex items-center gap-2 flex-wrap">
-                    <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Đã hoàn thành
-                    </Badge>
-                    <Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>
-                </div>
-            )
-        case "SHIPPED":
-            return (
-                <div className="flex items-center gap-2 flex-wrap">
-                    <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Đã giao hàng
-                    </Badge>
-                    {
-                        isPayment ? (<Badge className="bg-green-600 text-white text-xs">ĐÃ THANH TOÁN</Badge>) :
-                            (<Badge className="bg-yellow-600 text-white text-xs">CHƯA THANH TOÁN</Badge>)
-                    }
-
-                </div>
-            )
-        case "FALSED":
-            return (
-                <Badge className="text-red-600 border border-red-200 text-xs" variant="outline">
-                    Thất bại
-                </Badge>
-            )
-        default:
-            return <Badge className="text-xs" variant="outline">{status}</Badge>
-    }
-}
-
-export default function OrderDetailItem({ order }: { order: OrderItemRes }) {
+export default function OrderDetailItem({ order }: ItemProps) {
     const displayOrder = order;
-    const router = useRouter();
-    const [selectedItem, setSelectedItem] = useState<OrderRes['orderItems'][number] | null>(null);
+    const [selectedItem, setSelectedItem] = useState<OrderItemRes | null>(null);
+    const [selectedEdit, setSelectedEdit] = useState<OrderItemRes | null>(null);
     const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+    const [isReviewDialogEdit, setIsReviewDialogEdit] = useState(false);
+    const [review, setReview] = useState<ReviewProps>()
+    const [isLoading, setIsLoading] = React.useState(false);
+    useEffect(() => {
+        setIsLoading(true);
+        const loadReview = async () => {
+            try {
+                const data = await fetchReviewByOrderItemId(Number(order.orderItemId));
+                setReview(data);
+            }
+            catch (error) {
+                setIsLoading(false);
 
-    const handleReviewDialog = (item: OrderItemRes) => {
+            }
+        }
+
+        loadReview();
+    }, []);
+    // Handler to open the review form
+    const handleOpenReview = (item: OrderItemRes) => {
         setSelectedItem(item);
         setIsReviewDialogOpen(true);
     };
+    const handleOpenEdit = (item: OrderItemRes) => {
+        setSelectedEdit(item);
+        setIsReviewDialogEdit(true);
+    };
+    // Handler to close the review form
+    const handleCloseReview = () => {
+        setSelectedItem(null);
+        setIsReviewDialogOpen(false);
+    };
+    const handleCloseEdit = () => {
+        setSelectedEdit(null);
+        setIsReviewDialogEdit(false);
+    };
 
     return (
-        <div>
+        <div className="relative">
             <Link
                 href={`/products/${displayOrder.product.slug}`}
                 className="block hover:bg-gray-50 transition-all duration-200"
@@ -128,7 +72,7 @@ export default function OrderDetailItem({ order }: { order: OrderItemRes }) {
                                 src={
                                     displayOrder.product.images?.[0]?.fileName && process.env.NEXT_PUBLIC_FILE
                                         ? `${process.env.NEXT_PUBLIC_FILE}${displayOrder.product.images[0].fileName}`
-                                        : ""
+                                        : "/placeholder-image.png" // Fallback image if none exists
                                 }
                                 alt={displayOrder.product.productName || "Sản phẩm"}
                                 width={100}
@@ -147,7 +91,9 @@ export default function OrderDetailItem({ order }: { order: OrderItemRes }) {
                             {displayOrder.product.productName || "Không xác định"}
                         </h4>
                         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                            <span className="bg-gray-100 px-3 py-1 rounded-full">Kích thước: {displayOrder.product.size || "N/A"}</span>
+                            <span className="bg-gray-100 px-3 py-1 rounded-full">
+                                Kích thước: {displayOrder.product.size || "N/A"}
+                            </span>
                             <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-medium">
                                 Số lượng: x{displayOrder.quantity || 1}
                             </span>
@@ -155,29 +101,68 @@ export default function OrderDetailItem({ order }: { order: OrderItemRes }) {
                     </div>
                     <div className="text-right space-y-1">
                         {displayOrder.discount ? (
-                            <div className="text-sm text-gray-400 line-through">{formatCurrency(displayOrder.price || 0)}</div>
+                            <div className="text-sm text-gray-400 line-through">
+                                {formatCurrency(displayOrder.price || 0)}
+                            </div>
                         ) : null}
                         <div className="text-lg font-bold text-red-600">
-                            {formatCurrency(displayOrder.price - displayOrder.price * ((displayOrder.discount ?? 0) / 100))}
+                            {formatCurrency(
+                                displayOrder.price - displayOrder.price * ((displayOrder.discount ?? 0) / 100)
+                            )}
                         </div>
                     </div>
                 </div>
             </Link>
-            <button
-                className="absolute bottom-4 right-4 flex items-center gap-1 border-2 border-orange-500 bg-white text-orange-600 px-3 py-1 rounded-xl shadow-md transition hover:bg-orange-500 hover:text-white"
-                onClick={() => handleReviewDialog(displayOrder)}
-            >
-                <Pencil className="w-4 h-4" />
-                Viết đánh giá
-            </button>
-            <button
-                className="absolute bottom-4 right-4 flex items-center gap-1 border-2 border-orange-500 bg-white text-orange-600 px-3 py-1 rounded-xl shadow-md transition hover:bg-orange-500 hover:text-white"
-                onClick={() => handleReviewDialog(displayOrder)}
-            >
-                <Pencil className="w-4 h-4" />
-                Sửa đánh giá
-            </button>
-        </div>
+            {isLoading ? (
+                <Button
+                    className="absolute bottom-4 right-4 flex items-center gap-1 border-2 border-blue-500 bg-white text-blue-600 px-3 py-1 rounded-xl shadow-md transition hover:bg-blue-500 hover:text-white cursor-pointer"
+                    onClick={() => handleOpenEdit(displayOrder)}
+                >
+                    <Pencil className="w-4 h-4" />
+                    Sửa đánh giá
+                </Button>
+            )
+                : (
+                    <Button
+                        className="absolute bottom-4 right-4 flex items-center gap-1 border-2 border-orange-500 bg-white text-orange-600 px-3 py-1 rounded-xl shadow-md transition hover:bg-orange-500 hover:text-white cursor-pointer"
+                        onClick={() => handleOpenReview(displayOrder)}
+                    >
+                        <Pencil className="w-4 h-4" />
+                        {/* {displayOrder.review ? "Sửa đánh giá" : "Viết đánh giá"} */}
+                        Viết đánh giá
+                    </Button>
+                )}
 
-    )
+
+            {selectedItem && (
+                <AddReviewForm
+                    orderItemId={selectedItem.orderItemId}
+                    productName={selectedItem.product.productName}
+                    productImage={selectedItem.product.images?.[0]?.fileName ?? ""}
+                    open={isReviewDialogOpen}
+                    onClose={handleCloseReview}
+                />
+            )}
+            {selectedEdit && (
+                <EditReviewForm
+                    orderItemId={selectedEdit.orderItemId}
+                    productName={selectedEdit.product.productName}
+                    productImage={selectedEdit.product.images?.[0]?.fileName ?? ""}
+                    open={isReviewDialogEdit}
+                    onClose={handleCloseEdit}
+                />
+            )}
+        </div>
+    );
+}
+
+// Hàm format tiền tệ
+function formatCurrency(amount: number): string {
+    return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+        minimumFractionDigits: 0,
+    })
+        .format(amount)
+        .replace("₫", "₫");
 }

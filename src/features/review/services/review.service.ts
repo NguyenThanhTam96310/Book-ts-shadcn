@@ -84,3 +84,65 @@ export const fetchAverageStarByProductId = async (productId: number): Promise<St
     return response.data;
 };
 
+export const fetchReviewById = async (reviewId: number): Promise<ReviewProps> => {
+    try {
+        const response = await axiosInstance.get<ReviewProps>(`${envConfig.NEXT_PUBLIC_API}/public/reviews/${reviewId}`);
+        return response.data;
+    } catch (error: any) {
+        if (error.response?.data?.message) {
+            throw new Error(error.response.data.message);
+        } else {
+            console.error("Lỗi khi get đánh giá:", error);
+            throw new Error("Đã có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.");
+        }
+    }
+};
+export const fetchReviewByOrderItemId = async (orderItemId: number): Promise<ReviewProps> => {
+    try {
+        const response = await axiosInstance.get<ReviewProps>(`${envConfig.NEXT_PUBLIC_API}/public/reviews/orderItem/${orderItemId}`);
+        return response.data;
+    } catch (error: any) {
+        if (error.response?.data?.message) {
+            throw new Error(error.response.data.message);
+        } else {
+            throw new Error("Đã có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.");
+        }
+    }
+};
+export async function editReview(
+    reviewData: Omit<InputReviewBodyType, "images" | "createdAt" | "updateAt">,
+    files: File[]
+): Promise<any> {
+    try {
+        const formData = new FormData();
+        formData.append("reviewId", reviewData.reviewId.toString());
+        formData.append("orderItemId", reviewData.orderItemId.toString());
+        formData.append("fullName", reviewData.fullName);
+        formData.append("avatar", reviewData.avatar || "");
+        formData.append("star", reviewData.star.toString());
+        formData.append("comment", reviewData.comment);
+        // formData.append('reviewDTO', JSON.stringify(reviewData));
+        files.forEach((file) => {
+            formData.append("files", file, file.name);
+        })
+        const response = await axiosInstance.put(
+            `${envConfig.NEXT_PUBLIC_API}/public/reviews/orderItem`,
+            formData,
+            {
+                headers: {
+                    Accept: "*/*",
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+
+        return response.data;
+    } catch (error: any) {
+        if (error.response?.data?.message) {
+            throw new Error(error.response.data.message);
+        } else {
+            console.error("Lỗi khi gửi đánh giá:", error);
+            throw new Error("Đã có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.");
+        }
+    }
+}

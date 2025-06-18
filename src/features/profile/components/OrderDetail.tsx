@@ -280,23 +280,14 @@ const OrderDetail: FC<OrderDetailProps> = ({ order }) => {
                         <div className="divide-y divide-gray-100">
                             {displayOrder.orderItems.map((item) => (
                                 <div key={item.orderItemId} className="relative group">
-                                    <OrderDetailItem order={item} />
+                                    <OrderDetailItem
+                                        order={item}
+                                    />
                                 </div>
                             ))}
                         </div>
                     </CardContent>
                 </Card>
-                {selectedItem && (
-                    <AddReviewForm
-                        orderItemId={selectedItem.orderItemId}
-                        productName={selectedItem.product.productName}
-                        productImage={selectedItem.product.images?.[0]?.fileName ?? ""}
-                        open={isReviewDialogOpen}
-                        onClose={() => {
-                            setIsReviewDialogOpen(false);
-                            setSelectedItem(null);
-                        }}
-                    />)}
                 <Card className="shadow-lg border-0">
                     <CardHeader className="border-b">
                         <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">

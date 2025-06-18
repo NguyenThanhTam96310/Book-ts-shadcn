@@ -1,6 +1,7 @@
 import z from "zod";
 
 export const InputReviewBody = z.object({
+    reviewId: z.number(),
     orderItemId: z.number().min(1, "ID sản phẩm phải lớn hơn 0"),
     fullName: z
         .string()
@@ -16,8 +17,7 @@ export const InputReviewBody = z.object({
         )
         .optional(), // Có thể có hoặc không ảnh
     star: z.number().min(1, "Số sao đánh giá phải từ 1").max(5, "Số sao đánh giá tối đa là 5"),
-    comment: z.string().min(5, "Vui lòng nhập nội dung ít nhất 5 ký tự"),
-    files: z.array(z.instanceof(File)).optional(), // chuẩn với FormData append file
+    comment: z.string().min(5, "Vui lòng nhập nội dung ít nhất 5 ký tự")
 });
 
 
