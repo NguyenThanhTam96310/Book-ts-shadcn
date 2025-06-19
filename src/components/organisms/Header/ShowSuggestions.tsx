@@ -6,9 +6,14 @@ import { Package, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ProductSearchRes } from "@/features/product"
 import { AuthorSearchRes } from "@/features/author/services/type"
+import { CategorySearchRes } from "@/features/category/services/type"
+import { LanguagesSearchRes } from "@/features/language/services/type"
 
 interface Props {
     authors: AuthorSearchRes[]
+    categories: CategorySearchRes[]
+    publisher: PublisherShowcaseProps[]
+    languages: LanguagesSearchRes[]
     products: ProductSearchRes[]
     searchLoading: boolean
     setShowSuggestions: (show: boolean) => void
@@ -19,6 +24,9 @@ interface Props {
 const ShowSuggestions = ({
     authors,
     products,
+    languages,
+    categories,
+    publisher,
     searchLoading,
     setShowSuggestions,
     keyword,
@@ -28,6 +36,21 @@ const ShowSuggestions = ({
     // Handle author link click
     const handleAuthorClick = (authorId: number) => {
         router.push(`/products?authorIds=${authorId}`)
+        setShowSuggestions(false)
+
+    }
+    const handlePublisherClick = (publisherId: number) => {
+        router.push(`/products?publisherId=${publisherId}`)
+        setShowSuggestions(false)
+
+    }
+    const handleLangugeClick = (publisherId: number) => {
+        router.push(`/products?languageIds=${publisherId}`)
+        setShowSuggestions(false)
+
+    }
+    const handleCategoryClick = (slug: string) => {
+        router.push(`/products?slugCategory=${slug}`)
         setShowSuggestions(false)
 
     }
@@ -55,9 +78,6 @@ const ShowSuggestions = ({
                     {/* Author Suggestions */}
                     {authors.length > 0 && (
                         <>
-                            <div className="px-4 py-2 text-xs text-gray-500 font-medium border-b border-gray-100">
-                                Tác giả
-                            </div>
                             <div className={`  flex flex-wrap ${isMobile ? "" : "md:grid-cols-2"} gap-2 px-2 py-2`}>
                                 {authors.map((author) => (
                                     <div
@@ -68,7 +88,43 @@ const ShowSuggestions = ({
                                         }}
                                         className="inline-flex items-center px-3 py-1 bg-gray-100 rounded-xl text-sm text-gray-800 hover:bg-orange-100 transition cursor-pointer"
                                     >
-                                        {author.authorName || "Tác giả không xác định"}
+                                        {author.authorName}
+                                    </div>
+                                ))}
+                                {categories.map((category) => (
+                                    <div
+                                        key={category.categoryId}
+                                        onMouseDown={(e) => {
+                                            e.stopPropagation();
+                                            handleCategoryClick(String(category.slug));
+                                        }}
+                                        className="inline-flex items-center px-3 py-1 bg-gray-100 rounded-xl text-sm text-gray-800 hover:bg-orange-100 transition cursor-pointer"
+                                    >
+                                        {category.categoryName}
+                                    </div>
+                                ))}
+                                {publisher.map((publisher) => (
+                                    <div
+                                        key={publisher.publisherId}
+                                        onMouseDown={(e) => {
+                                            e.stopPropagation();
+                                            handlePublisherClick(Number(publisher.publisherId));
+                                        }}
+                                        className="inline-flex items-center px-3 py-1 bg-gray-100 rounded-xl text-sm text-gray-800 hover:bg-orange-100 transition cursor-pointer"
+                                    >
+                                        {publisher.publisherName}
+                                    </div>
+                                ))}
+                                {languages.map((language) => (
+                                    <div
+                                        key={language.languageId}
+                                        onMouseDown={(e) => {
+                                            e.stopPropagation();
+                                            handleLangugeClick(Number(language.languageId));
+                                        }}
+                                        className="inline-flex items-center px-3 py-1 bg-gray-100 rounded-xl text-sm text-gray-800 hover:bg-orange-100 transition cursor-pointer"
+                                    >
+                                        {language.name}
                                     </div>
                                 ))}
                             </div>

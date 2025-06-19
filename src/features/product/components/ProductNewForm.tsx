@@ -23,11 +23,17 @@ const ProductNewForm = () => {
     return (
         <>
             <main className="py-5">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {product.map((product) => (
-                        <ProductItem key={product.productId} product={product} />
-                    ))}
-                </div>
+
+                {product.length === 0 ? (
+                    <div className="text-center text-gray-500 py-10">Không có sản phẩm</div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        {product.map((product) => (
+                            <ProductItem key={product.productId} product={product} />
+                        ))}
+                    </div>
+                )}
+
             </main>
         </>
     );

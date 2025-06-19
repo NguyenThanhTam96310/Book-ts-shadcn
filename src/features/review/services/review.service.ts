@@ -97,18 +97,17 @@ export const fetchReviewById = async (reviewId: number): Promise<ReviewProps> =>
         }
     }
 };
-export const fetchReviewByOrderItemId = async (orderItemId: number): Promise<ReviewProps> => {
+export const fetchReviewByOrderItemId = async (orderItemId: number): Promise<ReviewProps | null> => {
     try {
-        const response = await axiosInstance.get<ReviewProps>(`${envConfig.NEXT_PUBLIC_API}/public/reviews/orderItem/${orderItemId}`);
-        return response.data;
-    } catch (error: any) {
-        if (error.response?.data?.message) {
-            throw new Error(error.response.data.message);
-        } else {
-            throw new Error("Đã có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.");
-        }
+        const response = await axiosInstance.get<ReviewProps>(
+            `${envConfig.NEXT_PUBLIC_API}/public/reviews/orderItem/${orderItemId}`
+        );
+        return response.data; // Có đánh giá → trả về ReviewProps
+    } catch {
+        return null;
     }
 };
+
 export async function editReview(
     reviewData: Omit<InputReviewBodyType, "images" | "createdAt" | "updateAt">,
     files: File[]

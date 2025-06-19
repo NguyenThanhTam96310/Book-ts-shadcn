@@ -9,7 +9,7 @@ const CategoryItem: FC<CategoryItemProps> = ({ categoryId, categoryName, slug, i
 
     return (
         <div className="group relative w-full h-48 md:h-52 lg:h-56 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2">
-            <Link href={`products?categoryId=${categoryId}`} className="block w-full h-full">
+            <Link href={`products?slugCategory=${slug}`} className="block w-full h-full">
                 {/* Background Image */}
                 <div className="relative w-full h-full">
                     <Image

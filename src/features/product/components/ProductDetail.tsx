@@ -21,6 +21,9 @@ import Link from 'next/link'
 import { DialogTitle } from "@/components/ui/dialog";
 import { fetchAverageStarByProductId } from "@/features/review/services/review.service";
 import { StarRes } from "@/features/review/services/type";
+import axiosInstance from "@/lib/api/Config";
+import envConfig from "@/lib/api/envConfig";
+import { addToCart } from "../services/product.service";
 
 interface ProductDetailProps {
     product: ProductItemProps
@@ -105,26 +108,28 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
             ? Math.round(product.price - (product.price * product.discount) / 100)
             : product.price
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         const quantityInput = document.getElementById('quantityInput') as HTMLInputElement
         const quantity = Number(quantityInput?.value || 1)
 
         if (userId) {
             const url = `/public/carts`
-            POST_ADD(url, { userId: userId, productId: product.productId, quantity })
-                .then(() => {
-                    toast.success('Thêm vào giỏ hàng thành công', {
-                        position: 'bottom-right',
-                        autoClose: 2000,
-                    })
-                    addProductIdToLocalStorage(product.productId)
-                })
-                .catch((error) => {
-                    toast.error('Sản phẩm đã có trong giỏ hàng.', {
-                        position: 'bottom-right',
-                        autoClose: 2000,
-                    })
-                })
+            // POST_ADD(url, { userId: userId, productId: product.productId, quantity })
+            //     .then(() => {
+            //         toast.success('Thêm vào giỏ hàng thành công', {
+            //             position: 'bottom-right',
+            //             autoClose: 2000,
+            //         })
+            //         addProductIdToLocalStorage(product.productId)
+            //     })
+            //     .catch((error) => {
+            //         toast.error('Sản phẩm đã có trong giỏ hàng.', {
+            //             position: 'bottom-right',
+            //             autoClose: 2000,
+            //         })
+            //     })
+            const response = await addToCart(Number(product.productId), quantity, userId)
+
         } else {
             const storedCart = localStorage.getItem(CART_ITEM_KEY);
             const cart = storedCart ? JSON.parse(storedCart) : { cartItems: [], totalPrice: 0 };
@@ -203,24 +208,47 @@ const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
         router.push("/payment");
     }
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         localStorage.removeItem(PAYMENT_ITEM_KEY);
         const quantityInput = document.getElementById('quantityInput') as HTMLInputElement
         const quantity = Number(quantityInput?.value || 1)
         if (userId) {
             const url = `/public/carts`
-            POST_ADD(url, { userId: userId, productId: product.productId, quantity })
-                .then(() => {
-                    const currentLength = parseInt(localStorage.getItem('CartLength') || '0')
-                    localStorage.setItem('CartLength', (currentLength + 1).toString())
+            // POST_ADD(url, { userId: userId, productId: product.productId, quantity })
+            //     .then(() => {
+            //         const currentLength = parseInt(localStorage.getItem('CartLength') || '0')
+            //         localStorage.setItem('CartLength', (currentLength + 1).toString())
+            //     })
+            //     .catch((error) => {
+            //         console.error('Add to cart error:', error)
+            //         toast.error('Mua ngay thất bại', {
+            //             position: 'bottom-right',
+            //             autoClose: 2000,
+            //         })
+            //     })
+            const response = await axiosInstance
+                .put(`${envConfig.NEXT_PUBLIC_API}/public/carts`, { userId: userId, productId: product.productId, quantity }, {
+                    headers: {
+                        accept: "*/*",
+                        "Content-Type": "application/json",
+                    },
                 })
-                .catch((error) => {
-                    console.error('Add to cart error:', error)
-                    toast.error('Mua ngay thất bại', {
-                        position: 'bottom-right',
+                .then(() => {
+                    toast.success("Thêm vào giỏ hàng thành công", {
+                        position: "bottom-right",
                         autoClose: 2000,
                     })
+                    addProductIdToLocalStorage(product.productId)
                 })
+                .catch((error) => {
+                    console.log(error);
+                    toast.error("Sản phẩm đã có trong giỏ hàng.", {
+                        position: "bottom-right",
+                        autoClose: 2000,
+                    })
+                    throw error;
+                });
+
             handleAddCheckout();
         } else {
             handleAddCheckout();

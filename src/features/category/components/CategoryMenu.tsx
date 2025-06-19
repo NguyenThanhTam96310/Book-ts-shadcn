@@ -27,8 +27,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { fetchMenus, MenuItem } from "@/features/menu";
 import { CategoryItemProps } from "@/features/category/services/type";
-import { fetchAllCategoriesByName } from "@/features/category/services/category.service";
-
+function getNumberBeforeDash(input: string) {
+    const parts = input.split('-');
+    return parseInt(parts[0], 10);
+}
 const CategoryDrawer = () => {
     const [openMenus, setOpenMenus] = useState<{ [key: string]: CategoryItemProps[] }>({});
     const [menus, setMenus] = useState<MenuItem[]>([]);
@@ -192,14 +194,14 @@ const CategoryDrawer = () => {
                                                 onMouseEnter={() => handleCategoryHover(String(menu.menuId))}
                                                 onMouseLeave={() => setHoveredCategory(null)}
                                             >
-                                                <div className="px-5 py-4">
+                                                <div className="px-4">
                                                     {/* Parent Category */}
                                                     <div className="flex items-center justify-between group-hover:translate-x-1 transition-transform">
                                                         <div className="flex items-center space-x-3">
                                                             <div className="w-7 h-7 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
                                                                 <Package className="w-5 h-5 text-white" />
                                                             </div>
-                                                            <Link href={`/products?slug=${menu.link}`}>
+                                                            <Link href={`/products?slugCategory=${menu.link}`}>
                                                                 <h3
                                                                     onClick={() => setOpen(false)}
                                                                     className="font-bold text-gray-900 text-sm group-hover:text-orange-600 transition-colors"
@@ -227,7 +229,7 @@ const CategoryDrawer = () => {
                                                                     >
                                                                         <div className="flex items-center justify-between py-1 hover:text-orange-600 transition-colors">
                                                                             <Link
-                                                                                href={`/products?slug=${child.link}`}
+                                                                                href={`/products?slugCategory=${child.link}`}
                                                                                 onClick={() => setOpen(false)}
                                                                                 className="flex-1"
                                                                             >
@@ -246,7 +248,7 @@ const CategoryDrawer = () => {
                                                                                 {child.childrens.map((grandchild) => (
                                                                                     <Link
                                                                                         key={grandchild.menuId}
-                                                                                        href={`/products?slug=${grandchild.link}`}
+                                                                                        href={`/products?slugCategory=${grandchild.link}`}
                                                                                         onClick={() => setOpen(false)}
                                                                                         className="block text-sm text-gray-600 hover:text-orange-600 transition-colors py-1 pl-2 border-l border-gray-200 hover:border-orange-300"
                                                                                     >
@@ -267,6 +269,72 @@ const CategoryDrawer = () => {
                                         ))}
                                     </div>
                                 </div>
+                                <Separator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+
+                                {/* Author */}
+                                {menuAuthor.length > 0 && (
+                                    <div>
+                                        <div className="flex items-center mb-4 p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-gray-100 hover:border-orange-200 bg-gradient-to-br from-orange-400 to-red-500 backdrop-blur-sm rounded-lg">
+                                            <div className="p-1.5 bg-blue-100 rounded-lg mr-3">
+                                                <Menu className="w-4 h-4 text-blue-600" />
+                                            </div>
+                                            <h2 className="text-lg font-bold text-white">Sách theo tác giả</h2>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {menuAuthor.map((aut) => (
+                                                <Link
+                                                    key={aut.menuId}
+                                                    href={`/author/${getNumberBeforeDash(aut.link)}`}
+                                                    onClick={() => setOpen(false)}
+                                                    className="group"
+                                                >
+                                                    <Card className="p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-gray-100 hover:border-orange-200 bg-white/80 backdrop-blur-sm">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors text-sm">
+                                                                {aut.name}
+                                                            </span>
+                                                            <div className="flex items-center space-x-1">
+                                                                <ArrowRight className="w-3 h-3 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
+                                                            </div>
+                                                        </div>
+                                                    </Card>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Topic */}
+                                {menuTopic.length > 0 && (
+                                    <div>
+                                        <div className="flex items-center mb-4 p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-gray-100 hover:border-orange-200 bg-gradient-to-br from-orange-400 to-red-500 backdrop-blur-sm rounded-lg">
+                                            <div className="p-1.5 bg-blue-100 rounded-lg mr-3">
+                                                <Menu className="w-4 h-4 text-blue-600" />
+                                            </div>
+                                            <h2 className="text-lg font-bold text-white">Bài viết tho chủ đề</h2>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {menuTopic.map((topic) => (
+                                                <Link
+                                                    key={topic.menuId}
+                                                    href={`/post?topicId=${topic.link}`}
+                                                    onClick={() => setOpen(false)}
+                                                    className="group"
+                                                >
+                                                    <Card className="p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-gray-100 hover:border-orange-200 bg-white/80 backdrop-blur-sm">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors text-sm">
+                                                                {topic.name}
+                                                            </span>
+                                                            <div className="flex items-center space-x-1">
+                                                                <ArrowRight className="w-3 h-3 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
+                                                            </div>
+                                                        </div>
+                                                    </Card>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>

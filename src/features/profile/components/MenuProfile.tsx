@@ -48,12 +48,12 @@ const MenuProfile = () => {
                 `Truy cập thất bại. Vui lòng thử lại sau`,
                 {
                     position: "top-right",
-                    autoClose: 2000,
+                    autoClose: 3000,
                 }
             );
-            setTimeout(() => {
-                router.push("/");
-            }, 3000);
+            // setTimeout(() => {
+            //     router.push("/");
+            // }, 3000);
         }
     }, []);
 
@@ -99,7 +99,7 @@ const MenuProfile = () => {
             description: "Theo dõi đơn hàng",
         },
         {
-            label: "Địa chỉ của tôi",
+            label: "Thông tin của tôi",
             icon: MapPin,
             href: "/profile/address",
             description: "Quản lý địa chỉ giao hàng",

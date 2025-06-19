@@ -1,7 +1,9 @@
 import { FetchProductListParams, ProductItemProps, ProductListResponse, ProductSearchRes } from "@/features/product/services/type"
 import axiosInstance from "@/lib/api/Config"
 import envConfig from "@/lib/api/envConfig"
+import { addProductIdToLocalStorage } from "@/lib/utils/localStorege";
 import qs from 'qs';
+import { toast } from "react-toastify";
 
 export const fetchProductFlashSaleForm = async (): Promise<ProductItemProps[]> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
@@ -20,7 +22,7 @@ export const fetchProductFlashSaleForm = async (): Promise<ProductItemProps[]> =
 export const fetchProductNewForm = async (): Promise<ProductItemProps[]> => {
     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
         params: {
-
+            isNew: true,
             status: true,
             pageNumber: 1,
             pageSize: 10,
@@ -46,32 +48,21 @@ export const fetchProductByCategory = async (categoryId: number): Promise<Produc
     return data.content
 }
 
-
-// export const fetchProductByAuthor = async (authorId: number): Promise<ProductItemProps[]> => {
-//     const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
-//         params: {
-//             authorIds: authorId,
-//             status: true,
-//             pageNumber: 1,
-//             pageSize: 10,
-//             sortBy: "productId",
-//             sortOrder: "asc"
-//         }
-//     })
-//     const data = response.data as { content: ProductItemProps[] }
-//     return data.content
-// }
-// src/features/product/services/product.service.ts
-export const fetchProductBySlug = async (slug: string): Promise<ProductItemProps> => {
-    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products/slug/${slug}`)
-    return response.data as ProductItemProps
+export const fetchProductBySlug = async (slug: string): Promise<ProductItemProps | null> => {
+    try {
+        const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products/slug/${slug}`)
+        return response.data as ProductItemProps
+    } catch (error) {
+        console.error("Error fetching product by slug:", error);
+        return null; // Hoặc throw nếu muốn component bắt lỗi
+    }
 
 }
 
 
 
 export const fetchProductList = async (params: FetchProductListParams): Promise<ProductListResponse> => {
-    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products?status=true`, {
+    const response = await axiosInstance.get(`${envConfig.NEXT_PUBLIC_API}/public/products`, {
         params,
         paramsSerializer: (params) => {
             return qs.stringify(params, {
@@ -155,3 +146,35 @@ export const fetchSearchProductName = async (keyword: string): Promise<any> => {
     const data = response.data as { content: ProductSearchRes[] };
     return data.content;
 }
+export const addToCart = async (productId: number, quantity: number, userId: number): Promise<void> => {
+    try {
+        await axiosInstance.put(
+            `${envConfig.NEXT_PUBLIC_API}/public/carts`,
+            {
+                userId,
+                productId,
+                quantity,
+            },
+            {
+                headers: {
+                    accept: "*/*",
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        toast.success("Thêm vào giỏ hàng thành công", {
+            position: "bottom-right",
+            autoClose: 2000,
+        });
+        addProductIdToLocalStorage(productId);
+    } catch (error) {
+        console.error("API call error:", error);
+
+        toast.error("Sản phẩm đã có trong giỏ hàng.", {
+            position: "bottom-right",
+            autoClose: 2000,
+        });
+
+        throw error; // Cho phép phần gọi nó xử lý tiếp nếu cần
+    }
+};

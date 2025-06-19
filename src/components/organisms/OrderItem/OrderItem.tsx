@@ -111,6 +111,12 @@ export default function OrderItem({ order }: { order: OrderRes }) {
         router.push(`/profile/order/${order.orderCode}`);
     };
 
+    // Giới hạn chỉ hiển thị 2 sản phẩm đầu tiên
+    const MAX_DISPLAY_ITEMS = 2;
+    const orderItems = order?.orderItems || [];
+    const displayItems = orderItems.slice(0, MAX_DISPLAY_ITEMS);
+    const remainingItemsCount = orderItems.length - MAX_DISPLAY_ITEMS;
+
     return (
         <Card className="w-full max-w-4xl ">
             <CardContent className="px-4">
@@ -130,7 +136,7 @@ export default function OrderItem({ order }: { order: OrderRes }) {
 
                 {/* Order Items */}
                 <div className="px-2 ">
-                    {order?.orderItems?.map((orderItem) => {
+                    {displayItems.map((orderItem) => {
                         const product = orderItem.product
                         const discountedPrice =
                             (product.discount ?? 0) > 0
@@ -195,6 +201,16 @@ export default function OrderItem({ order }: { order: OrderRes }) {
                             </div>
                         )
                     })}
+
+                    {/* Hiển thị thông báo số sản phẩm còn lại nếu có */}
+                    {remainingItemsCount > 0 && (
+                        <div className="py-3 px-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors" onClick={handleClick}>
+                            <p className="text-sm text-gray-600 text-center">
+                                Và {remainingItemsCount} sản phẩm khác...
+                                <span className="text-blue-600 ml-1 font-medium">Xem chi tiết</span>
+                            </p>
+                        </div>
+                    )}
 
                     {/* Total */}
                     <div className="flex justify-end mt-4">

@@ -30,7 +30,7 @@ export interface FetchProductListParams {
     minPrice?: number
     maxPrice?: number
     categoryId?: number
-    slug?: string
+    slugCategory?: string
     authorIds?: number[]
     languageIds?: number[]
     supplierId?: number

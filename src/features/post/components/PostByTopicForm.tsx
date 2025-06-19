@@ -1,32 +1,32 @@
 "use client"
 
 import PostItem from '@/components/organisms/PostItem'
-import { fetchPostByTopicId } from '@/features/post/services/post.service'
 import { PostItemRes } from '@/features/post/services/type'
 import React, { useEffect, useState } from 'react'
+import { fetchPostByTopicSlug } from '../services/post.service'
 
 interface PostByTopicFormProps {
-    topicId: number
+    slug: string
     currentPostId: number
 }
 
-const PostByTopicForm: React.FC<PostByTopicFormProps> = ({ topicId, currentPostId }) => {
+const PostByTopicForm: React.FC<PostByTopicFormProps> = ({ slug, currentPostId }) => {
     const [posts, setPosts] = useState<PostItemRes[]>([])
 
     useEffect(() => {
         const loadPosts = async () => {
             try {
-                const data = await fetchPostByTopicId(topicId)
+                const data = await fetchPostByTopicSlug(slug)
                 const filterPost = data.filter((post: PostItemRes) => post.type === "POST");
                 setPosts(filterPost)
             } catch (error) {
                 console.error("Lỗi khi load post:", error)
             }
         }
-        if (topicId) {
+        if (slug) {
             loadPosts()
         }
-    }, [topicId])
+    }, [slug])
     const filteredProducts = posts.filter(
         (p) => p.postId !== currentPostId
     )

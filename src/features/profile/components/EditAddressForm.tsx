@@ -213,8 +213,8 @@ export default function EditAddressForm() {
                                 <MapPin className="w-8 h-8 text-white" />
                             </div>
                             <div>
-                                <CardTitle className="text-3xl font-bold mb-2">Cập nhật địa chỉ</CardTitle>
-                                <p className="text-blue-100">Vui lòng cập nhật địa chỉ chính xác để shop phục vụ tốt nhất</p>
+                                <CardTitle className="text-3xl font-bold mb-2">Cập nhật thông tin</CardTitle>
+                                <p className="text-blue-100">Vui lòng cập nhật thông tin chính xác để shop phục vụ tốt nhất</p>
                             </div>
                         </div>
                     </CardHeader>

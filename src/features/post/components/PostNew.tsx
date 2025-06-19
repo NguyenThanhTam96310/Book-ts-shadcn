@@ -1,7 +1,7 @@
 "use client"
 
 import PostItem from '@/components/organisms/PostItem'
-import { fetchPostByTopicId, fetchPosts } from '@/features/post/services/post.service'
+import { fetchPosts } from '@/features/post/services/post.service'
 import { PostItemRes } from '@/features/post/services/type'
 import React, { useEffect, useState } from 'react'
 

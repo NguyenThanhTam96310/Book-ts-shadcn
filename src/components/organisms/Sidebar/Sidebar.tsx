@@ -115,7 +115,7 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
         setDisplayedAuthorsCount(10); // Reset về 5 tác giả ban đầu
 
         onFilterChange({
-            slug: undefined,
+            slugCategory: undefined,
             publisherId: undefined,
             authorIds: undefined,
             languageIds: undefined,
@@ -147,10 +147,10 @@ const Sidebar = ({ onFilterChange }: SidebarProps) => {
         }
     };
 
-    const handleCategoryChange = (slug: string) => {
-        const newCategorySlug = slug === selectedCategorySlug ? null : slug;
+    const handleCategoryChange = (slugCategory: string) => {
+        const newCategorySlug = slugCategory === selectedCategorySlug ? null : slugCategory;
         setSelectedCategorySlug(newCategorySlug);
-        onFilterChange({ slug: newCategorySlug ?? undefined });
+        onFilterChange({ slugCategory: newCategorySlug ?? undefined });
     };
 
     const handlePublisherChange = (publisherId: number) => {

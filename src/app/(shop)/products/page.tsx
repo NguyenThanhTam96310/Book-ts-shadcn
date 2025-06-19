@@ -32,20 +32,8 @@ const ProductPage = () => {
     const initialPublisherId = searchParams?.get("publisherId") ? Number(searchParams?.get("publisherId")) : undefined;
     const initialIsSale = searchParams?.get("isSale") ? Boolean(searchParams?.get("isSale")) : undefined;
     const initialKeyWord = searchParams?.get("keyword") ? String(searchParams?.get("keyword")) : undefined;
-
-    // Lấy initialCategoryId từ slug trong URL
-    const [initialCategoryId, setInitialCategoryId] = useState<number | undefined>(undefined);
+    const initialSlugCategory = searchParams?.get("slugCategory") ? String(searchParams?.get("slugCategory")) : undefined;
     const [totalPages, setTotalPages] = useState<number>(0);
-    useEffect(() => {
-        const slug = searchParams?.get("slug");
-        if (slug) {
-            getCategoryIdFromSlug(slug).then((categoryId) => {
-                setInitialCategoryId(categoryId);
-            });
-        } else {
-            setInitialCategoryId(undefined);
-        }
-    }, [searchParams]);
 
     // State để quản lý params, loại bỏ slug khỏi filterParams
     const [filterParams, setFilterParams] = useState<FetchProductListParams>({
@@ -55,7 +43,7 @@ const ProductPage = () => {
         pageSize: initialPageSize,
         sortBy: initialSortBy,
         sortOrder: initialSortOrder as "asc" | "desc",
-        categoryId: initialCategoryId,
+        slugCategory: initialSlugCategory,
         authorIds: initialAuthorIds,
         minPrice: initialMinPrice,
         maxPrice: initialMaxPrice,
@@ -68,15 +56,14 @@ const ProductPage = () => {
 
     // Đồng bộ params với searchParams khi URL thay đổi
     useEffect(() => {
-        const slug = searchParams?.get("slug");
+
         const fetchParams = async () => {
-            const categoryId = slug ? await getCategoryIdFromSlug(slug) : undefined;
+
             const newParams: Partial<FetchProductListParams> = {
                 sortBy: searchParams?.get("sortBy") || "productId",
                 sortOrder: (searchParams?.get("sortOrder") as "asc" | "desc") || "asc",
                 pageSize: searchParams?.get("pageSize") ? Number(searchParams?.get("pageSize")) : 12,
                 pageNumber: searchParams?.get("pageNumber") ? Number(searchParams?.get("pageNumber")) : 1,
-                categoryId,
                 authorIds: searchParams?.getAll("authorIds").length
                     ? searchParams.getAll("authorIds").map(Number)
                     : undefined,
@@ -88,6 +75,7 @@ const ProductPage = () => {
                 publisherId: searchParams?.get("publisherId") ? Number(searchParams?.get("publisherId")) : undefined,
                 isSale: searchParams?.get("isSale") ? Boolean(searchParams?.get("isSale")) : undefined,
                 keyword: searchParams?.get("keyword") ? String(searchParams?.get("keyword")) : undefined,
+                slugCategory: searchParams?.get("slugCategory") ? String(searchParams?.get("slugCategory")) : undefined,
             };
             setFilterParams((prev) => ({
                 ...prev,
@@ -107,10 +95,6 @@ const ProductPage = () => {
             if (filterParams.sortOrder && filterParams.sortOrder !== "asc") query.set("sortOrder", filterParams.sortOrder);
             if (filterParams.pageSize && filterParams.pageSize !== 12) query.set("pageSize", filterParams.pageSize.toString());
             if (filterParams.pageNumber && filterParams.pageNumber !== 1) query.set("pageNumber", filterParams.pageNumber.toString());
-            if (filterParams.categoryId !== undefined) {
-                const slug = await getSlugFromCategoryId(filterParams.categoryId);
-                if (slug) query.set("slug", slug);
-            }
             if (filterParams.authorIds !== undefined && filterParams.authorIds.length > 0) {
                 query.delete("authorIds");
                 filterParams.authorIds.forEach((id) => query.append("authorIds", id.toString()));
@@ -124,6 +108,7 @@ const ProductPage = () => {
             if (filterParams.publisherId !== undefined) query.set("publisherId", filterParams.publisherId.toString());
             if (filterParams.isSale !== undefined) query.set("isSale", filterParams.isSale.toString());
             if (filterParams.keyword !== undefined) query.set("keyword", filterParams.keyword.toString());
+            if (filterParams.slugCategory !== undefined) query.set("slugCategory", filterParams.slugCategory.toString());
 
             const queryString = query.toString();
             const currentQueryString = currentQuery.toString();
@@ -137,15 +122,9 @@ const ProductPage = () => {
 
     // Cập nhật params khi bộ lọc thay đổi, xử lý slug từ Sidebar
     const updateParams = async (newParams: Partial<FetchProductListParams>) => {
-        let categoryId = newParams.categoryId;
-        if (newParams.slug) {
-            categoryId = await getCategoryIdFromSlug(newParams.slug);
-        }
         setFilterParams((prev) => ({
             ...prev,
             ...newParams,
-            categoryId: categoryId ?? newParams.categoryId, // Ưu tiên categoryId từ slug
-            slug: undefined, // Xóa slug khỏi filterParams
             pageNumber: newParams.pageNumber ?? 1, // Reset về trang 1 khi thay đổi bộ lọc
         }));
     };

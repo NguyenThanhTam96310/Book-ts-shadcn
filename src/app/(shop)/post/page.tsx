@@ -7,13 +7,13 @@ import { useSearchParams } from "next/navigation";
 
 const PostPage = () => {
     const searchParams = useSearchParams();
-    const topicId = searchParams?.get("topicId") || null; // Lấy topicId từ query string
+    const slug = searchParams?.get("slug") || null; // Lấy topicId từ query string
 
     return (
         <div className="py-5 bg-gray-100">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 bg-white rounded-xl shadow-lg p-6">
-                {topicId ? (
-                    <PostsList topicId={Number(topicId)} />
+                {slug ? (
+                    <PostsList slug={String(slug)} />
 
                 ) : (
                     <PostNew />

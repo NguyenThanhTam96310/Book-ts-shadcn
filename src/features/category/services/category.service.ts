@@ -1,6 +1,7 @@
-import { CategoriesRes, CategoryItemProps } from "@/features/category/services/type"
+import { CategoriesRes, CategoryItemProps, CategorySearchRes } from "@/features/category/services/type"
 import axiosInstance from "@/lib/api/Config"
 import envConfig from "@/lib/api/envConfig"
+import qs from "qs"
 
 
 export const fetchCategories = async (): Promise<CategoryItemProps[]> => {
@@ -109,40 +110,24 @@ export const getSlugFromCategoryId = async (categoryId: number): Promise<string 
         return undefined;
     }
 };
-export const fetchAllCategoriesByName = async (categoryName: string): Promise<CategoryItemProps[]> => {
-    let allChildren: CategoryItemProps[] = [];
-    let pageNumber = 1;
-    const pageSize = 5; // Giữ nguyên pageSize như API hiện tại
-    let lastPage = false;
 
-    try {
-        while (!lastPage) {
-            const response = await axiosInstance.get<CategoriesRes>(
-                `${envConfig.NEXT_PUBLIC_API}/public/categories`,
-                {
-                    params: {
-                        keyword: categoryName,
-                        status: true,
-                        type: 'parent',
-                        pageNumber,
-                        pageSize,
-                        sortBy: 'categoryId',
-                        sortOrder: 'asc',
-                    },
-                }
-            );
-
-            const data = response.data;
-            // Lấy childrens từ tất cả danh mục cha trong trang hiện tại
-            const children = data.content.flatMap((category) => category.childrens || []);
-            allChildren = [...allChildren, ...children];
-            lastPage = data.lastPage; // Kiểm tra nếu là trang cuối
-            pageNumber++; // Tăng số trang
+export const fetchAllCategoriesByName = async (keyword: string): Promise<any> => {
+    const response = await axiosInstance.get(
+        `${envConfig.NEXT_PUBLIC_API}/public/categories`, {
+        params: {
+            keyword: keyword,
+            status: true,
+            pageNumber: 1,
+            pageSize: 5,
+            sortBy: 'categoryId',
+            sortOrder: "asc"
+        },
+        paramsSerializer: (params) => {
+            return qs.stringify(params, {
+                arrayFormat: 'repeat'
+            });
         }
-
-        return allChildren;
-    } catch (error) {
-        console.error('Error fetching all menus:', error);
-        throw error;
-    }
-};
+    });
+    const data = response.data as { content: CategorySearchRes[] };
+    return data.content;
+}

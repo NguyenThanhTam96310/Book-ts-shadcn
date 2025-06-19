@@ -42,7 +42,10 @@ const EditPasswordForm = () => {
             form.reset()
         } catch (error) {
             if (error instanceof Error) {
-                toast.error(error.message)
+                toast.error("Có lỗi xảy ra, vui lòng thử lại.", {
+                    position: "top-right",
+                    autoClose: 2000,
+                })
             } else {
                 toast.error("Có lỗi xảy ra, vui lòng thử lại.", {
                     position: "top-right",

@@ -1,7 +1,7 @@
 import z from "zod";
 
 export const InputReviewBody = z.object({
-    reviewId: z.number(),
+    reviewId: z.number().optional(),
     orderItemId: z.number().min(1, "ID sản phẩm phải lớn hơn 0"),
     fullName: z
         .string()

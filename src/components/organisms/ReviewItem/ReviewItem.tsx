@@ -19,7 +19,13 @@ const ReviewItem = ({ review }: { review: ReviewProps }) => {
         setSelectedImage(imageUrl)
         setSelectedImageIndex(index) // Cập nhật chỉ số hình ảnh
     }
-
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const day = date.getDate().toString().padStart(2, "0");
+        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
     // Hàm chuyển hình ảnh tiếp theo
     const nextImage = () => {
         if (review.images && review.images.length > 1) {
@@ -45,7 +51,7 @@ const ReviewItem = ({ review }: { review: ReviewProps }) => {
                         {review.fullName?.charAt(0)?.toUpperCase() || "U"}
                     </AvatarFallback>
                 </Avatar>
-                <time className="text-xs text-gray-500 mt-2 whitespace-nowrap">{review.createdAt}</time>
+                <time className="text-xs text-gray-500 mt-2 whitespace-nowrap">  {formatDate(review.createdAt)}</time>
             </div>
 
             <div className="flex-1 min-w-0">

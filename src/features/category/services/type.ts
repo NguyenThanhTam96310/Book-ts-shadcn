@@ -16,3 +16,8 @@ export interface CategoriesRes {
     totalPages: number;
     lastPage: boolean;
 }
+export interface CategorySearchRes {
+    categoryId?: string | number
+    categoryName: string
+    slug?: string
+}

@@ -30,6 +30,11 @@ import { fetchSearchProductName, ProductSearchRes } from "@/features/product"
 import { AuthorSearchRes } from "@/features/author/services/type"
 import { fetchSearchAuthorName } from "@/features/author/services/author.service"
 import ShowSuggestions from "@/components/organisms/Header/ShowSuggestions"
+import { fetchSearchPublisherName } from "@/features/publisher"
+import { CategorySearchRes } from "@/features/category/services/type"
+import { fetchAllCategoriesByName } from "@/features/category"
+import { LanguagesSearchRes } from "@/features/language/services/type"
+import { fetchAllLanguageByName } from "@/features/language"
 
 
 export default function Header() {
@@ -44,6 +49,9 @@ export default function Header() {
     // States cho search suggestions
     const [searchResults, setSearchResults] = useState<ProductSearchRes[]>([])
     const [searchAuthors, setSearchAuthors] = useState<AuthorSearchRes[]>([])
+    const [searchPublishers, setSearchPublishers] = useState<PublisherShowcaseProps[]>([])
+    const [searchCategories, setSearchCategories] = useState<CategorySearchRes[]>([])
+    const [searchLanguages, setSearchLanguages] = useState<LanguagesSearchRes[]>([])
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [searchLoading, setSearchLoading] = useState(false)
 
@@ -94,6 +102,9 @@ export default function Header() {
         if (!keyword.trim()) {
             setShowSuggestions(false)
             setSearchAuthors([])
+            setSearchPublishers([])
+            setSearchCategories([])
+            setSearchLanguages([])
             setSearchResults([])
             return
         }
@@ -104,13 +115,22 @@ export default function Header() {
             try {
                 const results = await fetchSearchProductName(keyword.trim())
                 const resultAuthors = await fetchSearchAuthorName(keyword.trim())
+                const resultPublishers = await fetchSearchPublisherName(keyword.trim())
+                const resultCategories = await fetchAllCategoriesByName(keyword.trim())
+                const resultLanguages = await fetchAllLanguageByName(keyword.trim())
                 setSearchResults(results || [])
                 setSearchAuthors(resultAuthors || [])
+                setSearchPublishers(resultPublishers || [])
+                setSearchCategories(resultCategories || [])
+                setSearchLanguages(resultLanguages || [])
                 setShowSuggestions(true)
             } catch (error) {
                 console.error("Error fetching search suggestions:", error)
                 setSearchResults([])
                 setSearchAuthors([])
+                setSearchPublishers([])
+                setSearchCategories([])
+                setSearchLanguages([])
 
             } finally {
                 setSearchLoading(false)
@@ -184,19 +204,6 @@ export default function Header() {
         }).format(price)
     }
 
-    // Handle author link click
-    const handleAuthorClick = (authorId: number) => {
-        router.push(`/products?authorIds=${authorId}`)
-        setShowSuggestions(false)
-
-    }
-
-    // Handle product link click
-    const handleProductClick = (product: ProductSearchRes) => {
-        setShowSuggestions(false)
-        // Assuming you have a product detail page route
-        router.push(`/products/${product.slug}`)
-    }
 
     return (
         <header className="top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100">
@@ -288,6 +295,9 @@ export default function Header() {
 
                         {showSuggestions && (
                             <ShowSuggestions
+                                publisher={searchPublishers}
+                                languages={searchLanguages}
+                                categories={searchCategories}
                                 authors={searchAuthors}
                                 products={searchResults}
                                 searchLoading={searchLoading}
@@ -449,6 +459,9 @@ export default function Header() {
                         {/* Mobile Search Suggestions */}
                         {showSuggestions && (
                             <ShowSuggestions
+                                publisher={searchPublishers}
+                                languages={searchLanguages}
+                                categories={searchCategories}
                                 authors={searchAuthors}
                                 products={searchResults}
                                 searchLoading={searchLoading}

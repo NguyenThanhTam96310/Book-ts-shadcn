@@ -10,6 +10,7 @@ import { fetchTopics } from "@/features/topics/services/topic.service"
 interface TopicRes {
     topicId: number
     topicName: string
+    slug: string
 }
 
 export default function TopicMenu() {
@@ -36,10 +37,10 @@ export default function TopicMenu() {
         setOpenDropdown(openDropdown === menuId ? null : menuId)
     }
 
-    const handleTopicClick = (topicId: string) => {
+    const handleTopicClick = (slug: string) => {
         // Tạo query string mới với topicId
         const params = new URLSearchParams(searchParams?.toString() ?? "")
-        params.set("topicId", topicId)
+        params.set("slug", slug)
         router.push(`/post?${params.toString()}`, { scroll: false }) // Cập nhật URL mà không reload trang
         setShowMobileMenu(false) // Close mobile menu after selection
     }
@@ -62,9 +63,9 @@ export default function TopicMenu() {
                                 </MenubarTrigger>
                             </MenubarMenu>
                             {topics.map((topic, index) => (
-                                <MenubarMenu key={topic.topicId}>
+                                <MenubarMenu key={topic.slug}>
                                     <MenubarTrigger
-                                        onClick={() => handleTopicClick(String(topic.topicId))}
+                                        onClick={() => handleTopicClick(String(topic.slug))}
                                         className="flex items-center gap-2 text-white text-base font-semibold hover:text-yellow-300 transition-all duration-300 hover:scale-105 px-4 py-2 rounded-full hover:bg-white/10 backdrop-blur-sm group cursor-pointer"
                                         style={{
                                             animationDelay: `${index * 0.1}s`,
@@ -129,9 +130,9 @@ export default function TopicMenu() {
 
                             {/* Topic Items */}
                             {topics.map((topic, index) => (
-                                <div key={topic.topicId} className="group">
+                                <div key={topic.slug} className="group">
                                     <button
-                                        onClick={() => handleTopicClick(String(topic.topicId))}
+                                        onClick={() => handleTopicClick(String(topic.slug))}
                                         className="w-full flex items-center justify-between p-4 text-gray-800 font-semibold rounded-xl hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-md"
                                         style={{
                                             animationDelay: `${(index + 1) * 0.05}s`,

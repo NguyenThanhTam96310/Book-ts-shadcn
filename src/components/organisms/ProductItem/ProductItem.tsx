@@ -12,6 +12,8 @@ import { CART_ITEM_KEY, USER_ID } from "@/constants/cartConstants"
 import { POST_ADD } from "@/lib/api/Service"
 import { toast } from "react-toastify"
 import { addProductIdToLocalStorage } from "@/lib/utils/localStorege"
+import axiosInstance from "@/lib/api/Config"
+import envConfig from "@/lib/api/envConfig"
 
 interface ProductDetailProps {
     product: ProductItemProps
@@ -45,7 +47,7 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
         }
     }, [])
 
-    const handleAddToCart = (e: React.MouseEvent) => {
+    const handleAddToCart = async (e: React.MouseEvent) => {
         e.preventDefault() // Prevent navigation when clicking the button
         e.stopPropagation() // Stop event propagation
 
@@ -53,7 +55,13 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
 
         if (userId) {
             const url = `/public/carts`
-            POST_ADD(url, { userId: userId, productId: product.productId, quantity })
+            const response = await axiosInstance
+                .put(`${envConfig.NEXT_PUBLIC_API}/public/carts`, { userId: userId, productId: product.productId, quantity }, {
+                    headers: {
+                        accept: "*/*",
+                        "Content-Type": "application/json",
+                    },
+                })
                 .then(() => {
                     toast.success("Thêm vào giỏ hàng thành công", {
                         position: "bottom-right",
@@ -62,12 +70,14 @@ const ProductItem: FC<ProductDetailProps> = ({ product }) => {
                     addProductIdToLocalStorage(product.productId)
                 })
                 .catch((error) => {
-                    console.error("Add to cart error:", error)
+                    console.log(error);
                     toast.error("Sản phẩm đã có trong giỏ hàng.", {
                         position: "bottom-right",
                         autoClose: 2000,
                     })
-                })
+                    throw error;
+                });
+
         } else {
             const storedCart = localStorage.getItem(CART_ITEM_KEY)
             const cart = storedCart ? JSON.parse(storedCart) : { cartItems: [], totalPrice: 0 }
