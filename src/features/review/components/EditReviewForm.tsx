@@ -60,7 +60,7 @@ export function EditReviewForm({
         defaultValues: {
             reviewId: undefined,
             orderItemId,
-            fullName: "",
+            // fullName: "",
             avatar: "string",
             images: [],
             star: 5,
@@ -68,7 +68,7 @@ export function EditReviewForm({
         },
     });
 
-    const [review, setReview] = useState<ReviewProps>()
+    const [review, setReview] = useState<ReviewProps | null>()
 
     useEffect(() => {
         const loadReview = async () => {
@@ -82,7 +82,7 @@ export function EditReviewForm({
                 // Populate form with existing data
                 if (data) {
                     form.setValue("reviewId", data.reviewId || 0);
-                    form.setValue("fullName", data.fullName || "");
+                    // form.setValue("fullName", data.fullName || "");
                     form.setValue("comment", data.comment || "");
                     form.setValue("star", data.star || 5);
                     form.setValue(
@@ -189,7 +189,7 @@ export function EditReviewForm({
         form.reset();
         setSelectedImages([]);
         setExistingImages([]);
-        setReview(undefined);
+        setReview(null);
         onClose();
     };
 
@@ -245,7 +245,7 @@ export function EditReviewForm({
                                 )}
                             />
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                <FormField
+                                {/* <FormField
                                     control={form.control}
                                     name="fullName"
                                     render={({ field }) => (
@@ -257,7 +257,7 @@ export function EditReviewForm({
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                />
+                                /> */}
                                 <FormField
                                     control={form.control}
                                     name="comment"

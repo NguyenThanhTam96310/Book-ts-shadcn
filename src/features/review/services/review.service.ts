@@ -11,7 +11,7 @@ export async function submitReview(
     try {
         const formData = new FormData();
         formData.append("orderItemId", reviewData.orderItemId.toString());
-        formData.append("fullName", reviewData.fullName);
+        // formData.append("fullName", reviewData.fullName);
         formData.append("avatar", reviewData.avatar || "");
         formData.append("star", reviewData.star.toString());
         formData.append("comment", reviewData.comment);
@@ -114,9 +114,11 @@ export async function editReview(
 ): Promise<any> {
     try {
         const formData = new FormData();
-        formData.append("reviewId", reviewData.reviewId.toString());
+        if (reviewData.reviewId !== undefined && reviewData.reviewId !== null) {
+            formData.append("reviewId", reviewData.reviewId.toString());
+        }
         formData.append("orderItemId", reviewData.orderItemId.toString());
-        formData.append("fullName", reviewData.fullName);
+        // formData.append("fullName", reviewData.fullName);
         formData.append("avatar", reviewData.avatar || "");
         formData.append("star", reviewData.star.toString());
         formData.append("comment", reviewData.comment);

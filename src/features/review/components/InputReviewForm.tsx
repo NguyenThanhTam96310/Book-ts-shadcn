@@ -55,7 +55,7 @@ export function AddReviewForm({
         defaultValues: {
             orderItemId,
             reviewId: undefined,
-            fullName: "",
+            // fullName: "",
             avatar: "string",
             images: [],
             star: 5,
@@ -163,7 +163,7 @@ export function AddReviewForm({
                         )}
                     />
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
+                        {/* <FormField
                             control={form.control}
                             name="fullName"
                             render={({ field }) => (
@@ -175,7 +175,7 @@ export function AddReviewForm({
                                     <FormMessage />
                                 </FormItem>
                             )}
-                        />
+                        /> */}
                         <FormField
                             control={form.control}
                             name="comment"

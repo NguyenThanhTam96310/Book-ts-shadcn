@@ -9,6 +9,7 @@ export type ReviewProps = {
     star: number
     images: Images[]
     createdAt: string
+    updatedAt?: string;
 }
 
 export interface ReviewRes {

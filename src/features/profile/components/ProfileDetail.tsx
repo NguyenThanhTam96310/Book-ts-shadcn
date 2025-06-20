@@ -31,7 +31,6 @@ export default function ProfileDetail() {
             try {
                 if (!email) return
                 const data = await fetchUserByEmail(email)
-                console.log(data)
                 setProfile(data)
                 // Gán giá trị ban đầu từ profile.fullName
                 if (data?.fullName) setFullName(data.fullName)

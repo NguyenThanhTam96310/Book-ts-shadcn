@@ -80,7 +80,7 @@ export default function MenuFooter() {
                   {section.childrens?.map((child, linkIndex) => (
                     <li key={`menu-item-${linkIndex}`}>
                       <a
-                        href={`/page/${child.link}`}
+                        href={`${child.link}`}
                         className="group flex items-center gap-2 text-gray-300 hover:text-orange-700 transition-all duration-300 text-sm py-1"
                       >
                         <span className="group-hover:translate-x-1 transition-transform duration-300">

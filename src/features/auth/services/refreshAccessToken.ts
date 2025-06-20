@@ -5,6 +5,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
     try {
         const response = await axios.post(
             `${envConfig.NEXT_PUBLIC_API}/auth/refresh-token`,
+            {},
             {
                 withCredentials: true, // Gửi cookie chứa refreshToken
             }

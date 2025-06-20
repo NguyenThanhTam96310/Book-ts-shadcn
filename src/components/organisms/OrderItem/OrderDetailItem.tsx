@@ -12,6 +12,7 @@ import { EditReviewForm } from "@/features/review/components/EditReviewForm";
 import { fetchReviewByOrderItemId } from "@/features/review/services/review.service";
 import { ReviewProps } from "@/features/review/services/type";
 import React from "react";
+import { toast } from "react-toastify";
 
 type ItemProps = {
     order: OrderItemRes;
@@ -36,6 +37,11 @@ export default function OrderDetailItem({ order }: ItemProps) {
     const handleOpenReview = (item: OrderItemRes) => {
         setSelectedItem(item);
         setIsReviewDialogOpen(true);
+    };
+    const handleToast = (updateAt: string) => {
+        if (updateAt) {
+            toast.success("Bạn đã đạt giới hạng chỉnh sửa!");
+        }
     };
     const handleOpenEdit = (item: OrderItemRes) => {
         setSelectedEdit(item);
