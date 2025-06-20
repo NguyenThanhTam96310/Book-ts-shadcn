@@ -33,7 +33,7 @@ export default async function PostDetailPage({ params }: Props) {
                                         <p className="text-gray-600 mt-1">Khám phá những bài viết thú vị về sách và đọc</p>
                                     </div>
                                 </div>
-                                <Link href={`/post?topicId=${post.topic?.topicId}`} passHref>
+                                <Link href={`/post?slugTopic=${post.topic?.slug}`} passHref>
                                     <Button
                                         variant="outline"
                                         className="hidden sm:flex items-center gap-2 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition-all duration-300"
@@ -53,7 +53,7 @@ export default async function PostDetailPage({ params }: Props) {
                                     <div className="bg-gradient-to-r from-orange-500 to-red-600 w-16 h-1 rounded-full"></div>
                                 </div>
                             </div>
-                            <PostByTopicForm topicId={Number(post.topic?.topicId)} currentPostId={Number(post.postId)} />
+                            <PostByTopicForm slug={String(post.topic?.slug)} currentPostId={Number(post.postId)} />
                         </div>
                     </Card>
                 </div>

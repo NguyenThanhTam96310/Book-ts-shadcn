@@ -316,7 +316,7 @@ const CategoryDrawer = () => {
                                             {menuTopic.map((topic) => (
                                                 <Link
                                                     key={topic.menuId}
-                                                    href={`/post?topicId=${topic.link}`}
+                                                    href={`/post?slugTopic=${topic.link}`}
                                                     onClick={() => setOpen(false)}
                                                     className="group"
                                                 >

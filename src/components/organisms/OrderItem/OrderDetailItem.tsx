@@ -13,6 +13,9 @@ import { fetchReviewByOrderItemId } from "@/features/review/services/review.serv
 import { ReviewProps } from "@/features/review/services/type";
 import React from "react";
 import { toast } from "react-toastify";
+import { useRouter } from "next/router";
+import { USER_NAME } from "@/constants/userConstants";
+import { USER_ID } from "@/constants/cartConstants";
 
 type ItemProps = {
     order: OrderItemRes;
@@ -26,6 +29,15 @@ export default function OrderDetailItem({ order }: ItemProps) {
     const [isReviewDialogEdit, setIsReviewDialogEdit] = useState(false);
     const [review, setReview] = useState<ReviewProps | null>(null)
     const [isLoading, setIsLoading] = React.useState(false);
+    const [email, setEmail] = useState<string>();
+    const [userId, setUserId] = useState<number>();
+
+    useEffect(() => {
+        const storedId = localStorage.getItem(USER_ID);
+        if (storedId) {
+            setUserId(Number(storedId));
+        }
+    }, []);
     useEffect(() => {
         const loadReview = async () => {
             const data = await fetchReviewByOrderItemId(Number(order.orderItemId));
@@ -111,23 +123,26 @@ export default function OrderDetailItem({ order }: ItemProps) {
                     </div>
                 </div>
             </Link>
-            {review ? (
-                <Button
-                    className="absolute bottom-4 right-4 flex items-center gap-1 border-2 border-blue-500 bg-white text-blue-600 px-3 py-1 rounded-xl shadow-md transition hover:bg-blue-500 hover:text-white cursor-pointer"
-                    onClick={() => handleOpenEdit(displayOrder)}
-                >
-                    <Pencil className="w-4 h-4" />
-                    Sửa đánh giá
-                </Button>
-            ) : (
-                <Button
-                    className="absolute bottom-4 right-4 flex items-center gap-1 border-2 border-orange-500 bg-white text-orange-600 px-3 py-1 rounded-xl shadow-md transition hover:bg-orange-500 hover:text-white cursor-pointer"
-                    onClick={() => handleOpenReview(displayOrder)}
-                >
-                    <Pencil className="w-4 h-4" />
-                    Viết đánh giá
-                </Button>
+            {userId && (
+                review ? (
+                    <Button
+                        className="absolute bottom-4 right-4 flex items-center gap-1 border-2 border-blue-500 bg-white text-blue-600 px-3 py-1 rounded-xl shadow-md transition hover:bg-blue-500 hover:text-white cursor-pointer"
+                        onClick={() => handleOpenEdit(displayOrder)}
+                    >
+                        <Pencil className="w-4 h-4" />
+                        Sửa đánh giá
+                    </Button>
+                ) : (
+                    <Button
+                        className="absolute bottom-4 right-4 flex items-center gap-1 border-2 border-orange-500 bg-white text-orange-600 px-3 py-1 rounded-xl shadow-md transition hover:bg-orange-500 hover:text-white cursor-pointer"
+                        onClick={() => handleOpenReview(displayOrder)}
+                    >
+                        <Pencil className="w-4 h-4" />
+                        Viết đánh giá
+                    </Button>
+                )
             )}
+
             {selectedItem && (
                 <AddReviewForm
                     orderItemId={selectedItem.orderItemId}

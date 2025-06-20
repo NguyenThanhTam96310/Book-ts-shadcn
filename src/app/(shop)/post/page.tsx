@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 
 const PostPage = () => {
     const searchParams = useSearchParams();
-    const slug = searchParams?.get("slug") || null; // Lấy topicId từ query string
+    const slug = searchParams?.get("slugTopic") || null; // Lấy topicId từ query string
 
     return (
         <div className="py-5 bg-gray-100">

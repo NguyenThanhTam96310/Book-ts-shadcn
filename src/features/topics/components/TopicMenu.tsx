@@ -40,7 +40,7 @@ export default function TopicMenu() {
     const handleTopicClick = (slug: string) => {
         // Tạo query string mới với topicId
         const params = new URLSearchParams(searchParams?.toString() ?? "")
-        params.set("slug", slug)
+        params.set("slugTopic", slug)
         router.push(`/post?${params.toString()}`, { scroll: false }) // Cập nhật URL mà không reload trang
         setShowMobileMenu(false) // Close mobile menu after selection
     }
